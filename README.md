@@ -14,10 +14,11 @@ The setter is the friend who makes an outing happen. mo. gives that person a sha
 - Prevent other guests from taking over claimed items or editing organizer-only details.
 - Release a participant’s claimed items if they decline.
 - Persist real plans to Cloudflare D1; demo changes stay temporary.
-- Show missing decisions and the next useful coordination prompt. This is a deterministic plan check, not an in-app AI model.
+- Review, correct, reject, or atomically approve ChatGPT preparation drafts. Approved items remain unclaimed; retries do not duplicate them. Attendance or plan changes require a fresh draft.
+- Show missing decisions and the next useful coordination prompt, current RSVP counts, and unsent follow-up drafts. This is a deterministic plan check, not an in-app AI model.
 - Download an ICS calendar entry. This is a one-time calendar export, not continuous calendar sync.
 - Save an existing HTTPS invitation URL and link back to it. A mo. plan can be added manually as an Apple Invites Link tile. Apple RSVPs are not automatically synchronized.
-- Expose seven authenticated MCP tools through the Site’s ChatGPT plugin. ChatGPT can structure a user’s supplied conversation, create/read/update plans, add unclaimed items, and record the caller’s own RSVP/commitments. It must not invent commitments, book anything, or send invitations automatically.
+- Expose nine authenticated MCP tools through the Site’s ChatGPT plugin. ChatGPT can structure a user’s supplied conversation, create/read/update plans, add unclaimed items, and record the caller’s own RSVP/commitments. It must not invent commitments, book anything, or send invitations automatically.
 
 ## Access
 
@@ -41,6 +42,7 @@ Before the first local database-backed preview, apply the tracked SQL migrations
 ```sh
 node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0000_nice_lord_tyger.sql
 node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0001_sharp_lake.sql
+node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0002_woozy_maximus.sql
 npm run dev
 ```
 
@@ -59,6 +61,10 @@ GitHub Actions runs these checks on pushes to main and pull requests. No reposit
 Use the Sites build/install helpers for this checkout. `npm run db:generate` appends database migrations. `npx tsc --noEmit` checks types. `node tests/route-harness.mjs` exercises the actual API and MCP route handlers against SQLite: persistence, RSVP changes, exclusive claims, authorization, partial plan updates, cross-origin protection, and MCP input validation. It creates only in-memory test data.
 
 Use `sites-preview start /workspace/sites/mo` for managed browser QA. Apply pending local migrations with the starter’s documented Wrangler command. Production migrations apply through Sites publishing. Do not create schema at request time.
+
+## ChatGPT preparation workflow
+
+See [the workflow and verification guide](docs/setter-workflow.md) for connection steps, review behavior, fictional Friendsgiving and trip examples, local demonstration evidence, and configuration limits. No embedded inference provider is configured. The web app helps compose a ChatGPT prompt; it does not itself interpret conversation text.
 
 ## Deliberately unresolved
 
