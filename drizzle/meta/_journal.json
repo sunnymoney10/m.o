@@ -15,6 +15,13 @@
       "when": 1794800849976,
       "tag": "0001_sharp_lake",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1794803676070,
+      "tag": "0002_woozy_maximus",
+      "breakpoints": true
     }
   ]
 }

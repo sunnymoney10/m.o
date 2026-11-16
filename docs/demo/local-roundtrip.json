@@ -1,0 +1,111 @@
+{
+  "date": "2026-11-16T04:38:45.352Z",
+  "scope": "Current Codex model authored the structured interpretation during implementation. Actual MCP -> authorized API -> persistent local SQLite, using simulated development identity. This is not a hosted ChatGPT plugin or live provider API test. Subsequent runs replay the saved model output.",
+  "source": "codex-proposal.json",
+  "proposal": {
+    "id": "88b0b005-65b5-4e29-ba76-e1b8d269a62b",
+    "status": "pending",
+    "planUnchanged": true,
+    "tasks": 0
+  },
+  "applied": {
+    "result": {
+      "ok": true
+    },
+    "plan": {
+      "id": "08045484-ac25-416a-8aea-10efe3478bea",
+      "title": "Fictional Friendsgiving demo",
+      "kind": "gathering",
+      "date": "",
+      "place": "Organizer’s apartment",
+      "budget": "",
+      "note": "",
+      "created": "2026-11-16T04:38:31.779Z",
+      "invite_url": null
+    },
+    "tasks": [
+      {
+        "id": "617d95f8-fac8-4a72-b281-bbc33b8b61f1",
+        "plan_id": "08045484-ac25-416a-8aea-10efe3478bea",
+        "title": "Ask guests about allergies and dietary needs",
+        "category": "todo",
+        "claimed_name": null,
+        "done": 0,
+        "isMine": false
+      },
+      {
+        "id": "23ef7008-be19-4ef7-b9ac-e1d9981bb278",
+        "plan_id": "08045484-ac25-416a-8aea-10efe3478bea",
+        "title": "Confirm the headcount and date",
+        "category": "todo",
+        "claimed_name": null,
+        "done": 0,
+        "isMine": false
+      },
+      {
+        "id": "eb3fd48e-705e-4dc5-974b-559a04281e4f",
+        "plan_id": "08045484-ac25-416a-8aea-10efe3478bea",
+        "title": "Coordinate a main dish after dietary needs are known",
+        "category": "bring",
+        "claimed_name": null,
+        "done": 0,
+        "isMine": false
+      },
+      {
+        "id": "8b39fb03-de21-44c6-88b1-afb15f772eda",
+        "plan_id": "08045484-ac25-416a-8aea-10efe3478bea",
+        "title": "Coordinate a suitable side dish",
+        "category": "bring",
+        "claimed_name": null,
+        "done": 0,
+        "isMine": false
+      },
+      {
+        "id": "358026ff-f4f4-417c-afe3-b652f599378c",
+        "plan_id": "08045484-ac25-416a-8aea-10efe3478bea",
+        "title": "Coordinate drinks and ice",
+        "category": "bring",
+        "claimed_name": null,
+        "done": 0,
+        "isMine": false
+      }
+    ],
+    "draftStatus": "applied",
+    "briefing": {
+      "kind": "deterministic",
+      "going": 1,
+      "maybe": 0,
+      "declined": 0,
+      "gaps": [
+        "Which date and time work?",
+        "What budget or contribution works for everyone?",
+        "5 unclaimed item(s): Ask guests about allergies and dietary needs, Confirm the headcount and date, Coordinate a main dish after dietary needs are known, Coordinate a suitable side dish, Coordinate drinks and ice."
+      ],
+      "nextAction": "Which date and time work?",
+      "followUps": [
+        {
+          "gap": "Which date and time work?",
+          "text": "For Fictional Friendsgiving demo: Which date and time work? Please update the mo. plan when you know.",
+          "sent": false
+        },
+        {
+          "gap": "What budget or contribution works for everyone?",
+          "text": "For Fictional Friendsgiving demo: What budget or contribution works for everyone? Please update the mo. plan when you know.",
+          "sent": false
+        },
+        {
+          "gap": "5 unclaimed item(s): Ask guests about allergies and dietary needs, Confirm the headcount and date, Coordinate a main dish after dietary needs are known, Coordinate a suitable side dish, Coordinate drinks and ice.",
+          "text": "For Fictional Friendsgiving demo: 5 unclaimed item(s): Ask guests about allergies and dietary needs, Confirm the headcount and date, Coordinate a main dish after dietary needs are known, Coordinate a suitable side dish, Coordinate drinks and ice. Please update the mo. plan when you know.",
+          "sent": false
+        }
+      ]
+    }
+  },
+  "retry": {
+    "result": {
+      "ok": true,
+      "alreadyApplied": true
+    },
+    "tasks": 5
+  }
+}

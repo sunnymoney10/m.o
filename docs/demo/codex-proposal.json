@@ -1,0 +1,14 @@
+{
+  "source": "Fictional demo: I’m hosting Friendsgiving at my apartment. We haven’t picked a date. I want a potluck, but nobody has committed to a dish. We haven’t asked about allergies or dietary needs and don’t know the final headcount. Please help me prepare without assigning anyone work.",
+  "fields": {"place": "Organizer’s apartment"},
+  "decisions": ["The organizer will host at their apartment."],
+  "suggestions": ["Use a potluck format, subject to the organizer’s review.", "Ask participants to claim dishes after dietary needs are known."],
+  "questions": ["What date and time work?", "How many people will attend?", "What allergies or dietary requirements should the menu accommodate?", "What will each participant choose to bring?", "What budget or contribution expectations should we agree?"],
+  "items": [
+    {"title": "Ask guests about allergies and dietary needs", "category": "todo"},
+    {"title": "Confirm the headcount and date", "category": "todo"},
+    {"title": "Coordinate a main dish after dietary needs are known", "category": "bring"},
+    {"title": "Coordinate a suitable side dish", "category": "bring"},
+    {"title": "Coordinate drinks and ice", "category": "bring"}
+  ]
+}
