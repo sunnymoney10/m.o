@@ -44,6 +44,7 @@ async function handler(req:Request){
     const b=await body();const title=str(b.title,100),name=str(b.name,60);if(!title||!name)return json({error:'Give the plan a title and tell us your name.'},400);
     if(b.date&&Number.isNaN(Date.parse(b.date)))return json({error:'Choose a valid date.'},400);
     if(b.inviteUrl&&!invitation(b.inviteUrl))return json({error:'Use a valid HTTPS invitation link.'},400);
+    const recent=await db.prepare('SELECT count(*) AS n FROM plans WHERE owner=? AND created>?').bind(actor,new Date(Date.now()-86400000).toISOString()).first<any>();if((recent?.n||0)>=20)return json({error:'You’ve started a lot of plans today. Try again tomorrow.'},429);
     const id=crypto.randomUUID();const kind=b.kind==='trip'?'trip':'gathering';const taskList=Array.isArray(b.tasks)?b.tasks.slice(0,30):[];
     const statements=[db.prepare('INSERT INTO plans (id,owner,title,kind,date,place,budget,note,invite_url,created) VALUES (?,?,?,?,?,?,?,?,?,?)').bind(id,actor,title,kind,str(b.date,40),str(b.place,160),str(b.budget,60),str(b.note,2000),invitation(b.inviteUrl),new Date().toISOString()),db.prepare('INSERT INTO guests (plan_id,actor,name,status,note) VALUES (?,?,?,?,?)').bind(id,actor,name,'in','')];
     for(const t of taskList){if(str(t?.title,160))statements.push(db.prepare('INSERT INTO tasks (id,plan_id,title,category,done) VALUES (?,?,?,?,0)').bind(crypto.randomUUID(),id,str(t.title,160),t.category==='bring'?'bring':'todo'));}
@@ -83,11 +84,13 @@ async function handler(req:Request){
    }
    if(seg[2]==='rsvp'&&req.method==='POST'){
     const name=str(b.name,60);if(!name||!['in','maybe','out'].includes(b.status))return json({error:'Add your name and choose a response.'},400);
+    if(!await guest()){const n=await db.prepare('SELECT count(*) AS n FROM guests WHERE plan_id=?').bind(id).first<any>();if((n?.n||0)>=150)return json({error:'This plan is full. Ask the organizer.'},400)}
     await db.batch([...(b.status==='out'?[db.prepare('UPDATE tasks SET claimed_by=NULL,claimed_name=NULL,done=0 WHERE plan_id=? AND claimed_by=?').bind(id,actor)]:[]),db.prepare('INSERT INTO guests (plan_id,actor,name,status,note) VALUES (?,?,?,?,?) ON CONFLICT(plan_id,actor) DO UPDATE SET name=excluded.name,status=excluded.status,note=excluded.note').bind(id,actor,name,b.status,str(b.note,300)),db.prepare('UPDATE tasks SET claimed_name=? WHERE plan_id=? AND claimed_by=?').bind(name,id,actor)]);return json({ok:true});
    }
    if(seg[2]==='tasks'&&seg.length===3&&req.method==='POST'){
     const title=str(b.title,160);if(!title)return json({error:'Add something to coordinate.'},400);
     if(!host&&!await guest())return json({error:'RSVP before adding to the plan.'},403);
+    const n=await db.prepare('SELECT count(*) AS n FROM tasks WHERE plan_id=?').bind(id).first<any>();if((n?.n||0)>=100)return json({error:'This plan has plenty to do already.'},400);
     await db.prepare('INSERT INTO tasks (id,plan_id,title,category,done) VALUES (?,?,?,?,0)').bind(crypto.randomUUID(),id,title,b.category==='bring'?'bring':'todo').run();return json({ok:true});
    }
    if(seg[2]==='tasks'&&seg[3]&&req.method==='PATCH'){

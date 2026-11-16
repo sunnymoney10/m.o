@@ -25,7 +25,7 @@ The setter is the friend who makes an outing happen. mo. gives that person a sha
 
 ## Access
 
-The first hosted release is an owner-private preview. Copying a plan link does not override Site access. For a later public pilot, explicitly change Site audience through the supported access controls; anyone possessing a plan’s UUID link can read that plan, while guest sessions restrict writes to their own commitments. Do not publish private demo/test data or reuse preview sessions as production guests.
+The owner has approved a public pilot. The Site audience itself is changed in the Sites access controls (not in this repo). Once public, anyone possessing a plan’s UUID link can read that plan and respond as a guest; guest sessions can only write their own RSVP, votes, claims and posts. Basic abuse caps apply: 20 new plans per person per day, 150 guests and 100 items per plan, plus existing caps on votes, stops and memories. Do not publish private demo/test data or reuse preview sessions as production guests.
 
 ## Reuse
 
@@ -49,7 +49,7 @@ node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1
 npm run dev
 ```
 
-Local identity is simulated by the development adapter; hosted identity comes from Sites. The production preview is private at https://mo-make-it-out-kofi.kofigladney.chatgpt.site. Hosting configuration is retained so this code maps to the existing deployment. GitHub commits do not automatically deploy that Site.
+Local identity is simulated by the development adapter; hosted identity comes from Sites. The production Site is https://mo-make-it-out-kofi.kofigladney.chatgpt.site. Hosting configuration is retained so this code maps to the existing deployment. GitHub commits do not automatically deploy that Site.
 
 ```sh
 npm run check

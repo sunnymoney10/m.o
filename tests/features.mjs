@@ -63,3 +63,5 @@ assert.equal((await request(other,'me','PUT',{name:'Copycat',handle:'jules'})).s
 r=await request(guest,'me');assert.equal(r.body.profile.handle,'jules');assert.deepEqual(r.body.profile.interests,['Live music','Food runs']);
 r=await request(host,'plan/'+id);const g=r.body.guests.find(x=>x.name==='Jules');assert.ok(g,'profile name flows to plans');assert.equal(g.handle,'jules');assert.equal(g.mo,'One more song.');
 console.log('PASS: group decisions, lock-in to plan details, live itinerary, replay permissions, made-it-out history and profiles.');
+const spammer=crypto.randomUUID();let last;for(let i=0;i<21;i++)last=await request(spammer,'plans','POST',{title:'Spam '+i,name:'S'});assert.equal(last.status,429,'daily plan cap');
+console.log('PASS: public-pilot abuse caps.');
