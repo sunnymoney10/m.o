@@ -1,4 +1,14 @@
-import {sqliteTable,text,integer,primaryKey} from 'drizzle-orm/sqlite-core';
-export const plans=sqliteTable('plans',{id:text('id').primaryKey(),owner:text('owner').notNull(),title:text('title').notNull(),kind:text('kind').notNull(),date:text('date').notNull(),place:text('place').notNull(),budget:text('budget').notNull(),note:text('note').notNull(),inviteUrl:text('invite_url'),created:text('created').notNull()});
+import {sqliteTable,text,integer,primaryKey,uniqueIndex} from 'drizzle-orm/sqlite-core';
+export const plans=sqliteTable('plans',{id:text('id').primaryKey(),owner:text('owner').notNull(),title:text('title').notNull(),kind:text('kind').notNull(),date:text('date').notNull(),place:text('place').notNull(),budget:text('budget').notNull(),note:text('note').notNull(),inviteUrl:text('invite_url'),created:text('created').notNull(),madeIt:integer('made_it').notNull().default(0)});
 export const guests=sqliteTable('guests',{planId:text('plan_id').notNull().references(()=>plans.id),actor:text('actor').notNull(),name:text('name').notNull(),status:text('status').notNull(),note:text('note').notNull()},t=>[primaryKey({columns:[t.planId,t.actor]})]);
 export const tasks=sqliteTable('tasks',{id:text('id').primaryKey(),planId:text('plan_id').notNull().references(()=>plans.id),title:text('title').notNull(),category:text('category').notNull(),claimedBy:text('claimed_by'),claimedName:text('claimed_name'),done:integer('done').notNull().default(0)});
+// Group decisions. A poll collects suggestions; only the organizer's lock-in makes one a confirmed decision.
+export const polls=sqliteTable('polls',{id:text('id').primaryKey(),planId:text('plan_id').notNull().references(()=>plans.id),question:text('question').notNull(),kind:text('kind').notNull(),decidedOption:text('decided_option'),created:text('created').notNull()});
+export const pollOptions=sqliteTable('poll_options',{id:text('id').primaryKey(),pollId:text('poll_id').notNull().references(()=>polls.id),label:text('label').notNull(),addedBy:text('added_by').notNull()});
+export const pollVotes=sqliteTable('poll_votes',{optionId:text('option_id').notNull().references(()=>pollOptions.id),pollId:text('poll_id').notNull(),actor:text('actor').notNull()},t=>[primaryKey({columns:[t.optionId,t.actor]})]);
+// The live plan: one current itinerary with key links. Organizer-maintained.
+export const stops=sqliteTable('stops',{id:text('id').primaryKey(),planId:text('plan_id').notNull().references(()=>plans.id),at:text('at').notNull(),title:text('title').notNull(),detail:text('detail').notNull(),url:text('url')});
+// Replay: memories and shout-outs written by the people who were there.
+export const memories=sqliteTable('memories',{id:text('id').primaryKey(),planId:text('plan_id').notNull().references(()=>plans.id),actor:text('actor').notNull(),name:text('name').notNull(),kind:text('kind').notNull(),body:text('body').notNull(),photoUrl:text('photo_url'),created:text('created').notNull()});
+// "What's your mo?" — a self-described profile. No scores or rankings.
+export const profiles=sqliteTable('profiles',{actor:text('actor').primaryKey(),name:text('name').notNull(),handle:text('handle').notNull(),mo:text('mo').notNull(),interests:text('interests').notNull(),style:text('style').notNull(),updated:text('updated').notNull()},t=>[uniqueIndex('profiles_handle_unique').on(t.handle)]);
