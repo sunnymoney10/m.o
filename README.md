@@ -14,10 +14,14 @@ The setter is the friend who makes an outing happen. mo. gives that person a sha
 - Prevent other guests from taking over claimed items or editing organizer-only details.
 - Release a participant’s claimed items if they decline.
 - Persist real plans to Cloudflare D1; demo changes stay temporary.
-- Show missing decisions and the next useful coordination prompt. This is a deterministic plan check, not an in-app AI model.
+- Put dates, places or anything else to a group vote. Members vote and suggest options; only the organizer can lock one in, and a locked date or place updates the plan. Votes are suggestions, never commitments.
+- Keep a live plan: an organizer-maintained itinerary of timed stops and key HTTPS links.
+- Replay: after the plan, people who were in post memories (optional HTTPS photo/album link) and shout-outs; the organizer marks the plan “made it out.” Authors and the organizer can remove posts.
+- “What’s your mo?” profiles: name, unique handle, a one-line mo, interests and planning style. Shown to people in shared plans. The profile page lists plans you made it out to, places conquered, and private counts of what you hosted and took care of — no scores or rankings.
+- Show missing decisions, the next useful coordination step, and copyable group-chat drafts (status update and a nudge for maybes). These are deterministic templates built from saved plan data, not an in-app AI model. mo. never sends messages.
 - Download an ICS calendar entry. This is a one-time calendar export, not continuous calendar sync.
 - Save an existing HTTPS invitation URL and link back to it. A mo. plan can be added manually as an Apple Invites Link tile. Apple RSVPs are not automatically synchronized.
-- Expose seven authenticated MCP tools through the Site’s ChatGPT plugin. ChatGPT can structure a user’s supplied conversation, create/read/update plans, add unclaimed items, and record the caller’s own RSVP/commitments. It must not invent commitments, book anything, or send invitations automatically.
+- Expose eleven authenticated MCP tools through the Site’s ChatGPT plugin. ChatGPT can structure a user’s supplied conversation, create/read/update plans, add unclaimed items, start organizer votes, record the caller’s own RSVP, votes and commitments, add itinerary stops, and draft a group-chat update from saved data. It must not invent commitments, book anything, or send invitations automatically.
 
 ## Access
 
@@ -41,6 +45,7 @@ Before the first local database-backed preview, apply the tracked SQL migrations
 ```sh
 node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0000_nice_lord_tyger.sql
 node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0001_sharp_lake.sql
+node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0002_live_replay_profiles.sql
 npm run dev
 ```
 
@@ -61,5 +66,7 @@ Use the Sites build/install helpers for this checkout. `npm run db:generate` app
 Use `sites-preview start /workspace/sites/mo` for managed browser QA. Apply pending local migrations with the starter’s documented Wrangler command. Production migrations apply through Sites publishing. Do not create schema at request time.
 
 ## Deliberately unresolved
+
+Photo uploads are not stored by mo.; replay photos are HTTPS links. Demo photos in `public/photos` are cropped from the mo. brand mockup.
 
 No payment processing, paid tier, booked inventory, affiliate revenue, social-platform scraping, automatic message sending, or automatic Apple/Google Calendar sync is implemented. The consumer core is free. A 30-day revenue route still requires validation and actual commercial terms; this prototype does not establish revenue or demand.
