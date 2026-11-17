@@ -1,8 +1,11 @@
 import assert from 'node:assert/strict';
 const origin=process.env.SITE_TEST_URL||'http://127.0.0.1:4173';
 const alice=crypto.randomUUID(),bob=crypto.randomUUID(),cara=crypto.randomUUID();
-async function request(actor,path,method='GET',body){const r=await fetch(origin+'/api/'+path,{method,headers:{Origin:origin,Cookie:'mo_session='+actor,'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});return {status:r.status,body:await r.json()}}
+async function request(actor,path,method='GET',body){const r=await fetch(origin+'/api/'+path,{method,headers:{Origin:origin,'oai-authenticated-user-id':actor,'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});return {status:r.status,body:await r.json()}}
 let r=await request(alice,'plans','POST',{title:'QA Friendsgiving',name:'QA host',kind:'gathering',date:'2026-11-26T23:00:00Z',place:'Test table',budget:'Bring a dish',tasks:[{title:'Dessert',category:'bring'}]});assert.equal(r.status,201,JSON.stringify(r));const id=r.body.id;
+assert.equal((await request(bob,'plan/'+id)).status,403);
+// Existing member fixtures represent invitations made before this release.
+for(const actor of [bob,cara])globalThis.__moTestEnv.DB.prepare('INSERT INTO guests (plan_id,actor,name,status,note) VALUES (?,?,?,?,?)').bind(id,actor,'Invited','out','').run();
 r=await request(bob,'plan/'+id);assert.equal(r.status,200);assert.equal(r.body.host,false);assert.ok(!('owner' in r.body.plan));const task=r.body.tasks[0].id;
 r=await request(bob,'plan/'+id,'PATCH',{title:'Unauthorized edit'});assert.equal(r.status,403);
 r=await request(bob,`plan/${id}/tasks/${task}`,'PATCH',{action:'claim'});assert.equal(r.status,400);

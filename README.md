@@ -14,18 +14,14 @@ The setter is the friend who makes an outing happen. mo. gives that person a sha
 - Prevent other guests from taking over claimed items or editing organizer-only details.
 - Release a participant’s claimed items if they decline.
 - Persist real plans to Cloudflare D1; demo changes stay temporary.
-- Put dates, places or anything else to a group vote. Members vote and suggest options; only the organizer can lock one in, and a locked date or place updates the plan. Votes are suggestions, never commitments.
-- Keep a live plan: an organizer-maintained itinerary of timed stops and key HTTPS links.
-- Replay: after the plan, people who were in post memories (optional HTTPS photo/album link) and shout-outs; the organizer marks the plan “made it out.” Authors and the organizer can remove posts.
-- “What’s your mo?” profiles: name, unique handle, a one-line mo, interests and planning style. Shown to people in shared plans. The profile page lists plans you made it out to, places conquered, and private counts of what you hosted and took care of — no scores or rankings.
-- Show missing decisions, the next useful coordination step, and copyable group-chat drafts (status update and a nudge for maybes). These are deterministic templates built from saved plan data, not an in-app AI model. mo. never sends messages.
+- Show missing decisions and the next useful coordination prompt. This is a deterministic plan check, not an in-app AI model.
 - Download an ICS calendar entry. This is a one-time calendar export, not continuous calendar sync.
 - Save an existing HTTPS invitation URL and link back to it. A mo. plan can be added manually as an Apple Invites Link tile. Apple RSVPs are not automatically synchronized.
-- Expose eleven authenticated MCP tools through the Site’s ChatGPT plugin. ChatGPT can structure a user’s supplied conversation, create/read/update plans, add unclaimed items, start organizer votes, record the caller’s own RSVP, votes and commitments, add itinerary stops, and draft a group-chat update from saved data. It must not invent commitments, book anything, or send invitations automatically.
+- Expose seven authenticated MCP tools through the Site’s ChatGPT plugin. ChatGPT can structure a user’s supplied conversation, create/read/update plans, add unclaimed items, and record the caller’s own RSVP/commitments. It must not invent commitments, book anything, or send invitations automatically.
 
 ## Access
 
-The owner has approved a public pilot. The Site audience itself is changed in the Sites access controls (not in this repo). Once public, anyone possessing a plan’s UUID link can read that plan and respond as a guest; guest sessions can only write their own RSVP, votes, claims and posts. Basic abuse caps apply: 20 new plans per person per day, 150 guests and 100 items per plan, plus existing caps on votes, stops and memories. Do not publish private demo/test data or reuse preview sessions as production guests.
+The first hosted release is an owner-private preview. Copying a plan link does not override Site access. For a later public pilot, explicitly change Site audience through the supported access controls; anyone possessing a plan’s UUID link can read that plan, while guest sessions restrict writes to their own commitments. Do not publish private demo/test data or reuse preview sessions as production guests.
 
 ## Reuse
 
@@ -45,11 +41,10 @@ Before the first local database-backed preview, apply the tracked SQL migrations
 ```sh
 node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0000_nice_lord_tyger.sql
 node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0001_sharp_lake.sql
-node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0002_live_replay_profiles.sql
 npm run dev
 ```
 
-Local identity is simulated by the development adapter; hosted identity comes from Sites. The production Site is https://mo-make-it-out-kofi.kofigladney.chatgpt.site. Hosting configuration is retained so this code maps to the existing deployment. GitHub commits do not automatically deploy that Site.
+Local identity is simulated by the development adapter; hosted identity comes from Sites. The production preview is private at https://mo-make-it-out-kofi.kofigladney.chatgpt.site. Hosting configuration is retained so this code maps to the existing deployment. GitHub commits do not automatically deploy that Site.
 
 ```sh
 npm run check
@@ -67,6 +62,12 @@ Use `sites-preview start /workspace/sites/mo` for managed browser QA. Apply pend
 
 ## Deliberately unresolved
 
-Photo uploads are not stored by mo.; replay photos are HTTPS links. Demo photos in `public/photos` are cropped from the mo. brand mockup.
-
 No payment processing, paid tier, booked inventory, affiliate revenue, social-platform scraping, automatic message sending, or automatic Apple/Google Calendar sync is implemented. The consumer core is free. A 30-day revenue route still requires validation and actual commercial terms; this prototype does not establish revenue or demand.
+
+## Host desk message drafts
+
+The current private host desk is at `/host`. Its Messages tab uses the current event title/time and recorded guest response when preparing editable templates. It leaves missing dates unresolved and does not turn an offered dish into a commitment. Invitation drafts preserve your invitation text; update that text in Event details when plans change.
+
+Saved drafts remember which event/guest details were reviewed. After those details change, or for an older draft without that context, review the text again or prepare a fresh draft before copying. Address drafts require a recorded address and confirmed attendance. Copying or opening the text app first checks the online desk version; if new replies arrived, refresh rather than sending an outdated draft. Editing/preparing a draft clears its current sent marker. Only **Mark sent** records an intentional manual send; nothing is sent automatically.
+
+Regression checks cover current and missing event details, declined guests, contribution wording, address prerequisites, legacy/stale review, persisted draft context and guest-response conflicts. Browser QA is unverified when the Cloud desktop control tool is unavailable.

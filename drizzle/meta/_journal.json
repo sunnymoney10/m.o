@@ -22,6 +22,20 @@
       "when": 1794805200000,
       "tag": "0002_live_replay_profiles",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1794950000003,
+      "tag": "0002_brown_gamma_corps",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1794950000004,
+      "tag": "0003_good_logan",
+      "breakpoints": true
     }
   ]
 }

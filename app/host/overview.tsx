@@ -1,0 +1,22 @@
+'use client';
+import {CalendarDays,MapPin,ArrowUpRight,ChevronRight,CheckCircle2,MessageSquare} from 'lucide-react';
+import {briefing} from '../../lib/operations.mts';
+type Guest={id:string;name:string;rsvp:string;dish:string;food:string;plus:string};
+type Desk={title:string;when:string;place:string;address:string;guests:Guest[]};
+export default function HostOverview({desk,demo,onNavigate,onFollowUp}:{desk:Desk;demo:boolean;onNavigate:(tab:string)=>void;onFollowUp:(guestId:string)=>void}){
+ const confirmed=desk.guests.filter(g=>g.rsvp==='Confirmed');
+ const pending=desk.guests.filter(g=>['Awaiting reply','Maybe'].includes(g.rsvp));
+ const food=desk.guests.filter(g=>g.rsvp!=='Declined'&&g.dish&&g.food!=='Reconfirmed');
+ const plus=desk.guests.filter(g=>g.plus==='Requested');
+ const seats=confirmed.length+confirmed.filter(g=>g.plus==='Approved').length;
+ const priorities=briefing(desk);
+ return <>
+  <div className="host-stats" aria-label="Recorded event status">{[[seats,'Confirmed seats','Guests'],[pending.length,'Awaiting replies','Guests'],[food.length,'Dishes to check','Food & backups'],[plus.length,'Plus-one requests','Guests']].map(([n,label,tab])=><button key={label} onClick={()=>onNavigate(String(tab))}><span>{label}</span><strong>{n}</strong><ChevronRight size={15} aria-hidden="true"/></button>)}</div>
+  <p className="host-stat-note">Recorded replies only. Seats include one extra for each approved plus-one.</p>
+  <div className="host-overview-grid"><section className="host-panel host-priorities"><div className="host-panel-heading"><div><p className="host-label">NEXT UP</p><h2>Needs your attention</h2></div><span className="host-count">{priorities.length}</span></div>
+   {priorities.length?<>{priorities.slice(0,4).map((item,i)=><button key={i} className="attention" onClick={()=>onNavigate(item.where)}><span className="priority-number">{String(i+1).padStart(2,'0')}</span><div><b>{item.title}</b><small>{item.where}</small></div><ChevronRight size={17} aria-hidden="true"/></button>)}{priorities.length>4&&<details className="host-priority-more"><summary>Show {priorities.length-4} more tasks</summary>{priorities.slice(4).map((item,i)=><button key={i} className="attention" onClick={()=>onNavigate(item.where)}><div><b>{item.title}</b><small>{item.where}</small></div><ChevronRight size={17} aria-hidden="true"/></button>)}</details>}</>:<div className="host-empty"><CheckCircle2 size={28} aria-hidden="true"/><h3>{desk.guests.length?'You’re up to date.':'Start with your people.'}</h3><p>{desk.guests.length?'No gaps flagged in your recorded details. Check back as replies come in.':'Add your guest list to start collecting replies and contributions.'}</p>{!desk.guests.length&&<button className="host-primary" onClick={()=>onNavigate('Guests')}>Add guests</button>}</div>}
+  </section><aside className="host-overview-aside"><section className="host-panel host-event-card"><p className="host-label">THE PLAN</p><h2>{desk.title||'Your event'}</h2><p><CalendarDays size={17} aria-hidden="true"/><span>{desk.when||'Date and time to decide'}</span></p><p><MapPin size={17} aria-hidden="true"/><span>{desk.place||'Place to decide'}</span></p><p className="host-muted">{desk.address?'Private address recorded':'Address not added yet'}</p><button className="host-link" onClick={()=>onNavigate('Event details')}>Edit event details<ArrowUpRight size={15} aria-hidden="true"/></button></section>
+  <section className="host-panel host-follow-ups"><p className="host-label">A LITTLE NUDGE</p><h2>Waiting to hear back</h2>{pending.length?<>{pending.slice(0,3).map(g=><button className="host-person-row" aria-label={'Prepare follow-up for '+g.name+', '+g.rsvp} key={g.id} onClick={()=>onFollowUp(g.id)}><span className="host-person-avatar" aria-hidden="true">{g.name.slice(0,1).toUpperCase()}</span><span><b>{g.name}</b><small>{g.rsvp}</small></span><MessageSquare size={16} aria-hidden="true"/></button>)}{pending.length>3&&<button className="host-link" onClick={()=>onNavigate('Guests')}>View all {pending.length} pending replies</button>}<p className="host-muted">Choose a person to prepare a message. Nothing is sent.</p></>:<p className="host-muted">{desk.guests.length?'Everyone on your list has responded.':'Your guests will appear here after you add them.'}</p>}</section></aside></div>
+  {demo&&<p className="host-muted">Fictional demo. Changes stay in this tab.</p>}
+ </>;
+}

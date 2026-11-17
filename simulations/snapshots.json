@@ -1,0 +1,3385 @@
+{
+  "planning": {
+    "title": "SIMULATION — Nia’s Friendsgiving",
+    "when": "Sunday, November 22 · 5 PM ET",
+    "place": "Fictional Raleigh venue",
+    "address": "SIMULATION — no real street address",
+    "invite": "Fictional private Friendsgiving, Nov 22 at 5 PM ET. Reply with your contribution; request plus-ones first. Do not use this as a real invitation.",
+    "post": "SIMULATED CAPTION: Friendsgiving is coming. Invite only; do not publish.",
+    "guests": [
+      {
+        "id": "jade",
+        "name": "Jade",
+        "phone": "",
+        "rsvp": "Confirmed",
+        "dish": "Roasted vegetables",
+        "serves": "12",
+        "food": "Reconfirmed",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Reliable cohost; wants a short task list, not every detail.",
+        "draft": "",
+        "sent": "",
+        "diet": "",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Own ride",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": ""
+      },
+      {
+        "id": "milo",
+        "name": "Milo",
+        "phone": "",
+        "rsvp": "Awaiting reply",
+        "dish": "Potato salad",
+        "serves": "10",
+        "food": "Offered",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Enthusiastic but overcommits; answers late.",
+        "draft": "",
+        "sent": "",
+        "diet": "",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Own ride",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": ""
+      },
+      {
+        "id": "tess",
+        "name": "Tess",
+        "phone": "",
+        "rsvp": "Confirmed",
+        "dish": "Mac and cheese",
+        "serves": "12",
+        "food": "Reconfirmed",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Nurse finishing a shift; cannot arrive before 5:30.",
+        "draft": "",
+        "sent": "",
+        "diet": "",
+        "arrival": "5:30 PM",
+        "kitchen": "Oven 5:30–6:00 PM",
+        "transport": "Own ride",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": ""
+      },
+      {
+        "id": "omar",
+        "name": "Omar",
+        "phone": "",
+        "rsvp": "Confirmed",
+        "dish": "Fruit platter",
+        "serves": "10",
+        "food": "Reconfirmed",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Vegetarian with a reported nut allergy; asks clear ingredient questions.",
+        "draft": "",
+        "sent": "",
+        "diet": "Vegetarian; reported nut allergy",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Own ride",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": ""
+      },
+      {
+        "id": "leah",
+        "name": "Leah",
+        "phone": "",
+        "rsvp": "Confirmed",
+        "dish": "Lentil loaf",
+        "serves": "6",
+        "food": "Reconfirmed",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Vegan; happy to cook if there is a genuinely suitable main.",
+        "draft": "",
+        "sent": "",
+        "diet": "Vegan",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Own ride",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": ""
+      },
+      {
+        "id": "dante",
+        "name": "Dante",
+        "phone": "",
+        "rsvp": "Confirmed",
+        "dish": "Speaker and playlist",
+        "serves": "",
+        "food": "Reconfirmed",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: DJ and driver; offers three seats but dislikes repeated reminders.",
+        "draft": "",
+        "sent": "",
+        "diet": "",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Can drive",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 3,
+        "music": "Soul and R&B; no outside amplification",
+        "suggestion": ""
+      },
+      {
+        "id": "priya",
+        "name": "Priya",
+        "phone": "",
+        "rsvp": "Confirmed",
+        "dish": "Gluten-free brownies",
+        "serves": "12",
+        "food": "Reconfirmed",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Organized driver; needs gluten-free options; two passenger seats.",
+        "draft": "",
+        "sent": "",
+        "diet": "Gluten-free",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Can drive",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 2,
+        "music": "",
+        "suggestion": ""
+      },
+      {
+        "id": "ben",
+        "name": "Ben",
+        "phone": "",
+        "rsvp": "Confirmed",
+        "dish": "Drinks",
+        "serves": "20",
+        "food": "Reconfirmed",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Budget-conscious; prefers buying a useful item to cooking.",
+        "draft": "",
+        "sent": "",
+        "diet": "",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Own ride",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": ""
+      },
+      {
+        "id": "sasha",
+        "name": "Sasha",
+        "phone": "",
+        "rsvp": "Confirmed",
+        "dish": "Dinner rolls",
+        "serves": "24",
+        "food": "Reconfirmed",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "Requested",
+        "plusNames": "Avery and Morgan (two people)",
+        "note": "SIMULATED PERSONALITY: Wants to bring two friends; assumes the host will say yes.",
+        "draft": "",
+        "sent": "",
+        "diet": "",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Own ride",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": ""
+      },
+      {
+        "id": "theo",
+        "name": "Theo",
+        "phone": "",
+        "rsvp": "Confirmed",
+        "dish": "Breakfast supplies",
+        "serves": "4",
+        "food": "Reconfirmed",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Quiet overnight guest; needs clear checkout and sleeping arrangements.",
+        "draft": "",
+        "sent": "",
+        "diet": "",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Own ride",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": ""
+      },
+      {
+        "id": "zuri",
+        "name": "Zuri",
+        "phone": "",
+        "rsvp": "Confirmed",
+        "dish": "Dessert",
+        "serves": "10",
+        "food": "Reconfirmed",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Photographer; wants approval before posting anyone publicly.",
+        "draft": "",
+        "sent": "",
+        "diet": "",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Own ride",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": ""
+      },
+      {
+        "id": "cam",
+        "name": "Cam",
+        "phone": "",
+        "rsvp": "Confirmed",
+        "dish": "Board games",
+        "serves": "",
+        "food": "Reconfirmed",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Game captain; wants a poll rather than deciding for everybody.",
+        "draft": "",
+        "sent": "",
+        "diet": "",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Own ride",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": "Cards after dinner; no forced drinking."
+      },
+      {
+        "id": "inez",
+        "name": "Inez",
+        "phone": "",
+        "rsvp": "Confirmed",
+        "dish": "Cups",
+        "serves": "20",
+        "food": "Reconfirmed",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Does not drive or cook; can help set up if a ride arrives early.",
+        "draft": "",
+        "sent": "",
+        "diet": "",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Need a ride",
+        "pickupArea": "Fictional North meetup",
+        "rideTime": "4 PM",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": ""
+      },
+      {
+        "id": "noah",
+        "name": "Noah",
+        "phone": "",
+        "rsvp": "Confirmed",
+        "dish": "Turkey",
+        "serves": "20",
+        "food": "Reconfirmed",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Main-dish cook; turkey needs counter space and carving time.",
+        "draft": "",
+        "sent": "",
+        "diet": "",
+        "arrival": "4:45 PM",
+        "kitchen": "Counter 4:30–5:00; oven 4–4:45",
+        "transport": "Own ride",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": ""
+      },
+      {
+        "id": "eli",
+        "name": "Eli",
+        "phone": "",
+        "rsvp": "Maybe",
+        "dish": "Folding tables",
+        "serves": "",
+        "food": "Offered",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Work schedule uncertain; initially agrees to bring tables and ice.",
+        "draft": "",
+        "sent": "",
+        "diet": "",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Own ride",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": ""
+      },
+      {
+        "id": "rae",
+        "name": "Rae",
+        "phone": "",
+        "rsvp": "Confirmed",
+        "dish": "Serving utensils",
+        "serves": "",
+        "food": "Reconfirmed",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Lends serving equipment; needs it returned on checkout.",
+        "draft": "",
+        "sent": "",
+        "diet": "",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Own ride",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": ""
+      },
+      {
+        "id": "quinn",
+        "name": "Quinn",
+        "phone": "",
+        "rsvp": "Awaiting reply",
+        "dish": "",
+        "serves": "",
+        "food": "Offered",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Wants to attend but needs the cost and transport settled first.",
+        "draft": "",
+        "sent": "",
+        "diet": "",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Need a ride",
+        "pickupArea": "Fictional West meetup",
+        "rideTime": "",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": ""
+      }
+    ],
+    "ops": {
+      "supplies": [
+        {
+          "id": "chairs",
+          "title": "Folding chairs",
+          "need": 8,
+          "have": 0,
+          "guestId": "eli",
+          "confirmed": false
+        },
+        {
+          "id": "ice",
+          "title": "Ice bags",
+          "need": 4,
+          "have": 0,
+          "guestId": "eli",
+          "confirmed": false
+        },
+        {
+          "id": "plates",
+          "title": "Plates",
+          "need": 20,
+          "have": 24,
+          "guestId": "",
+          "confirmed": false
+        },
+        {
+          "id": "containers",
+          "title": "Leftover containers",
+          "need": 12,
+          "have": 0,
+          "guestId": "ben",
+          "confirmed": false
+        }
+      ],
+      "expenses": [
+        {
+          "id": "stay",
+          "title": "Hypothetical rental incl. fees",
+          "cents": 69600,
+          "category": "Overnight",
+          "split": [
+            "host",
+            "jade",
+            "theo",
+            "priya"
+          ]
+        },
+        {
+          "id": "food",
+          "title": "Shared groceries and supplies",
+          "cents": 21600,
+          "category": "Gathering",
+          "split": [
+            "host",
+            "jade",
+            "tess",
+            "omar",
+            "leah",
+            "dante",
+            "priya",
+            "ben",
+            "sasha",
+            "theo",
+            "zuri",
+            "cam",
+            "inez",
+            "noah",
+            "rae"
+          ]
+        },
+        {
+          "id": "chairs",
+          "title": "Fallback furniture rental if needed",
+          "cents": 6000,
+          "category": "Gathering",
+          "split": []
+        }
+      ],
+      "payments": {
+        "jade": 17400,
+        "theo": 10000
+      },
+      "overnight": [
+        "host",
+        "jade",
+        "theo",
+        "priya"
+      ],
+      "contingencies": [
+        {
+          "id": "rain",
+          "trigger": "Patio becomes too cold or rainy",
+          "action": "Move indoors. Needs all 8 borrowed chairs and second table.",
+          "person": "jade",
+          "ready": false
+        },
+        {
+          "id": "salad",
+          "trigger": "Milo cannot bring potato salad",
+          "action": "Ask Ben to buy a ready-made side after checking dietary needs.",
+          "person": "ben",
+          "ready": false
+        }
+      ],
+      "closeout": [
+        {
+          "id": "return",
+          "title": "Return Rae’s serving tray",
+          "kind": "Borrowed item",
+          "person": "host",
+          "done": false
+        },
+        {
+          "id": "trash",
+          "title": "Bag trash before 10 AM checkout",
+          "kind": "Cleanup",
+          "person": "theo",
+          "done": false
+        },
+        {
+          "id": "leftovers",
+          "title": "Collect containers and label leftovers",
+          "kind": "Leftovers",
+          "person": "jade",
+          "done": false
+        }
+      ],
+      "venues": [
+        {
+          "id": "juniper",
+          "name": "SIMULATION — Juniper House",
+          "url": "https://example.com/simulated-juniper-house",
+          "cents": 69600,
+          "attendees": 20,
+          "sleepers": 4,
+          "permission": "Written confirmation",
+          "kitchen": "1 oven, 4 burners, 2 fridge shelves. Seats 12; borrow 8 chairs and table.",
+          "indoor": "20 only if borrowed furniture arrives; outside is optional.",
+          "outdoor": "Covered patio; 2 heaters. Hot tub 4 at a time, until 9 PM.",
+          "parking": "6 driveway spaces; no street parking.",
+          "notes": "SIMULATION ONLY — no actual reservation or property.\nBooking reference SIM-FG-2026. Juniper House is a fictional Raleigh rental.\nCheck-in Sunday November 22 at 2 PM ET; checkout Monday November 23 at 10 AM ET.\nWritten permission: private seated dinner for maximum 20 total attendees including host; maximum 4 overnight guests. No unapproved visitors.\nParking: 6 vehicles on the driveway; no street parking.\nArrival: use the front entrance; 3 steps, no step-free route.\nOne oven; 4 burners; fridge has two shelves available. Indoor dining seats 12; 8 folding chairs and a second table are required.\nCovered patio has 2 heaters; hot tub maximum 4 people, closes 9 PM. No glass outside.\nQuiet hours begin at 9 PM; no amplified outdoor music.\nDoor code SIM-4826. Share only with setup and overnight guests after check-in.\nDress code: warm layers and closed shoes; bring swimwear and a towel if using hot tub.\nCleanup: bag trash, load dishwasher, restore furniture; checkout before 10 AM Monday.\nTotal: lodging $480; cleaning $120; taxes and service $96; total $696.\nCancellation: hypothetical fee terms, $348 nonrefundable after November 20. These terms are fabricated for testing."
+        }
+      ],
+      "chosenVenue": "juniper",
+      "dietChecks": {},
+      "menu": {
+        "jade": {
+          "category": "Vegetable",
+          "ingredients": "Vegetables, butter; cook has not checked nut cross-contact.",
+          "diet": ""
+        },
+        "milo": {
+          "category": "Starch / side",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "tess": {
+          "category": "Starch / side",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "omar": {
+          "category": "Other",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "leah": {
+          "category": "Main",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "dante": {
+          "category": "Other",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "priya": {
+          "category": "Dessert",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "ben": {
+          "category": "Drinks",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "sasha": {
+          "category": "Starch / side",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "theo": {
+          "category": "Other",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "zuri": {
+          "category": "Dessert",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "cam": {
+          "category": "Other",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "inez": {
+          "category": "Other",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "noah": {
+          "category": "Main",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "eli": {
+          "category": "Other",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "rae": {
+          "category": "Other",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "quinn": {
+          "category": "Other",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        }
+      },
+      "eventStart": "2026-11-22T17:00:00-05:00",
+      "eventEnd": "2026-11-22T22:00:00-05:00",
+      "learning": ""
+    },
+    "tools": {
+      "needs": [
+        {
+          "id": "ice-choice",
+          "title": "Ice",
+          "effort": "Buy ready-made",
+          "budget": "Low"
+        },
+        {
+          "id": "vegan-side",
+          "title": "Dairy-free vegetable side",
+          "effort": "Cook something",
+          "budget": "Medium"
+        }
+      ],
+      "roles": [
+        {
+          "id": "setup",
+          "title": "Setup by 3 PM",
+          "guestId": "jade",
+          "confirmed": true
+        },
+        {
+          "id": "kitchen",
+          "title": "Coordinate oven time",
+          "guestId": "noah",
+          "confirmed": true
+        },
+        {
+          "id": "cleanup",
+          "title": "Closing cleanup crew",
+          "guestId": "",
+          "confirmed": false
+        }
+      ],
+      "blocks": [
+        {
+          "id": "pickup",
+          "title": "Host grocery pickup",
+          "person": "host",
+          "resource": "",
+          "start": "14:00",
+          "end": "15:00"
+        },
+        {
+          "id": "checkin",
+          "title": "Host rental check-in",
+          "person": "host",
+          "resource": "",
+          "start": "14:00",
+          "end": "14:30"
+        },
+        {
+          "id": "turkey",
+          "title": "Turkey reheat",
+          "person": "noah",
+          "resource": "Oven",
+          "start": "16:00",
+          "end": "16:45"
+        },
+        {
+          "id": "mac",
+          "title": "Mac and cheese reheat",
+          "person": "tess",
+          "resource": "Oven",
+          "start": "16:30",
+          "end": "17:00"
+        }
+      ]
+    },
+    "board": {
+      "polls": [
+        {
+          "id": "games",
+          "question": "After-dinner activity?",
+          "options": [
+            "Cards",
+            "Board games",
+            "Karaoke"
+          ],
+          "votes": {
+            "cam": 0,
+            "jade": 1
+          },
+          "closes": "2026-11-21T23:00:00Z",
+          "closed": false,
+          "decision": ""
+        }
+      ],
+      "errands": [
+        {
+          "id": "ice-run",
+          "title": "Pick up 4 ice bags",
+          "store": "Example grocery (fictional)",
+          "area": "North meetup",
+          "by": "4:30 PM ET",
+          "guestId": "eli",
+          "confirmed": true,
+          "done": false
+        }
+      ],
+      "rides": [
+        {
+          "id": "ride1",
+          "driver": "dante",
+          "passengers": [
+            "inez"
+          ],
+          "seats": 3,
+          "area": "Fictional North meetup",
+          "when": "4 PM",
+          "confirmed": true
+        }
+      ]
+    },
+    "concierge": {
+      "items": [
+        {
+          "id": "parking",
+          "category": "Parking",
+          "title": "Parking",
+          "text": "6 driveway spaces, no street parking. Coordinate rides.",
+          "source": "Simulated booking",
+          "original": "Parking: 6 vehicles on driveway; no street parking.",
+          "approved": true,
+          "audience": []
+        },
+        {
+          "id": "rules",
+          "category": "Property rules",
+          "title": "Quiet hours",
+          "text": "No amplified outdoor music; quiet hours 9 PM.",
+          "source": "Simulated booking",
+          "original": "Quiet hours begin at 9 PM; no amplified outdoor music.",
+          "approved": true,
+          "audience": []
+        },
+        {
+          "id": "arrival",
+          "category": "Arrival",
+          "title": "Setup entry",
+          "text": "Front entrance, 3 steps. Setup starts 2:30 PM.",
+          "source": "Simulated host decision",
+          "original": "",
+          "approved": true,
+          "audience": [
+            "jade"
+          ]
+        }
+      ],
+      "reminders": [
+        {
+          "id": "reminder",
+          "text": "Reconfirm Milo’s side and Eli’s furniture.",
+          "when": "Nov 21, 6 PM ET",
+          "guestId": "",
+          "sent": false
+        }
+      ],
+      "code": "SIM-4826",
+      "codeGuests": [
+        "jade",
+        "theo",
+        "priya"
+      ],
+      "releaseCode": false
+    }
+  },
+  "disruption": {
+    "title": "SIMULATION — Nia’s Friendsgiving",
+    "when": "Sunday, November 22 · 5 PM ET",
+    "place": "Fictional Raleigh venue",
+    "address": "SIMULATION — no real street address",
+    "invite": "Fictional private Friendsgiving, Nov 22 at 5 PM ET. Reply with your contribution; request plus-ones first. Do not use this as a real invitation.",
+    "post": "SIMULATED CAPTION: Friendsgiving is coming. Invite only; do not publish.",
+    "guests": [
+      {
+        "id": "jade",
+        "name": "Jade",
+        "phone": "",
+        "rsvp": "Confirmed",
+        "dish": "Roasted vegetables",
+        "serves": "12",
+        "food": "Reconfirmed",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Reliable cohost; wants a short task list, not every detail.",
+        "draft": "",
+        "sent": "",
+        "diet": "",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Own ride",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": ""
+      },
+      {
+        "id": "milo",
+        "name": "Milo",
+        "phone": "",
+        "rsvp": "Maybe",
+        "dish": "Potato salad",
+        "serves": "10",
+        "food": "Offered",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Enthusiastic but overcommits; answers late.",
+        "draft": "",
+        "sent": "",
+        "diet": "",
+        "arrival": "6:30 PM at earliest",
+        "kitchen": "",
+        "transport": "Own ride",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": "",
+        "respondedAt": "2026-11-16T20:12:42.192Z"
+      },
+      {
+        "id": "tess",
+        "name": "Tess",
+        "phone": "",
+        "rsvp": "Confirmed",
+        "dish": "Mac and cheese",
+        "serves": "12",
+        "food": "Reconfirmed",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Nurse finishing a shift; cannot arrive before 5:30.",
+        "draft": "",
+        "sent": "",
+        "diet": "",
+        "arrival": "5:30 PM",
+        "kitchen": "Oven 5:30–6 PM",
+        "transport": "Own ride",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": "",
+        "respondedAt": "2026-11-16T20:12:42.190Z"
+      },
+      {
+        "id": "omar",
+        "name": "Omar",
+        "phone": "",
+        "rsvp": "Confirmed",
+        "dish": "Fruit platter",
+        "serves": "10",
+        "food": "Reconfirmed",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Vegetarian with a reported nut allergy; asks clear ingredient questions.",
+        "draft": "",
+        "sent": "",
+        "diet": "Vegetarian; reported nut allergy",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Own ride",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": ""
+      },
+      {
+        "id": "leah",
+        "name": "Leah",
+        "phone": "",
+        "rsvp": "Confirmed",
+        "dish": "Lentil loaf",
+        "serves": "6",
+        "food": "Reconfirmed",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Vegan; happy to cook if there is a genuinely suitable main.",
+        "draft": "",
+        "sent": "",
+        "diet": "Vegan",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Own ride",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": ""
+      },
+      {
+        "id": "dante",
+        "name": "Dante",
+        "phone": "",
+        "rsvp": "Declined",
+        "dish": "Speaker and playlist",
+        "serves": "",
+        "food": "Offered",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: DJ and driver; offers three seats but dislikes repeated reminders.",
+        "draft": "",
+        "sent": "",
+        "diet": "",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Can drive",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 3,
+        "music": "Soul and R&B; no outside amplification",
+        "suggestion": "",
+        "respondedAt": "2026-11-16T20:12:42.186Z"
+      },
+      {
+        "id": "priya",
+        "name": "Priya",
+        "phone": "",
+        "rsvp": "Declined",
+        "dish": "Gluten-free brownies",
+        "serves": "12",
+        "food": "Offered",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Organized driver; needs gluten-free options; two passenger seats.",
+        "draft": "",
+        "sent": "",
+        "diet": "Gluten-free",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Can drive",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 2,
+        "music": "",
+        "suggestion": "",
+        "respondedAt": "2026-11-16T20:12:42.189Z"
+      },
+      {
+        "id": "ben",
+        "name": "Ben",
+        "phone": "",
+        "rsvp": "Confirmed",
+        "dish": "Drinks",
+        "serves": "20",
+        "food": "Reconfirmed",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Budget-conscious; prefers buying a useful item to cooking.",
+        "draft": "",
+        "sent": "",
+        "diet": "",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Own ride",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": ""
+      },
+      {
+        "id": "sasha",
+        "name": "Sasha",
+        "phone": "",
+        "rsvp": "Confirmed",
+        "dish": "Dinner rolls",
+        "serves": "24",
+        "food": "Reconfirmed",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "Requested",
+        "plusNames": "Avery and Morgan (two people)",
+        "note": "SIMULATED PERSONALITY: Wants to bring two friends; assumes the host will say yes.",
+        "draft": "",
+        "sent": "",
+        "diet": "",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Own ride",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": ""
+      },
+      {
+        "id": "theo",
+        "name": "Theo",
+        "phone": "",
+        "rsvp": "Confirmed",
+        "dish": "Breakfast supplies",
+        "serves": "4",
+        "food": "Reconfirmed",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Quiet overnight guest; needs clear checkout and sleeping arrangements.",
+        "draft": "",
+        "sent": "",
+        "diet": "",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Own ride",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": ""
+      },
+      {
+        "id": "zuri",
+        "name": "Zuri",
+        "phone": "",
+        "rsvp": "Confirmed",
+        "dish": "Dessert",
+        "serves": "10",
+        "food": "Reconfirmed",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Photographer; wants approval before posting anyone publicly.",
+        "draft": "",
+        "sent": "",
+        "diet": "",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Own ride",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": ""
+      },
+      {
+        "id": "cam",
+        "name": "Cam",
+        "phone": "",
+        "rsvp": "Confirmed",
+        "dish": "Board games",
+        "serves": "",
+        "food": "Reconfirmed",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Game captain; wants a poll rather than deciding for everybody.",
+        "draft": "",
+        "sent": "",
+        "diet": "",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Own ride",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": "Cards after dinner; no forced drinking."
+      },
+      {
+        "id": "inez",
+        "name": "Inez",
+        "phone": "",
+        "rsvp": "Confirmed",
+        "dish": "Cups",
+        "serves": "20",
+        "food": "Reconfirmed",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Does not drive or cook; can help set up if a ride arrives early.",
+        "draft": "",
+        "sent": "",
+        "diet": "",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Need a ride",
+        "pickupArea": "Fictional North meetup",
+        "rideTime": "4 PM",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": ""
+      },
+      {
+        "id": "noah",
+        "name": "Noah",
+        "phone": "",
+        "rsvp": "Confirmed",
+        "dish": "Turkey",
+        "serves": "20",
+        "food": "Reconfirmed",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Main-dish cook; turkey needs counter space and carving time.",
+        "draft": "",
+        "sent": "",
+        "diet": "",
+        "arrival": "4:45 PM",
+        "kitchen": "Counter 4:30–5:00; oven 4–4:45",
+        "transport": "Own ride",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": ""
+      },
+      {
+        "id": "eli",
+        "name": "Eli",
+        "phone": "",
+        "rsvp": "Declined",
+        "dish": "Folding tables",
+        "serves": "",
+        "food": "Offered",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Work schedule uncertain; initially agrees to bring tables and ice.",
+        "draft": "",
+        "sent": "",
+        "diet": "",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Own ride",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": "",
+        "respondedAt": "2026-11-16T20:12:42.183Z"
+      },
+      {
+        "id": "rae",
+        "name": "Rae",
+        "phone": "",
+        "rsvp": "Confirmed",
+        "dish": "Serving utensils",
+        "serves": "",
+        "food": "Reconfirmed",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Lends serving equipment; needs it returned on checkout.",
+        "draft": "",
+        "sent": "",
+        "diet": "",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Own ride",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": ""
+      },
+      {
+        "id": "quinn",
+        "name": "Quinn",
+        "phone": "",
+        "rsvp": "Awaiting reply",
+        "dish": "",
+        "serves": "",
+        "food": "Offered",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Wants to attend but needs the cost and transport settled first.",
+        "draft": "",
+        "sent": "",
+        "diet": "",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Need a ride",
+        "pickupArea": "Fictional West meetup",
+        "rideTime": "",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": ""
+      }
+    ],
+    "ops": {
+      "supplies": [
+        {
+          "id": "chairs",
+          "title": "Folding chairs",
+          "need": 8,
+          "have": 0,
+          "guestId": "eli",
+          "confirmed": false
+        },
+        {
+          "id": "ice",
+          "title": "Ice bags",
+          "need": 4,
+          "have": 0,
+          "guestId": "eli",
+          "confirmed": false
+        },
+        {
+          "id": "plates",
+          "title": "Plates",
+          "need": 20,
+          "have": 24,
+          "guestId": "",
+          "confirmed": false
+        },
+        {
+          "id": "containers",
+          "title": "Leftover containers",
+          "need": 12,
+          "have": 0,
+          "guestId": "ben",
+          "confirmed": false
+        }
+      ],
+      "expenses": [
+        {
+          "id": "stay",
+          "title": "Hypothetical rental incl. fees",
+          "cents": 69600,
+          "category": "Overnight",
+          "split": [
+            "host",
+            "jade",
+            "theo",
+            "priya"
+          ]
+        },
+        {
+          "id": "food",
+          "title": "Shared groceries and supplies",
+          "cents": 21600,
+          "category": "Gathering",
+          "split": [
+            "host",
+            "jade",
+            "tess",
+            "omar",
+            "leah",
+            "dante",
+            "priya",
+            "ben",
+            "sasha",
+            "theo",
+            "zuri",
+            "cam",
+            "inez",
+            "noah",
+            "rae"
+          ]
+        },
+        {
+          "id": "chairs",
+          "title": "Fallback furniture rental if needed",
+          "cents": 6000,
+          "category": "Gathering",
+          "split": []
+        }
+      ],
+      "payments": {
+        "jade": 17400,
+        "theo": 10000
+      },
+      "overnight": [
+        "host",
+        "jade",
+        "theo",
+        "priya"
+      ],
+      "contingencies": [
+        {
+          "id": "rain",
+          "trigger": "Patio becomes too cold or rainy",
+          "action": "Move indoors. Needs all 8 borrowed chairs and second table.",
+          "person": "jade",
+          "ready": false
+        },
+        {
+          "id": "salad",
+          "trigger": "Milo cannot bring potato salad",
+          "action": "Ask Ben to buy a ready-made side after checking dietary needs.",
+          "person": "ben",
+          "ready": false
+        }
+      ],
+      "closeout": [
+        {
+          "id": "return",
+          "title": "Return Rae’s serving tray",
+          "kind": "Borrowed item",
+          "person": "host",
+          "done": false
+        },
+        {
+          "id": "trash",
+          "title": "Bag trash before 10 AM checkout",
+          "kind": "Cleanup",
+          "person": "theo",
+          "done": false
+        },
+        {
+          "id": "leftovers",
+          "title": "Collect containers and label leftovers",
+          "kind": "Leftovers",
+          "person": "jade",
+          "done": false
+        }
+      ],
+      "venues": [
+        {
+          "id": "juniper",
+          "name": "SIMULATION — Juniper House",
+          "url": "https://example.com/simulated-juniper-house",
+          "cents": 69600,
+          "attendees": 20,
+          "sleepers": 4,
+          "permission": "Written confirmation",
+          "kitchen": "1 oven, 4 burners, 2 fridge shelves. Seats 12; borrow 8 chairs and table.",
+          "indoor": "20 only if borrowed furniture arrives; outside is optional.",
+          "outdoor": "Covered patio; 2 heaters. Hot tub 4 at a time, until 9 PM.",
+          "parking": "6 driveway spaces; no street parking.",
+          "notes": "SIMULATION ONLY — no actual reservation or property.\nBooking reference SIM-FG-2026. Juniper House is a fictional Raleigh rental.\nCheck-in Sunday November 22 at 2 PM ET; checkout Monday November 23 at 10 AM ET.\nWritten permission: private seated dinner for maximum 20 total attendees including host; maximum 4 overnight guests. No unapproved visitors.\nParking: 6 vehicles on the driveway; no street parking.\nArrival: use the front entrance; 3 steps, no step-free route.\nOne oven; 4 burners; fridge has two shelves available. Indoor dining seats 12; 8 folding chairs and a second table are required.\nCovered patio has 2 heaters; hot tub maximum 4 people, closes 9 PM. No glass outside.\nQuiet hours begin at 9 PM; no amplified outdoor music.\nDoor code SIM-4826. Share only with setup and overnight guests after check-in.\nDress code: warm layers and closed shoes; bring swimwear and a towel if using hot tub.\nCleanup: bag trash, load dishwasher, restore furniture; checkout before 10 AM Monday.\nTotal: lodging $480; cleaning $120; taxes and service $96; total $696.\nCancellation: hypothetical fee terms, $348 nonrefundable after November 20. These terms are fabricated for testing."
+        }
+      ],
+      "chosenVenue": "juniper",
+      "dietChecks": {},
+      "menu": {
+        "jade": {
+          "category": "Vegetable",
+          "ingredients": "Vegetables, butter; cook has not checked nut cross-contact.",
+          "diet": ""
+        },
+        "milo": {
+          "category": "Starch / side",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "tess": {
+          "category": "Starch / side",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "omar": {
+          "category": "Other",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "leah": {
+          "category": "Main",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "dante": {
+          "category": "Other",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "priya": {
+          "category": "Dessert",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "ben": {
+          "category": "Drinks",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "sasha": {
+          "category": "Starch / side",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "theo": {
+          "category": "Other",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "zuri": {
+          "category": "Dessert",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "cam": {
+          "category": "Other",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "inez": {
+          "category": "Other",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "noah": {
+          "category": "Main",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "eli": {
+          "category": "Other",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "rae": {
+          "category": "Other",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "quinn": {
+          "category": "Other",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        }
+      },
+      "eventStart": "2026-11-22T17:00:00-05:00",
+      "eventEnd": "2026-11-22T22:00:00-05:00",
+      "learning": ""
+    },
+    "tools": {
+      "needs": [
+        {
+          "id": "ice-choice",
+          "title": "Ice",
+          "effort": "Buy ready-made",
+          "budget": "Low"
+        },
+        {
+          "id": "vegan-side",
+          "title": "Dairy-free vegetable side",
+          "effort": "Cook something",
+          "budget": "Medium"
+        }
+      ],
+      "roles": [
+        {
+          "id": "setup",
+          "title": "Setup by 3 PM",
+          "guestId": "jade",
+          "confirmed": true
+        },
+        {
+          "id": "kitchen",
+          "title": "Coordinate oven time",
+          "guestId": "noah",
+          "confirmed": true
+        },
+        {
+          "id": "cleanup",
+          "title": "Closing cleanup crew",
+          "guestId": "",
+          "confirmed": false
+        }
+      ],
+      "blocks": [
+        {
+          "id": "pickup",
+          "title": "Host grocery pickup",
+          "person": "host",
+          "resource": "",
+          "start": "14:00",
+          "end": "15:00"
+        },
+        {
+          "id": "checkin",
+          "title": "Host rental check-in",
+          "person": "host",
+          "resource": "",
+          "start": "14:00",
+          "end": "14:30"
+        },
+        {
+          "id": "turkey",
+          "title": "Turkey reheat",
+          "person": "noah",
+          "resource": "Oven",
+          "start": "16:00",
+          "end": "16:45"
+        },
+        {
+          "id": "mac",
+          "title": "Mac and cheese reheat",
+          "person": "tess",
+          "resource": "Oven",
+          "start": "16:30",
+          "end": "17:00"
+        }
+      ]
+    },
+    "board": {
+      "polls": [
+        {
+          "id": "games",
+          "question": "After-dinner activity?",
+          "options": [
+            "Cards",
+            "Board games",
+            "Karaoke"
+          ],
+          "votes": {
+            "cam": 0,
+            "jade": 1
+          },
+          "closes": "2026-11-21T23:00:00Z",
+          "closed": false,
+          "decision": ""
+        }
+      ],
+      "errands": [
+        {
+          "id": "ice-run",
+          "title": "Pick up 4 ice bags",
+          "store": "Example grocery (fictional)",
+          "area": "North meetup",
+          "by": "4:30 PM ET",
+          "guestId": "",
+          "confirmed": false,
+          "done": false
+        }
+      ],
+      "rides": [
+        {
+          "id": "ride1",
+          "driver": "dante",
+          "passengers": [
+            "inez"
+          ],
+          "seats": 3,
+          "area": "Fictional North meetup",
+          "when": "4 PM",
+          "confirmed": false
+        }
+      ]
+    },
+    "concierge": {
+      "items": [
+        {
+          "id": "parking",
+          "category": "Parking",
+          "title": "Parking",
+          "text": "6 driveway spaces, no street parking. Coordinate rides.",
+          "source": "Simulated booking",
+          "original": "Parking: 6 vehicles on driveway; no street parking.",
+          "approved": true,
+          "audience": []
+        },
+        {
+          "id": "rules",
+          "category": "Property rules",
+          "title": "Quiet hours",
+          "text": "No amplified outdoor music; quiet hours 9 PM.",
+          "source": "Simulated booking",
+          "original": "Quiet hours begin at 9 PM; no amplified outdoor music.",
+          "approved": true,
+          "audience": []
+        },
+        {
+          "id": "arrival",
+          "category": "Arrival",
+          "title": "Setup entry",
+          "text": "Front entrance, 3 steps. Setup starts 2:30 PM.",
+          "source": "Simulated host decision",
+          "original": "",
+          "approved": true,
+          "audience": [
+            "jade"
+          ]
+        }
+      ],
+      "reminders": [
+        {
+          "id": "reminder",
+          "text": "Reconfirm Milo’s side and Eli’s furniture.",
+          "when": "Nov 21, 6 PM ET",
+          "guestId": "",
+          "sent": false
+        }
+      ],
+      "code": "SIM-4826",
+      "codeGuests": [
+        "jade",
+        "theo",
+        "priya"
+      ],
+      "releaseCode": false
+    }
+  },
+  "recovery": {
+    "title": "SIMULATION — Nia’s Friendsgiving",
+    "when": "Sunday, November 22 · 5 PM ET",
+    "place": "Fictional Raleigh venue",
+    "address": "SIMULATION — no real street address",
+    "invite": "Fictional private Friendsgiving, Nov 22 at 5 PM ET. Reply with your contribution; request plus-ones first. Do not use this as a real invitation.",
+    "post": "SIMULATED CAPTION: Friendsgiving is coming. Invite only; do not publish.",
+    "guests": [
+      {
+        "id": "jade",
+        "name": "Jade",
+        "phone": "",
+        "rsvp": "Confirmed",
+        "dish": "Roasted vegetables",
+        "serves": "12",
+        "food": "Reconfirmed",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Reliable cohost; wants a short task list, not every detail.",
+        "draft": "",
+        "sent": "",
+        "diet": "",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Own ride",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": ""
+      },
+      {
+        "id": "milo",
+        "name": "Milo",
+        "phone": "",
+        "rsvp": "Maybe",
+        "dish": "Potato salad",
+        "serves": "10",
+        "food": "Offered",
+        "backup": "Ben agreed to buy a separate suitable side",
+        "backupStatus": "Confirmed",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Enthusiastic but overcommits; answers late.",
+        "draft": "",
+        "sent": "",
+        "diet": "",
+        "arrival": "6:30 PM at earliest",
+        "kitchen": "",
+        "transport": "Own ride",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": "",
+        "respondedAt": "2026-11-16T20:12:42.192Z"
+      },
+      {
+        "id": "tess",
+        "name": "Tess",
+        "phone": "",
+        "rsvp": "Confirmed",
+        "dish": "Mac and cheese",
+        "serves": "12",
+        "food": "Reconfirmed",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Nurse finishing a shift; cannot arrive before 5:30.",
+        "draft": "",
+        "sent": "",
+        "diet": "",
+        "arrival": "5:30 PM",
+        "kitchen": "Oven 5:30–6 PM",
+        "transport": "Own ride",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": "",
+        "respondedAt": "2026-11-16T20:12:42.190Z"
+      },
+      {
+        "id": "omar",
+        "name": "Omar",
+        "phone": "",
+        "rsvp": "Confirmed",
+        "dish": "Fruit platter",
+        "serves": "10",
+        "food": "Reconfirmed",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Vegetarian with a reported nut allergy; asks clear ingredient questions.",
+        "draft": "",
+        "sent": "",
+        "diet": "Vegetarian; reported nut allergy",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Own ride",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": ""
+      },
+      {
+        "id": "leah",
+        "name": "Leah",
+        "phone": "",
+        "rsvp": "Confirmed",
+        "dish": "Lentil loaf",
+        "serves": "6",
+        "food": "Reconfirmed",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Vegan; happy to cook if there is a genuinely suitable main.",
+        "draft": "",
+        "sent": "",
+        "diet": "Vegan",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Own ride",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": ""
+      },
+      {
+        "id": "dante",
+        "name": "Dante",
+        "phone": "",
+        "rsvp": "Declined",
+        "dish": "Speaker and playlist",
+        "serves": "",
+        "food": "Offered",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: DJ and driver; offers three seats but dislikes repeated reminders.",
+        "draft": "",
+        "sent": "",
+        "diet": "",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Can drive",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 3,
+        "music": "Soul and R&B; no outside amplification",
+        "suggestion": "",
+        "respondedAt": "2026-11-16T20:12:42.186Z"
+      },
+      {
+        "id": "priya",
+        "name": "Priya",
+        "phone": "",
+        "rsvp": "Declined",
+        "dish": "Gluten-free brownies",
+        "serves": "12",
+        "food": "Offered",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Organized driver; needs gluten-free options; two passenger seats.",
+        "draft": "",
+        "sent": "",
+        "diet": "Gluten-free",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Can drive",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 2,
+        "music": "",
+        "suggestion": "",
+        "respondedAt": "2026-11-16T20:12:42.189Z"
+      },
+      {
+        "id": "ben",
+        "name": "Ben",
+        "phone": "",
+        "rsvp": "Confirmed",
+        "dish": "Drinks",
+        "serves": "20",
+        "food": "Reconfirmed",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Budget-conscious; prefers buying a useful item to cooking.",
+        "draft": "",
+        "sent": "",
+        "diet": "",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Own ride",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": ""
+      },
+      {
+        "id": "sasha",
+        "name": "Sasha",
+        "phone": "",
+        "rsvp": "Confirmed",
+        "dish": "Dinner rolls",
+        "serves": "24",
+        "food": "Reconfirmed",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "Requested",
+        "plusNames": "Avery and Morgan (two people)",
+        "note": "SIMULATED PERSONALITY: Wants to bring two friends; assumes the host will say yes.",
+        "draft": "",
+        "sent": "",
+        "diet": "",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Own ride",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": ""
+      },
+      {
+        "id": "theo",
+        "name": "Theo",
+        "phone": "",
+        "rsvp": "Confirmed",
+        "dish": "Breakfast supplies",
+        "serves": "4",
+        "food": "Reconfirmed",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Quiet overnight guest; needs clear checkout and sleeping arrangements.",
+        "draft": "",
+        "sent": "",
+        "diet": "",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Own ride",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": ""
+      },
+      {
+        "id": "zuri",
+        "name": "Zuri",
+        "phone": "",
+        "rsvp": "Confirmed",
+        "dish": "Dessert",
+        "serves": "10",
+        "food": "Reconfirmed",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Photographer; wants approval before posting anyone publicly.",
+        "draft": "",
+        "sent": "",
+        "diet": "",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Own ride",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": ""
+      },
+      {
+        "id": "cam",
+        "name": "Cam",
+        "phone": "",
+        "rsvp": "Confirmed",
+        "dish": "Board games",
+        "serves": "",
+        "food": "Reconfirmed",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Game captain; wants a poll rather than deciding for everybody.",
+        "draft": "",
+        "sent": "",
+        "diet": "",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Own ride",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": "Cards after dinner; no forced drinking."
+      },
+      {
+        "id": "inez",
+        "name": "Inez",
+        "phone": "",
+        "rsvp": "Confirmed",
+        "dish": "Cups",
+        "serves": "20",
+        "food": "Reconfirmed",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Does not drive or cook; can help set up if a ride arrives early.",
+        "draft": "",
+        "sent": "",
+        "diet": "",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Need a ride",
+        "pickupArea": "Fictional North meetup",
+        "rideTime": "4 PM",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": ""
+      },
+      {
+        "id": "noah",
+        "name": "Noah",
+        "phone": "",
+        "rsvp": "Confirmed",
+        "dish": "Turkey",
+        "serves": "20",
+        "food": "Reconfirmed",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Main-dish cook; turkey needs counter space and carving time.",
+        "draft": "",
+        "sent": "",
+        "diet": "",
+        "arrival": "4:45 PM",
+        "kitchen": "Counter 4:30–5:00; oven 4–4:45",
+        "transport": "Own ride",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": ""
+      },
+      {
+        "id": "eli",
+        "name": "Eli",
+        "phone": "",
+        "rsvp": "Declined",
+        "dish": "Folding tables",
+        "serves": "",
+        "food": "Offered",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Work schedule uncertain; initially agrees to bring tables and ice.",
+        "draft": "",
+        "sent": "",
+        "diet": "",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Own ride",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": "",
+        "respondedAt": "2026-11-16T20:12:42.183Z"
+      },
+      {
+        "id": "rae",
+        "name": "Rae",
+        "phone": "",
+        "rsvp": "Confirmed",
+        "dish": "Serving utensils",
+        "serves": "",
+        "food": "Reconfirmed",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Lends serving equipment; needs it returned on checkout.",
+        "draft": "",
+        "sent": "",
+        "diet": "",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Own ride",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": ""
+      },
+      {
+        "id": "quinn",
+        "name": "Quinn",
+        "phone": "",
+        "rsvp": "Awaiting reply",
+        "dish": "",
+        "serves": "",
+        "food": "Offered",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Wants to attend but needs the cost and transport settled first.",
+        "draft": "",
+        "sent": "",
+        "diet": "",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Need a ride",
+        "pickupArea": "Fictional West meetup",
+        "rideTime": "",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": ""
+      }
+    ],
+    "ops": {
+      "supplies": [
+        {
+          "id": "chairs",
+          "title": "Folding chairs",
+          "need": 8,
+          "have": 0,
+          "guestId": "host",
+          "confirmed": true
+        },
+        {
+          "id": "ice",
+          "title": "Ice bags",
+          "need": 4,
+          "have": 0,
+          "guestId": "jade",
+          "confirmed": true
+        },
+        {
+          "id": "plates",
+          "title": "Plates",
+          "need": 20,
+          "have": 24,
+          "guestId": "",
+          "confirmed": false
+        },
+        {
+          "id": "containers",
+          "title": "Leftover containers",
+          "need": 12,
+          "have": 0,
+          "guestId": "ben",
+          "confirmed": true
+        }
+      ],
+      "expenses": [
+        {
+          "id": "stay",
+          "title": "Hypothetical rental incl. fees",
+          "cents": 69600,
+          "category": "Overnight",
+          "split": [
+            "host",
+            "jade",
+            "theo"
+          ]
+        },
+        {
+          "id": "food",
+          "title": "Shared groceries and supplies",
+          "cents": 21600,
+          "category": "Gathering",
+          "split": [
+            "host",
+            "jade",
+            "tess",
+            "omar",
+            "leah",
+            "dante",
+            "priya",
+            "ben",
+            "sasha",
+            "theo",
+            "zuri",
+            "cam",
+            "inez",
+            "noah",
+            "rae"
+          ]
+        },
+        {
+          "id": "chairs",
+          "title": "Fallback furniture rental if needed",
+          "cents": 6000,
+          "category": "Gathering",
+          "split": [
+            "host",
+            "jade",
+            "theo"
+          ]
+        }
+      ],
+      "payments": {
+        "jade": 17400,
+        "theo": 10000
+      },
+      "overnight": [
+        "host",
+        "jade",
+        "theo",
+        "priya"
+      ],
+      "contingencies": [
+        {
+          "id": "rain",
+          "trigger": "Patio becomes too cold or rainy",
+          "action": "Move indoors. Needs all 8 borrowed chairs and second table.",
+          "person": "jade",
+          "ready": true
+        },
+        {
+          "id": "salad",
+          "trigger": "Milo cannot bring potato salad",
+          "action": "Ask Ben to buy a ready-made side after checking dietary needs.",
+          "person": "ben",
+          "ready": false
+        }
+      ],
+      "closeout": [
+        {
+          "id": "return",
+          "title": "Return Rae’s serving tray",
+          "kind": "Borrowed item",
+          "person": "host",
+          "done": false
+        },
+        {
+          "id": "trash",
+          "title": "Bag trash before 10 AM checkout",
+          "kind": "Cleanup",
+          "person": "theo",
+          "done": false
+        },
+        {
+          "id": "leftovers",
+          "title": "Collect containers and label leftovers",
+          "kind": "Leftovers",
+          "person": "jade",
+          "done": false
+        }
+      ],
+      "venues": [
+        {
+          "id": "juniper",
+          "name": "SIMULATION — Juniper House",
+          "url": "https://example.com/simulated-juniper-house",
+          "cents": 69600,
+          "attendees": 20,
+          "sleepers": 4,
+          "permission": "Written confirmation",
+          "kitchen": "1 oven, 4 burners, 2 fridge shelves. Seats 12; borrow 8 chairs and table.",
+          "indoor": "20 only if borrowed furniture arrives; outside is optional.",
+          "outdoor": "Covered patio; 2 heaters. Hot tub 4 at a time, until 9 PM.",
+          "parking": "6 driveway spaces; no street parking.",
+          "notes": "SIMULATION ONLY — no actual reservation or property.\nBooking reference SIM-FG-2026. Juniper House is a fictional Raleigh rental.\nCheck-in Sunday November 22 at 2 PM ET; checkout Monday November 23 at 10 AM ET.\nWritten permission: private seated dinner for maximum 20 total attendees including host; maximum 4 overnight guests. No unapproved visitors.\nParking: 6 vehicles on the driveway; no street parking.\nArrival: use the front entrance; 3 steps, no step-free route.\nOne oven; 4 burners; fridge has two shelves available. Indoor dining seats 12; 8 folding chairs and a second table are required.\nCovered patio has 2 heaters; hot tub maximum 4 people, closes 9 PM. No glass outside.\nQuiet hours begin at 9 PM; no amplified outdoor music.\nDoor code SIM-4826. Share only with setup and overnight guests after check-in.\nDress code: warm layers and closed shoes; bring swimwear and a towel if using hot tub.\nCleanup: bag trash, load dishwasher, restore furniture; checkout before 10 AM Monday.\nTotal: lodging $480; cleaning $120; taxes and service $96; total $696.\nCancellation: hypothetical fee terms, $348 nonrefundable after November 20. These terms are fabricated for testing."
+        }
+      ],
+      "chosenVenue": "juniper",
+      "dietChecks": {
+        "omar": true,
+        "leah": true
+      },
+      "menu": {
+        "jade": {
+          "category": "Vegetable",
+          "ingredients": "Vegetables and olive oil; fictional cook separately confirmed preparation details.",
+          "diet": ""
+        },
+        "milo": {
+          "category": "Starch / side",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "tess": {
+          "category": "Starch / side",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "omar": {
+          "category": "Other",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "leah": {
+          "category": "Main",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "dante": {
+          "category": "Other",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "priya": {
+          "category": "Dessert",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "ben": {
+          "category": "Drinks",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "sasha": {
+          "category": "Starch / side",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "theo": {
+          "category": "Other",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "zuri": {
+          "category": "Dessert",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "cam": {
+          "category": "Other",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "inez": {
+          "category": "Other",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "noah": {
+          "category": "Main",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "eli": {
+          "category": "Other",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "rae": {
+          "category": "Other",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "quinn": {
+          "category": "Other",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        }
+      },
+      "eventStart": "2026-11-22T17:00:00-05:00",
+      "eventEnd": "2026-11-22T22:00:00-05:00",
+      "learning": ""
+    },
+    "tools": {
+      "needs": [
+        {
+          "id": "ice-choice",
+          "title": "Ice",
+          "effort": "Buy ready-made",
+          "budget": "Low"
+        },
+        {
+          "id": "vegan-side",
+          "title": "Dairy-free vegetable side",
+          "effort": "Cook something",
+          "budget": "Medium"
+        }
+      ],
+      "roles": [
+        {
+          "id": "setup",
+          "title": "Setup by 3 PM",
+          "guestId": "jade",
+          "confirmed": true
+        },
+        {
+          "id": "kitchen",
+          "title": "Coordinate oven time",
+          "guestId": "noah",
+          "confirmed": true
+        },
+        {
+          "id": "cleanup",
+          "title": "Closing cleanup crew",
+          "guestId": "cam",
+          "confirmed": true
+        }
+      ],
+      "blocks": [
+        {
+          "id": "pickup",
+          "title": "Host grocery pickup",
+          "person": "host",
+          "resource": "",
+          "start": "13:00",
+          "end": "13:45"
+        },
+        {
+          "id": "checkin",
+          "title": "Host rental check-in",
+          "person": "host",
+          "resource": "",
+          "start": "14:00",
+          "end": "14:30"
+        },
+        {
+          "id": "turkey",
+          "title": "Turkey reheat",
+          "person": "noah",
+          "resource": "Oven",
+          "start": "16:00",
+          "end": "16:45"
+        },
+        {
+          "id": "mac",
+          "title": "Mac and cheese reheat",
+          "person": "tess",
+          "resource": "Oven",
+          "start": "17:30",
+          "end": "18:00"
+        }
+      ]
+    },
+    "board": {
+      "polls": [
+        {
+          "id": "games",
+          "question": "After-dinner activity?",
+          "options": [
+            "Cards",
+            "Board games",
+            "Karaoke"
+          ],
+          "votes": {
+            "cam": 0,
+            "jade": 1
+          },
+          "closes": "2026-11-21T23:00:00Z",
+          "closed": false,
+          "decision": ""
+        }
+      ],
+      "errands": [
+        {
+          "id": "ice-run",
+          "title": "Pick up 4 ice bags",
+          "store": "Example grocery (fictional)",
+          "area": "North meetup",
+          "by": "4:30 PM ET",
+          "guestId": "jade",
+          "confirmed": true,
+          "done": false
+        }
+      ],
+      "rides": [
+        {
+          "id": "ride1",
+          "driver": "jade",
+          "passengers": [
+            "inez"
+          ],
+          "seats": 2,
+          "area": "Fictional North meetup",
+          "when": "3:45 PM",
+          "confirmed": true
+        }
+      ]
+    },
+    "concierge": {
+      "items": [
+        {
+          "id": "parking",
+          "category": "Parking",
+          "title": "Parking",
+          "text": "6 driveway spaces, no street parking. Coordinate rides.",
+          "source": "Simulated booking",
+          "original": "Parking: 6 vehicles on driveway; no street parking.",
+          "approved": true,
+          "audience": []
+        },
+        {
+          "id": "rules",
+          "category": "Property rules",
+          "title": "Quiet hours",
+          "text": "No amplified outdoor music; quiet hours 9 PM.",
+          "source": "Simulated booking",
+          "original": "Quiet hours begin at 9 PM; no amplified outdoor music.",
+          "approved": true,
+          "audience": []
+        },
+        {
+          "id": "arrival",
+          "category": "Arrival",
+          "title": "Setup entry",
+          "text": "Front entrance, 3 steps. Setup starts 2:30 PM.",
+          "source": "Simulated host decision",
+          "original": "",
+          "approved": true,
+          "audience": [
+            "jade"
+          ]
+        }
+      ],
+      "reminders": [
+        {
+          "id": "reminder",
+          "text": "Reconfirm Milo’s side and Eli’s furniture.",
+          "when": "Nov 21, 6 PM ET",
+          "guestId": "",
+          "sent": false
+        }
+      ],
+      "code": "SIM-4826",
+      "codeGuests": [
+        "jade",
+        "theo",
+        "priya"
+      ],
+      "releaseCode": false
+    }
+  },
+  "closeout": {
+    "title": "SIMULATION — Nia’s Friendsgiving",
+    "when": "Sunday, November 22 · 5 PM ET",
+    "place": "Fictional Raleigh venue",
+    "address": "SIMULATION — no real street address",
+    "invite": "Fictional private Friendsgiving, Nov 22 at 5 PM ET. Reply with your contribution; request plus-ones first. Do not use this as a real invitation.",
+    "post": "SIMULATED CAPTION: Friendsgiving is coming. Invite only; do not publish.",
+    "guests": [
+      {
+        "id": "jade",
+        "name": "Jade",
+        "phone": "",
+        "rsvp": "Confirmed",
+        "dish": "Roasted vegetables",
+        "serves": "12",
+        "food": "Reconfirmed",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Reliable cohost; wants a short task list, not every detail.",
+        "draft": "",
+        "sent": "",
+        "diet": "",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Own ride",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": ""
+      },
+      {
+        "id": "milo",
+        "name": "Milo",
+        "phone": "",
+        "rsvp": "Maybe",
+        "dish": "Potato salad",
+        "serves": "10",
+        "food": "Offered",
+        "backup": "Ben agreed to buy a separate suitable side",
+        "backupStatus": "Confirmed",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Enthusiastic but overcommits; answers late.",
+        "draft": "",
+        "sent": "",
+        "diet": "",
+        "arrival": "6:30 PM at earliest",
+        "kitchen": "",
+        "transport": "Own ride",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": "",
+        "respondedAt": "2026-11-16T20:12:42.192Z"
+      },
+      {
+        "id": "tess",
+        "name": "Tess",
+        "phone": "",
+        "rsvp": "Confirmed",
+        "dish": "Mac and cheese",
+        "serves": "12",
+        "food": "Reconfirmed",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Nurse finishing a shift; cannot arrive before 5:30.",
+        "draft": "",
+        "sent": "",
+        "diet": "",
+        "arrival": "5:30 PM",
+        "kitchen": "Oven 5:30–6 PM",
+        "transport": "Own ride",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": "",
+        "respondedAt": "2026-11-16T20:12:42.190Z"
+      },
+      {
+        "id": "omar",
+        "name": "Omar",
+        "phone": "",
+        "rsvp": "Confirmed",
+        "dish": "Fruit platter",
+        "serves": "10",
+        "food": "Reconfirmed",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Vegetarian with a reported nut allergy; asks clear ingredient questions.",
+        "draft": "",
+        "sent": "",
+        "diet": "Vegetarian; reported nut allergy",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Own ride",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": ""
+      },
+      {
+        "id": "leah",
+        "name": "Leah",
+        "phone": "",
+        "rsvp": "Confirmed",
+        "dish": "Lentil loaf",
+        "serves": "6",
+        "food": "Reconfirmed",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Vegan; happy to cook if there is a genuinely suitable main.",
+        "draft": "",
+        "sent": "",
+        "diet": "Vegan",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Own ride",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": ""
+      },
+      {
+        "id": "dante",
+        "name": "Dante",
+        "phone": "",
+        "rsvp": "Declined",
+        "dish": "Speaker and playlist",
+        "serves": "",
+        "food": "Offered",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: DJ and driver; offers three seats but dislikes repeated reminders.",
+        "draft": "",
+        "sent": "",
+        "diet": "",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Can drive",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 3,
+        "music": "Soul and R&B; no outside amplification",
+        "suggestion": "",
+        "respondedAt": "2026-11-16T20:12:42.186Z"
+      },
+      {
+        "id": "priya",
+        "name": "Priya",
+        "phone": "",
+        "rsvp": "Declined",
+        "dish": "Gluten-free brownies",
+        "serves": "12",
+        "food": "Offered",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Organized driver; needs gluten-free options; two passenger seats.",
+        "draft": "",
+        "sent": "",
+        "diet": "Gluten-free",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Can drive",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 2,
+        "music": "",
+        "suggestion": "",
+        "respondedAt": "2026-11-16T20:12:42.189Z"
+      },
+      {
+        "id": "ben",
+        "name": "Ben",
+        "phone": "",
+        "rsvp": "Confirmed",
+        "dish": "Drinks",
+        "serves": "20",
+        "food": "Reconfirmed",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Budget-conscious; prefers buying a useful item to cooking.",
+        "draft": "",
+        "sent": "",
+        "diet": "",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Own ride",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": ""
+      },
+      {
+        "id": "sasha",
+        "name": "Sasha",
+        "phone": "",
+        "rsvp": "Confirmed",
+        "dish": "Dinner rolls",
+        "serves": "24",
+        "food": "Reconfirmed",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "Requested",
+        "plusNames": "Avery and Morgan (two people)",
+        "note": "SIMULATED PERSONALITY: Wants to bring two friends; assumes the host will say yes.",
+        "draft": "",
+        "sent": "",
+        "diet": "",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Own ride",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": ""
+      },
+      {
+        "id": "theo",
+        "name": "Theo",
+        "phone": "",
+        "rsvp": "Confirmed",
+        "dish": "Breakfast supplies",
+        "serves": "4",
+        "food": "Reconfirmed",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Quiet overnight guest; needs clear checkout and sleeping arrangements.",
+        "draft": "",
+        "sent": "",
+        "diet": "",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Own ride",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": ""
+      },
+      {
+        "id": "zuri",
+        "name": "Zuri",
+        "phone": "",
+        "rsvp": "Confirmed",
+        "dish": "Dessert",
+        "serves": "10",
+        "food": "Reconfirmed",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Photographer; wants approval before posting anyone publicly.",
+        "draft": "",
+        "sent": "",
+        "diet": "",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Own ride",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": ""
+      },
+      {
+        "id": "cam",
+        "name": "Cam",
+        "phone": "",
+        "rsvp": "Confirmed",
+        "dish": "Board games",
+        "serves": "",
+        "food": "Reconfirmed",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Game captain; wants a poll rather than deciding for everybody.",
+        "draft": "",
+        "sent": "",
+        "diet": "",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Own ride",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": "Cards after dinner; no forced drinking."
+      },
+      {
+        "id": "inez",
+        "name": "Inez",
+        "phone": "",
+        "rsvp": "Confirmed",
+        "dish": "Cups",
+        "serves": "20",
+        "food": "Reconfirmed",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Does not drive or cook; can help set up if a ride arrives early.",
+        "draft": "",
+        "sent": "",
+        "diet": "",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Need a ride",
+        "pickupArea": "Fictional North meetup",
+        "rideTime": "4 PM",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": ""
+      },
+      {
+        "id": "noah",
+        "name": "Noah",
+        "phone": "",
+        "rsvp": "Confirmed",
+        "dish": "Turkey",
+        "serves": "20",
+        "food": "Reconfirmed",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Main-dish cook; turkey needs counter space and carving time.",
+        "draft": "",
+        "sent": "",
+        "diet": "",
+        "arrival": "4:45 PM",
+        "kitchen": "Counter 4:30–5:00; oven 4–4:45",
+        "transport": "Own ride",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": ""
+      },
+      {
+        "id": "eli",
+        "name": "Eli",
+        "phone": "",
+        "rsvp": "Declined",
+        "dish": "Folding tables",
+        "serves": "",
+        "food": "Offered",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Work schedule uncertain; initially agrees to bring tables and ice.",
+        "draft": "",
+        "sent": "",
+        "diet": "",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Own ride",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": "",
+        "respondedAt": "2026-11-16T20:12:42.183Z"
+      },
+      {
+        "id": "rae",
+        "name": "Rae",
+        "phone": "",
+        "rsvp": "Confirmed",
+        "dish": "Serving utensils",
+        "serves": "",
+        "food": "Reconfirmed",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Lends serving equipment; needs it returned on checkout.",
+        "draft": "",
+        "sent": "",
+        "diet": "",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Own ride",
+        "pickupArea": "",
+        "rideTime": "",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": ""
+      },
+      {
+        "id": "quinn",
+        "name": "Quinn",
+        "phone": "",
+        "rsvp": "Awaiting reply",
+        "dish": "",
+        "serves": "",
+        "food": "Offered",
+        "backup": "",
+        "backupStatus": "Not arranged",
+        "plus": "None",
+        "plusNames": "",
+        "note": "SIMULATED PERSONALITY: Wants to attend but needs the cost and transport settled first.",
+        "draft": "",
+        "sent": "",
+        "diet": "",
+        "arrival": "4:45 PM",
+        "kitchen": "",
+        "transport": "Need a ride",
+        "pickupArea": "Fictional West meetup",
+        "rideTime": "",
+        "rideSeats": 0,
+        "music": "",
+        "suggestion": ""
+      }
+    ],
+    "ops": {
+      "supplies": [
+        {
+          "id": "chairs",
+          "title": "Folding chairs",
+          "need": 8,
+          "have": 0,
+          "guestId": "host",
+          "confirmed": true
+        },
+        {
+          "id": "ice",
+          "title": "Ice bags",
+          "need": 4,
+          "have": 0,
+          "guestId": "jade",
+          "confirmed": true
+        },
+        {
+          "id": "plates",
+          "title": "Plates",
+          "need": 20,
+          "have": 24,
+          "guestId": "",
+          "confirmed": false
+        },
+        {
+          "id": "containers",
+          "title": "Leftover containers",
+          "need": 12,
+          "have": 0,
+          "guestId": "ben",
+          "confirmed": true
+        }
+      ],
+      "expenses": [
+        {
+          "id": "stay",
+          "title": "Hypothetical rental incl. fees",
+          "cents": 69600,
+          "category": "Overnight",
+          "split": [
+            "host",
+            "jade",
+            "theo"
+          ]
+        },
+        {
+          "id": "food",
+          "title": "Shared groceries and supplies",
+          "cents": 21600,
+          "category": "Gathering",
+          "split": [
+            "host",
+            "jade",
+            "tess",
+            "omar",
+            "leah",
+            "dante",
+            "priya",
+            "ben",
+            "sasha",
+            "theo",
+            "zuri",
+            "cam",
+            "inez",
+            "noah",
+            "rae"
+          ]
+        },
+        {
+          "id": "chairs",
+          "title": "Fallback furniture rental if needed",
+          "cents": 6000,
+          "category": "Gathering",
+          "split": [
+            "host",
+            "jade",
+            "theo"
+          ]
+        }
+      ],
+      "payments": {
+        "jade": 17400,
+        "theo": 10000
+      },
+      "overnight": [
+        "host",
+        "jade",
+        "theo",
+        "priya"
+      ],
+      "contingencies": [
+        {
+          "id": "rain",
+          "trigger": "Patio becomes too cold or rainy",
+          "action": "Move indoors. Needs all 8 borrowed chairs and second table.",
+          "person": "jade",
+          "ready": true
+        },
+        {
+          "id": "salad",
+          "trigger": "Milo cannot bring potato salad",
+          "action": "Ask Ben to buy a ready-made side after checking dietary needs.",
+          "person": "ben",
+          "ready": false
+        }
+      ],
+      "closeout": [
+        {
+          "id": "return",
+          "title": "Return Rae’s serving tray",
+          "kind": "Borrowed item",
+          "person": "host",
+          "done": true
+        },
+        {
+          "id": "trash",
+          "title": "Bag trash before 10 AM checkout",
+          "kind": "Cleanup",
+          "person": "theo",
+          "done": true
+        },
+        {
+          "id": "leftovers",
+          "title": "Collect containers and label leftovers",
+          "kind": "Leftovers",
+          "person": "jade",
+          "done": true
+        }
+      ],
+      "venues": [
+        {
+          "id": "juniper",
+          "name": "SIMULATION — Juniper House",
+          "url": "https://example.com/simulated-juniper-house",
+          "cents": 69600,
+          "attendees": 20,
+          "sleepers": 4,
+          "permission": "Written confirmation",
+          "kitchen": "1 oven, 4 burners, 2 fridge shelves. Seats 12; borrow 8 chairs and table.",
+          "indoor": "20 only if borrowed furniture arrives; outside is optional.",
+          "outdoor": "Covered patio; 2 heaters. Hot tub 4 at a time, until 9 PM.",
+          "parking": "6 driveway spaces; no street parking.",
+          "notes": "SIMULATION ONLY — no actual reservation or property.\nBooking reference SIM-FG-2026. Juniper House is a fictional Raleigh rental.\nCheck-in Sunday November 22 at 2 PM ET; checkout Monday November 23 at 10 AM ET.\nWritten permission: private seated dinner for maximum 20 total attendees including host; maximum 4 overnight guests. No unapproved visitors.\nParking: 6 vehicles on the driveway; no street parking.\nArrival: use the front entrance; 3 steps, no step-free route.\nOne oven; 4 burners; fridge has two shelves available. Indoor dining seats 12; 8 folding chairs and a second table are required.\nCovered patio has 2 heaters; hot tub maximum 4 people, closes 9 PM. No glass outside.\nQuiet hours begin at 9 PM; no amplified outdoor music.\nDoor code SIM-4826. Share only with setup and overnight guests after check-in.\nDress code: warm layers and closed shoes; bring swimwear and a towel if using hot tub.\nCleanup: bag trash, load dishwasher, restore furniture; checkout before 10 AM Monday.\nTotal: lodging $480; cleaning $120; taxes and service $96; total $696.\nCancellation: hypothetical fee terms, $348 nonrefundable after November 20. These terms are fabricated for testing."
+        }
+      ],
+      "chosenVenue": "juniper",
+      "dietChecks": {
+        "omar": true,
+        "leah": true
+      },
+      "menu": {
+        "jade": {
+          "category": "Vegetable",
+          "ingredients": "Vegetables and olive oil; fictional cook separately confirmed preparation details.",
+          "diet": ""
+        },
+        "milo": {
+          "category": "Starch / side",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "tess": {
+          "category": "Starch / side",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "omar": {
+          "category": "Other",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "leah": {
+          "category": "Main",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "dante": {
+          "category": "Other",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "priya": {
+          "category": "Dessert",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "ben": {
+          "category": "Drinks",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "sasha": {
+          "category": "Starch / side",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "theo": {
+          "category": "Other",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "zuri": {
+          "category": "Dessert",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "cam": {
+          "category": "Other",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "inez": {
+          "category": "Other",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "noah": {
+          "category": "Main",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "eli": {
+          "category": "Other",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "rae": {
+          "category": "Other",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        },
+        "quinn": {
+          "category": "Other",
+          "ingredients": "Not yet confirmed",
+          "diet": ""
+        }
+      },
+      "eventStart": "2026-11-22T17:00:00-05:00",
+      "eventEnd": "2026-11-22T22:00:00-05:00",
+      "learning": "SIMULATED debrief: ask for extra chairs first, collect ingredient details earlier, and give cohost access before sending invites."
+    },
+    "tools": {
+      "needs": [
+        {
+          "id": "ice-choice",
+          "title": "Ice",
+          "effort": "Buy ready-made",
+          "budget": "Low"
+        },
+        {
+          "id": "vegan-side",
+          "title": "Dairy-free vegetable side",
+          "effort": "Cook something",
+          "budget": "Medium"
+        }
+      ],
+      "roles": [
+        {
+          "id": "setup",
+          "title": "Setup by 3 PM",
+          "guestId": "jade",
+          "confirmed": true
+        },
+        {
+          "id": "kitchen",
+          "title": "Coordinate oven time",
+          "guestId": "noah",
+          "confirmed": true
+        },
+        {
+          "id": "cleanup",
+          "title": "Closing cleanup crew",
+          "guestId": "cam",
+          "confirmed": true
+        }
+      ],
+      "blocks": [
+        {
+          "id": "pickup",
+          "title": "Host grocery pickup",
+          "person": "host",
+          "resource": "",
+          "start": "13:00",
+          "end": "13:45"
+        },
+        {
+          "id": "checkin",
+          "title": "Host rental check-in",
+          "person": "host",
+          "resource": "",
+          "start": "14:00",
+          "end": "14:30"
+        },
+        {
+          "id": "turkey",
+          "title": "Turkey reheat",
+          "person": "noah",
+          "resource": "Oven",
+          "start": "16:00",
+          "end": "16:45"
+        },
+        {
+          "id": "mac",
+          "title": "Mac and cheese reheat",
+          "person": "tess",
+          "resource": "Oven",
+          "start": "17:30",
+          "end": "18:00"
+        }
+      ]
+    },
+    "board": {
+      "polls": [
+        {
+          "id": "games",
+          "question": "After-dinner activity?",
+          "options": [
+            "Cards",
+            "Board games",
+            "Karaoke"
+          ],
+          "votes": {
+            "cam": 0,
+            "jade": 1
+          },
+          "closes": "2026-11-21T23:00:00Z",
+          "closed": false,
+          "decision": ""
+        }
+      ],
+      "errands": [
+        {
+          "id": "ice-run",
+          "title": "Pick up 4 ice bags",
+          "store": "Example grocery (fictional)",
+          "area": "North meetup",
+          "by": "4:30 PM ET",
+          "guestId": "jade",
+          "confirmed": true,
+          "done": false
+        }
+      ],
+      "rides": [
+        {
+          "id": "ride1",
+          "driver": "jade",
+          "passengers": [
+            "inez"
+          ],
+          "seats": 2,
+          "area": "Fictional North meetup",
+          "when": "3:45 PM",
+          "confirmed": true
+        }
+      ]
+    },
+    "concierge": {
+      "items": [
+        {
+          "id": "parking",
+          "category": "Parking",
+          "title": "Parking",
+          "text": "6 driveway spaces, no street parking. Coordinate rides.",
+          "source": "Simulated booking",
+          "original": "Parking: 6 vehicles on driveway; no street parking.",
+          "approved": true,
+          "audience": []
+        },
+        {
+          "id": "rules",
+          "category": "Property rules",
+          "title": "Quiet hours",
+          "text": "No amplified outdoor music; quiet hours 9 PM.",
+          "source": "Simulated booking",
+          "original": "Quiet hours begin at 9 PM; no amplified outdoor music.",
+          "approved": true,
+          "audience": []
+        },
+        {
+          "id": "arrival",
+          "category": "Arrival",
+          "title": "Setup entry",
+          "text": "Front entrance, 3 steps. Setup starts 2:30 PM.",
+          "source": "Simulated host decision",
+          "original": "",
+          "approved": true,
+          "audience": [
+            "jade"
+          ]
+        }
+      ],
+      "reminders": [
+        {
+          "id": "reminder",
+          "text": "Reconfirm Milo’s side and Eli’s furniture.",
+          "when": "Nov 21, 6 PM ET",
+          "guestId": "",
+          "sent": false
+        }
+      ],
+      "code": "SIM-4826",
+      "codeGuests": [
+        "jade",
+        "theo",
+        "priya"
+      ],
+      "releaseCode": false
+    }
+  }
+}

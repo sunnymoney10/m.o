@@ -1,0 +1,907 @@
+{
+  "scenario": "Nia’s fictional Friendsgiving",
+  "created": "2026-11-16",
+  "method": "Current route handlers, SQLite in-memory migrations, pure planning functions. No real bookings, messages, payments, guests or production records.",
+  "booking": "SIMULATION ONLY — no actual reservation or property.\nBooking reference SIM-FG-2026. Juniper House is a fictional Raleigh rental.\nCheck-in Sunday November 22 at 2 PM ET; checkout Monday November 23 at 10 AM ET.\nWritten permission: private seated dinner for maximum 20 total attendees including host; maximum 4 overnight guests. No unapproved visitors.\nParking: 6 vehicles on the driveway; no street parking.\nArrival: use the front entrance; 3 steps, no step-free route.\nOne oven; 4 burners; fridge has two shelves available. Indoor dining seats 12; 8 folding chairs and a second table are required.\nCovered patio has 2 heaters; hot tub maximum 4 people, closes 9 PM. No glass outside.\nQuiet hours begin at 9 PM; no amplified outdoor music.\nDoor code SIM-4826. Share only with setup and overnight guests after check-in.\nDress code: warm layers and closed shoes; bring swimwear and a towel if using hot tub.\nCleanup: bag trash, load dishwasher, restore furniture; checkout before 10 AM Monday.\nTotal: lodging $480; cleaning $120; taxes and service $96; total $696.\nCancellation: hypothetical fee terms, $348 nonrefundable after November 20. These terms are fabricated for testing.",
+  "personalities": [
+    {
+      "id": "jade",
+      "name": "Jade",
+      "persona": "Reliable cohost; wants a short task list, not every detail.",
+      "dish": "Roasted vegetables",
+      "rsvp": "Confirmed",
+      "serves": "12"
+    },
+    {
+      "id": "milo",
+      "name": "Milo",
+      "persona": "Enthusiastic but overcommits; answers late.",
+      "dish": "Potato salad",
+      "rsvp": "Awaiting reply",
+      "serves": "10"
+    },
+    {
+      "id": "tess",
+      "name": "Tess",
+      "persona": "Nurse finishing a shift; cannot arrive before 5:30.",
+      "dish": "Mac and cheese",
+      "rsvp": "Confirmed",
+      "serves": "12"
+    },
+    {
+      "id": "omar",
+      "name": "Omar",
+      "persona": "Vegetarian with a reported nut allergy; asks clear ingredient questions.",
+      "dish": "Fruit platter",
+      "rsvp": "Confirmed",
+      "serves": "10"
+    },
+    {
+      "id": "leah",
+      "name": "Leah",
+      "persona": "Vegan; happy to cook if there is a genuinely suitable main.",
+      "dish": "Lentil loaf",
+      "rsvp": "Confirmed",
+      "serves": "6"
+    },
+    {
+      "id": "dante",
+      "name": "Dante",
+      "persona": "DJ and driver; offers three seats but dislikes repeated reminders.",
+      "dish": "Speaker and playlist",
+      "rsvp": "Confirmed",
+      "serves": ""
+    },
+    {
+      "id": "priya",
+      "name": "Priya",
+      "persona": "Organized driver; needs gluten-free options; two passenger seats.",
+      "dish": "Gluten-free brownies",
+      "rsvp": "Confirmed",
+      "serves": "12"
+    },
+    {
+      "id": "ben",
+      "name": "Ben",
+      "persona": "Budget-conscious; prefers buying a useful item to cooking.",
+      "dish": "Drinks",
+      "rsvp": "Confirmed",
+      "serves": "20"
+    },
+    {
+      "id": "sasha",
+      "name": "Sasha",
+      "persona": "Wants to bring two friends; assumes the host will say yes.",
+      "dish": "Dinner rolls",
+      "rsvp": "Confirmed",
+      "serves": "24"
+    },
+    {
+      "id": "theo",
+      "name": "Theo",
+      "persona": "Quiet overnight guest; needs clear checkout and sleeping arrangements.",
+      "dish": "Breakfast supplies",
+      "rsvp": "Confirmed",
+      "serves": "4"
+    },
+    {
+      "id": "zuri",
+      "name": "Zuri",
+      "persona": "Photographer; wants approval before posting anyone publicly.",
+      "dish": "Dessert",
+      "rsvp": "Confirmed",
+      "serves": "10"
+    },
+    {
+      "id": "cam",
+      "name": "Cam",
+      "persona": "Game captain; wants a poll rather than deciding for everybody.",
+      "dish": "Board games",
+      "rsvp": "Confirmed",
+      "serves": ""
+    },
+    {
+      "id": "inez",
+      "name": "Inez",
+      "persona": "Does not drive or cook; can help set up if a ride arrives early.",
+      "dish": "Cups",
+      "rsvp": "Confirmed",
+      "serves": "20"
+    },
+    {
+      "id": "noah",
+      "name": "Noah",
+      "persona": "Main-dish cook; turkey needs counter space and carving time.",
+      "dish": "Turkey",
+      "rsvp": "Confirmed",
+      "serves": "20"
+    },
+    {
+      "id": "eli",
+      "name": "Eli",
+      "persona": "Work schedule uncertain; initially agrees to bring tables and ice.",
+      "dish": "Folding tables",
+      "rsvp": "Maybe",
+      "serves": ""
+    },
+    {
+      "id": "rae",
+      "name": "Rae",
+      "persona": "Lends serving equipment; needs it returned on checkout.",
+      "dish": "Serving utensils",
+      "rsvp": "Confirmed",
+      "serves": ""
+    },
+    {
+      "id": "quinn",
+      "name": "Quinn",
+      "persona": "Wants to attend but needs the cost and transport settled first.",
+      "dish": "",
+      "rsvp": "Awaiting reply",
+      "serves": ""
+    }
+  ],
+  "timeline": [
+    {
+      "phase": "Nov 16: planning",
+      "briefing": [
+        {
+          "title": "3 guests need an attendance answer",
+          "where": "Guests"
+        },
+        {
+          "title": "1 plus-one requests need review",
+          "where": "Guests"
+        },
+        {
+          "title": "2 contributions need reconfirmation",
+          "where": "Food & backups"
+        },
+        {
+          "title": "3 dietary requirements need a menu check",
+          "where": "Event essentials"
+        },
+        {
+          "title": "3 supplies have an uncovered gap",
+          "where": "Event essentials"
+        },
+        {
+          "title": "2 schedule overlaps need attention",
+          "where": "Host tools"
+        },
+        {
+          "title": "1 helper roles are not confirmed",
+          "where": "Host tools"
+        },
+        {
+          "title": "1 reminders remain in your queue",
+          "where": "Guest concierge"
+        },
+        {
+          "title": "Some expenses have no agreed split",
+          "where": "Event essentials"
+        }
+      ],
+      "finance": {
+        "due": {
+          "host": 18840,
+          "jade": 18840,
+          "theo": 18840,
+          "priya": 18840,
+          "tess": 1440,
+          "omar": 1440,
+          "leah": 1440,
+          "dante": 1440,
+          "ben": 1440,
+          "sasha": 1440,
+          "zuri": 1440,
+          "cam": 1440,
+          "inez": 1440,
+          "noah": 1440,
+          "rae": 1440
+        },
+        "unallocated": 6000,
+        "total": 97200
+      }
+    },
+    {
+      "phase": "Nov 21: Eli drops out",
+      "briefing": [
+        {
+          "title": "2 guests need an attendance answer",
+          "where": "Guests"
+        },
+        {
+          "title": "1 plus-one requests need review",
+          "where": "Guests"
+        },
+        {
+          "title": "1 contributions need reconfirmation",
+          "where": "Food & backups"
+        },
+        {
+          "title": "3 dietary requirements need a menu check",
+          "where": "Event essentials"
+        },
+        {
+          "title": "3 supplies have an uncovered gap",
+          "where": "Event essentials"
+        },
+        {
+          "title": "1 errands need an agreed helper",
+          "where": "Group coordination"
+        },
+        {
+          "title": "2 schedule overlaps need attention",
+          "where": "Host tools"
+        },
+        {
+          "title": "1 helper roles are not confirmed",
+          "where": "Host tools"
+        },
+        {
+          "title": "1 reminders remain in your queue",
+          "where": "Guest concierge"
+        },
+        {
+          "title": "Some expenses have no agreed split",
+          "where": "Event essentials"
+        }
+      ]
+    }
+  ],
+  "stageSummary": {
+    "planning": {
+      "briefing": [
+        {
+          "title": "3 guests need an attendance answer",
+          "where": "Guests"
+        },
+        {
+          "title": "1 plus-one requests need review",
+          "where": "Guests"
+        },
+        {
+          "title": "2 contributions need reconfirmation",
+          "where": "Food & backups"
+        },
+        {
+          "title": "3 dietary requirements need a menu check",
+          "where": "Event essentials"
+        },
+        {
+          "title": "3 supplies have an uncovered gap",
+          "where": "Event essentials"
+        },
+        {
+          "title": "2 schedule overlaps need attention",
+          "where": "Host tools"
+        },
+        {
+          "title": "1 helper roles are not confirmed",
+          "where": "Host tools"
+        },
+        {
+          "title": "1 reminders remain in your queue",
+          "where": "Guest concierge"
+        },
+        {
+          "title": "Some expenses have no agreed split",
+          "where": "Event essentials"
+        }
+      ],
+      "finance": {
+        "due": {
+          "host": 18840,
+          "jade": 18840,
+          "theo": 18840,
+          "priya": 18840,
+          "tess": 1440,
+          "omar": 1440,
+          "leah": 1440,
+          "dante": 1440,
+          "ben": 1440,
+          "sasha": 1440,
+          "zuri": 1440,
+          "cam": 1440,
+          "inez": 1440,
+          "noah": 1440,
+          "rae": 1440
+        },
+        "unallocated": 6000,
+        "total": 97200
+      }
+    },
+    "disruption": {
+      "briefing": [
+        {
+          "title": "2 guests need an attendance answer",
+          "where": "Guests"
+        },
+        {
+          "title": "1 plus-one requests need review",
+          "where": "Guests"
+        },
+        {
+          "title": "1 contributions need reconfirmation",
+          "where": "Food & backups"
+        },
+        {
+          "title": "2 dietary requirements need a menu check",
+          "where": "Event essentials"
+        },
+        {
+          "title": "3 supplies have an uncovered gap",
+          "where": "Event essentials"
+        },
+        {
+          "title": "1 errands need an agreed helper",
+          "where": "Group coordination"
+        },
+        {
+          "title": "1 carpools need agreement",
+          "where": "Group coordination"
+        },
+        {
+          "title": "2 schedule overlaps need attention",
+          "where": "Host tools"
+        },
+        {
+          "title": "1 helper roles are not confirmed",
+          "where": "Host tools"
+        },
+        {
+          "title": "1 reminders remain in your queue",
+          "where": "Guest concierge"
+        },
+        {
+          "title": "Some expenses have no agreed split",
+          "where": "Event essentials"
+        },
+        {
+          "title": "A declined guest remains on an expense split; review the agreement",
+          "where": "Event essentials"
+        }
+      ],
+      "finance": {
+        "due": {
+          "host": 18840,
+          "jade": 18840,
+          "theo": 18840,
+          "priya": 18840,
+          "tess": 1440,
+          "omar": 1440,
+          "leah": 1440,
+          "dante": 1440,
+          "ben": 1440,
+          "sasha": 1440,
+          "zuri": 1440,
+          "cam": 1440,
+          "inez": 1440,
+          "noah": 1440,
+          "rae": 1440
+        },
+        "unallocated": 6000,
+        "total": 97200
+      }
+    },
+    "recovery": {
+      "briefing": [
+        {
+          "title": "2 guests need an attendance answer",
+          "where": "Guests"
+        },
+        {
+          "title": "1 plus-one requests need review",
+          "where": "Guests"
+        },
+        {
+          "title": "1 contributions need reconfirmation",
+          "where": "Food & backups"
+        },
+        {
+          "title": "1 reminders remain in your queue",
+          "where": "Guest concierge"
+        },
+        {
+          "title": "A declined guest remains on an expense split; review the agreement",
+          "where": "Event essentials"
+        }
+      ],
+      "finance": {
+        "due": {
+          "host": 26640,
+          "jade": 26640,
+          "theo": 26640,
+          "tess": 1440,
+          "omar": 1440,
+          "leah": 1440,
+          "dante": 1440,
+          "priya": 1440,
+          "ben": 1440,
+          "sasha": 1440,
+          "zuri": 1440,
+          "cam": 1440,
+          "inez": 1440,
+          "noah": 1440,
+          "rae": 1440
+        },
+        "unallocated": 0,
+        "total": 97200
+      }
+    },
+    "closeout": {
+      "briefing": [
+        {
+          "title": "2 guests need an attendance answer",
+          "where": "Guests"
+        },
+        {
+          "title": "1 plus-one requests need review",
+          "where": "Guests"
+        },
+        {
+          "title": "1 contributions need reconfirmation",
+          "where": "Food & backups"
+        },
+        {
+          "title": "1 reminders remain in your queue",
+          "where": "Guest concierge"
+        },
+        {
+          "title": "A declined guest remains on an expense split; review the agreement",
+          "where": "Event essentials"
+        }
+      ],
+      "finance": {
+        "due": {
+          "host": 26640,
+          "jade": 26640,
+          "theo": 26640,
+          "tess": 1440,
+          "omar": 1440,
+          "leah": 1440,
+          "dante": 1440,
+          "priya": 1440,
+          "ben": 1440,
+          "sasha": 1440,
+          "zuri": 1440,
+          "cam": 1440,
+          "inez": 1440,
+          "noah": 1440,
+          "rae": 1440
+        },
+        "unallocated": 0,
+        "total": 97200
+      }
+    }
+  },
+  "summary": {
+    "pass": 14,
+    "gap": 13,
+    "fail": 0
+  },
+  "findings": [
+    {
+      "id": "S01",
+      "status": "PASS",
+      "title": "Full scenario persists with all planning records",
+      "evidence": {
+        "bytes": 15134,
+        "guests": 17,
+        "venues": 1
+      },
+      "priority": "P2"
+    },
+    {
+      "id": "S02",
+      "status": "PASS",
+      "title": "Manual schedule detects host and oven conflicts",
+      "evidence": {
+        "person": [
+          {
+            "a": {
+              "id": "pickup",
+              "title": "Host grocery pickup",
+              "person": "host",
+              "resource": "",
+              "start": "14:00",
+              "end": "15:00"
+            },
+            "b": {
+              "id": "checkin",
+              "title": "Host rental check-in",
+              "person": "host",
+              "resource": "",
+              "start": "14:00",
+              "end": "14:30"
+            }
+          }
+        ],
+        "resource": [
+          {
+            "a": {
+              "id": "turkey",
+              "title": "Turkey reheat",
+              "person": "noah",
+              "resource": "Oven",
+              "start": "16:00",
+              "end": "16:45"
+            },
+            "b": {
+              "id": "mac",
+              "title": "Mac and cheese reheat",
+              "person": "tess",
+              "resource": "Oven",
+              "start": "16:30",
+              "end": "17:00"
+            }
+          }
+        ]
+      },
+      "priority": "P2"
+    },
+    {
+      "id": "S03",
+      "status": "GAP",
+      "title": "Confirmed-seat widget excludes the host",
+      "evidence": {
+        "displayed": 14,
+        "actualIncludingHost": 15,
+        "source": "app/host/page.tsx head=yes.length+approved-plus-one-count"
+      },
+      "priority": "P0"
+    },
+    {
+      "id": "S04",
+      "status": "PASS",
+      "title": "Two-person plus-one request stays a request",
+      "evidence": {
+        "plus": "Requested",
+        "plusNames": "Avery and Morgan"
+      },
+      "priority": "P2"
+    },
+    {
+      "id": "S05",
+      "status": "GAP",
+      "title": "Multiple names in one approved plus-one count as one seat",
+      "evidence": {
+        "displayed": 15,
+        "actualIncludingHostAndTwoExtras": 17
+      },
+      "priority": "P0"
+    },
+    {
+      "id": "S06",
+      "status": "PASS",
+      "title": "Personal card hides private notes and event address",
+      "evidence": {
+        "privateNotesVisible": false,
+        "addressVisible": false
+      },
+      "priority": "P2"
+    },
+    {
+      "id": "S07",
+      "status": "PASS",
+      "title": "Unreleased door code stays hidden",
+      "evidence": {
+        "accessCode": ""
+      },
+      "priority": "P2"
+    },
+    {
+      "id": "S08",
+      "status": "PASS",
+      "title": "Selected confirmed setup guest receives released code",
+      "evidence": {
+        "released": true
+      },
+      "priority": "P2"
+    },
+    {
+      "id": "S09",
+      "status": "PASS",
+      "title": "Stale host save cannot overwrite a guest reply",
+      "evidence": {
+        "status": 409
+      },
+      "priority": "P0"
+    },
+    {
+      "id": "S10",
+      "status": "GAP",
+      "title": "Conflicting host edit has no merge or draft recovery",
+      "evidence": {
+        "response": "This desk changed in another tab. Reload before editing to avoid overwriting it.",
+        "hostUX": "Reload explicitly discards unsaved edits; save error preserves only current tab."
+      },
+      "priority": "P0"
+    },
+    {
+      "id": "S11",
+      "status": "GAP",
+      "title": "Legitimate shared contribution rejected as duplicate",
+      "evidence": {
+        "request": "Quinn brings additional drinks for 10",
+        "status": 409,
+        "error": "Someone has just chosen that contribution. Choose another or ask your host about bringing more."
+      },
+      "priority": "P1"
+    },
+    {
+      "id": "S12",
+      "status": "GAP",
+      "title": "Late food arrival does not invalidate an earlier kitchen slot",
+      "evidence": {
+        "guestArrival": "5:30 PM",
+        "block": {
+          "id": "mac",
+          "title": "Mac and cheese reheat",
+          "person": "tess",
+          "resource": "Oven",
+          "start": "16:30",
+          "end": "17:00"
+        },
+        "alerts": [
+          {
+            "title": "3 guests need an attendance answer",
+            "where": "Guests"
+          },
+          {
+            "title": "1 plus-one requests need review",
+            "where": "Guests"
+          },
+          {
+            "title": "2 contributions need reconfirmation",
+            "where": "Food & backups"
+          },
+          {
+            "title": "3 dietary requirements need a menu check",
+            "where": "Event essentials"
+          },
+          {
+            "title": "3 supplies have an uncovered gap",
+            "where": "Event essentials"
+          },
+          {
+            "title": "2 schedule overlaps need attention",
+            "where": "Host tools"
+          },
+          {
+            "title": "1 helper roles are not confirmed",
+            "where": "Host tools"
+          },
+          {
+            "title": "1 reminders remain in your queue",
+            "where": "Guest concierge"
+          },
+          {
+            "title": "Some expenses have no agreed split",
+            "where": "Event essentials"
+          }
+        ]
+      },
+      "priority": "P1"
+    },
+    {
+      "id": "S13",
+      "status": "PASS",
+      "title": "Dropout releases ice errand",
+      "evidence": {
+        "errand": {
+          "id": "ice-run",
+          "title": "Pick up 4 ice bags",
+          "store": "Example grocery (fictional)",
+          "area": "North meetup",
+          "by": "4:30 PM ET",
+          "guestId": "",
+          "confirmed": false,
+          "done": false
+        }
+      },
+      "priority": "P2"
+    },
+    {
+      "id": "S14",
+      "status": "PASS",
+      "title": "Dropout leaves furniture and ice uncovered",
+      "evidence": {
+        "supplies": [
+          {
+            "id": "chairs",
+            "title": "Folding chairs",
+            "need": 8,
+            "have": 0,
+            "guestId": "eli",
+            "confirmed": false
+          },
+          {
+            "id": "ice",
+            "title": "Ice bags",
+            "need": 4,
+            "have": 0,
+            "guestId": "eli",
+            "confirmed": false
+          }
+        ]
+      },
+      "priority": "P2"
+    },
+    {
+      "id": "S15",
+      "status": "PASS",
+      "title": "Driver dropout invalidates carpool",
+      "evidence": {
+        "ride": {
+          "id": "ride1",
+          "driver": "dante",
+          "passengers": [
+            "inez"
+          ],
+          "seats": 3,
+          "area": "Fictional North meetup",
+          "when": "4 PM",
+          "confirmed": false
+        }
+      },
+      "priority": "P2"
+    },
+    {
+      "id": "S16",
+      "status": "GAP",
+      "title": "Affected rider gets no automatic replacement or personal alert",
+      "evidence": {
+        "inezCardHasRideAssignment": false,
+        "hostAlert": [
+          {
+            "title": "1 carpools need agreement",
+            "where": "Group coordination"
+          }
+        ]
+      },
+      "priority": "P1"
+    },
+    {
+      "id": "S17",
+      "status": "PASS",
+      "title": "Overnight dropout flags existing cost agreement",
+      "evidence": {
+        "alert": [
+          {
+            "title": "A declined guest remains on an expense split; review the agreement",
+            "where": "Event essentials"
+          }
+        ]
+      },
+      "priority": "P2"
+    },
+    {
+      "id": "S18",
+      "status": "GAP",
+      "title": "No automated replacement-cost choice or funding protection",
+      "evidence": {
+        "remainingRentalCents": 69600,
+        "originalOvernightShare": 17400,
+        "threePersonHypotheticalShare": 23200,
+        "increasePerRemainingPerson": 5800
+      },
+      "priority": "P1"
+    },
+    {
+      "id": "S19",
+      "status": "GAP",
+      "title": "Dietary review is a manual checkbox, not verified menu suitability",
+      "evidence": {
+        "jadeIngredients": "Vegetables, butter; cook has not checked nut cross-contact.",
+        "leahDiet": "Vegan",
+        "automatedIngredientCompatibility": false
+      },
+      "priority": "P1"
+    },
+    {
+      "id": "S20",
+      "status": "PASS",
+      "title": "Booking extraction skips code line",
+      "evidence": {
+        "draftCards": 7
+      },
+      "priority": "P2"
+    },
+    {
+      "id": "S21",
+      "status": "GAP",
+      "title": "Keyword extraction is incomplete and can misclassify combined instructions",
+      "evidence": {
+        "checkoutParagraph": {
+          "id": "dcb80b8d-6760-4d8a-9165-0aa697e4e6bd",
+          "category": "Arrival",
+          "title": "Arrival",
+          "text": "Check-in Sunday November 22 at 2 PM ET; checkout Monday November 23 at 10 AM ET.",
+          "source": "Simulated booking",
+          "original": "Check-in Sunday November 22 at 2 PM ET; checkout Monday November 23 at 10 AM ET.",
+          "approved": false,
+          "audience": []
+        },
+        "permissionParagraph": {
+          "id": "de979d35-8514-4987-8436-3d0da3217337",
+          "category": "Property rules",
+          "title": "Property rules",
+          "text": "Written permission: private seated dinner for maximum 20 total attendees including host; maximum 4 overnight guests. No unapproved visitors.",
+          "source": "Simulated booking",
+          "original": "Written permission: private seated dinner for maximum 20 total attendees including host; maximum 4 overnight guests. No unapproved visitors.",
+          "approved": false,
+          "audience": []
+        },
+        "note": "Single line can contain arrival and checkout; extraction keeps only first matched category. Booking costs/cancellation are not structured."
+      },
+      "priority": "P1"
+    },
+    {
+      "id": "S22",
+      "status": "PASS",
+      "title": "Poll vote changes replace prior vote",
+      "evidence": {
+        "votes": {
+          "cam": 0,
+          "jade": 1
+        }
+      },
+      "priority": "P2"
+    },
+    {
+      "id": "S23",
+      "status": "GAP",
+      "title": "Event time and calendar export can disagree",
+      "evidence": {
+        "headline": "Sunday, November 22 · 6 PM ET",
+        "calendarStart": "2026-11-22T17:00:00-05:00",
+        "calendarHas5PM": true
+      },
+      "priority": "P0"
+    },
+    {
+      "id": "S24",
+      "status": "GAP",
+      "title": "Weather and seating Plan B has no dependency enforcement",
+      "evidence": {
+        "seats": 12,
+        "desiredAttendees": 20,
+        "missingChairs": 8,
+        "contingencyReady": false,
+        "briefingMentionsWeather": false
+      },
+      "priority": "P1"
+    },
+    {
+      "id": "S25",
+      "status": "GAP",
+      "title": "Cleanup obligations do not appear in the main briefing",
+      "evidence": {
+        "unfinished": 3,
+        "briefingMentionsCheckout": false
+      },
+      "priority": "P1"
+    },
+    {
+      "id": "S26",
+      "status": "PASS",
+      "title": "Reissuing link revokes old personal link",
+      "evidence": {
+        "status": 404
+      },
+      "priority": "P2"
+    },
+    {
+      "id": "S27",
+      "status": "GAP",
+      "title": "Personal link is transferable and not bound to guest identity",
+      "evidence": {
+        "behavior": "guest-reply authorizes via bearer token; no recipient identity binding",
+        "note": "Intentional low-friction design, must explain and protect sensitive access separately."
+      },
+      "priority": "P0"
+    }
+  ]
+}
