@@ -1,0 +1,261 @@
+{
+  "inez": {
+    "polls": [
+      {
+        "id": "games",
+        "question": "After-dinner activity?",
+        "options": [
+          "Cards",
+          "Board games",
+          "Karaoke"
+        ],
+        "counts": [
+          1,
+          1,
+          0
+        ],
+        "open": true,
+        "mine": null,
+        "decision": ""
+      }
+    ],
+    "errands": [],
+    "instructions": [
+      {
+        "category": "Parking",
+        "title": "Parking",
+        "text": "6 driveway spaces, no street parking. Coordinate rides.",
+        "source": "Simulated booking",
+        "original": "Parking: 6 vehicles on driveway; no street parking."
+      },
+      {
+        "category": "Property rules",
+        "title": "Quiet hours",
+        "text": "No amplified outdoor music; quiet hours 9 PM.",
+        "source": "Simulated booking",
+        "original": "Quiet hours begin at 9 PM; no amplified outdoor music."
+      }
+    ],
+    "accessCode": "",
+    "title": "SIMULATION — Nia’s Friendsgiving",
+    "when": "Sunday, November 22 · 5 PM ET",
+    "place": "Fictional Raleigh venue",
+    "guest": {
+      "name": "Inez",
+      "rsvp": "Confirmed",
+      "dish": "Cups",
+      "serves": "20",
+      "food": "Reconfirmed",
+      "diet": "",
+      "arrival": "4:45 PM",
+      "kitchen": "",
+      "plus": "None",
+      "plusNames": "",
+      "transport": "Need a ride",
+      "pickupArea": "Fictional North meetup",
+      "rideTime": "4 PM",
+      "rideSeats": 0,
+      "suggestion": "",
+      "music": ""
+    },
+    "needs": [
+      {
+        "id": "ice-choice",
+        "title": "Ice",
+        "effort": "Buy ready-made",
+        "budget": "Low"
+      },
+      {
+        "id": "vegan-side",
+        "title": "Dairy-free vegetable side",
+        "effort": "Cook something",
+        "budget": "Medium"
+      }
+    ],
+    "roles": [
+      {
+        "id": "cleanup",
+        "title": "Closing cleanup crew",
+        "mine": false,
+        "confirmed": false
+      }
+    ]
+  },
+  "omar": {
+    "polls": [
+      {
+        "id": "games",
+        "question": "After-dinner activity?",
+        "options": [
+          "Cards",
+          "Board games",
+          "Karaoke"
+        ],
+        "counts": [
+          1,
+          1,
+          0
+        ],
+        "open": true,
+        "mine": null,
+        "decision": ""
+      }
+    ],
+    "errands": [],
+    "instructions": [
+      {
+        "category": "Parking",
+        "title": "Parking",
+        "text": "6 driveway spaces, no street parking. Coordinate rides.",
+        "source": "Simulated booking",
+        "original": "Parking: 6 vehicles on driveway; no street parking."
+      },
+      {
+        "category": "Property rules",
+        "title": "Quiet hours",
+        "text": "No amplified outdoor music; quiet hours 9 PM.",
+        "source": "Simulated booking",
+        "original": "Quiet hours begin at 9 PM; no amplified outdoor music."
+      }
+    ],
+    "accessCode": "",
+    "title": "SIMULATION — Nia’s Friendsgiving",
+    "when": "Sunday, November 22 · 5 PM ET",
+    "place": "Fictional Raleigh venue",
+    "guest": {
+      "name": "Omar",
+      "rsvp": "Confirmed",
+      "dish": "Fruit platter",
+      "serves": "10",
+      "food": "Reconfirmed",
+      "diet": "Vegetarian; reported nut allergy",
+      "arrival": "4:45 PM",
+      "kitchen": "",
+      "plus": "None",
+      "plusNames": "",
+      "transport": "Own ride",
+      "pickupArea": "",
+      "rideTime": "",
+      "rideSeats": 0,
+      "suggestion": "",
+      "music": ""
+    },
+    "needs": [
+      {
+        "id": "ice-choice",
+        "title": "Ice",
+        "effort": "Buy ready-made",
+        "budget": "Low"
+      },
+      {
+        "id": "vegan-side",
+        "title": "Dairy-free vegetable side",
+        "effort": "Cook something",
+        "budget": "Medium"
+      }
+    ],
+    "roles": [
+      {
+        "id": "cleanup",
+        "title": "Closing cleanup crew",
+        "mine": false,
+        "confirmed": false
+      }
+    ]
+  },
+  "jade": {
+    "polls": [
+      {
+        "id": "games",
+        "question": "After-dinner activity?",
+        "options": [
+          "Cards",
+          "Board games",
+          "Karaoke"
+        ],
+        "counts": [
+          1,
+          1,
+          0
+        ],
+        "open": true,
+        "mine": 1,
+        "decision": ""
+      }
+    ],
+    "errands": [],
+    "instructions": [
+      {
+        "category": "Parking",
+        "title": "Parking",
+        "text": "6 driveway spaces, no street parking. Coordinate rides.",
+        "source": "Simulated booking",
+        "original": "Parking: 6 vehicles on driveway; no street parking."
+      },
+      {
+        "category": "Property rules",
+        "title": "Quiet hours",
+        "text": "No amplified outdoor music; quiet hours 9 PM.",
+        "source": "Simulated booking",
+        "original": "Quiet hours begin at 9 PM; no amplified outdoor music."
+      },
+      {
+        "category": "Arrival",
+        "title": "Setup entry",
+        "text": "Front entrance, 3 steps. Setup starts 2:30 PM.",
+        "source": "Simulated host decision",
+        "original": ""
+      }
+    ],
+    "accessCode": "",
+    "title": "SIMULATION — Nia’s Friendsgiving",
+    "when": "Sunday, November 22 · 5 PM ET",
+    "place": "Fictional Raleigh venue",
+    "guest": {
+      "name": "Jade",
+      "rsvp": "Confirmed",
+      "dish": "Roasted vegetables",
+      "serves": "12",
+      "food": "Reconfirmed",
+      "diet": "",
+      "arrival": "4:45 PM",
+      "kitchen": "",
+      "plus": "None",
+      "plusNames": "",
+      "transport": "Own ride",
+      "pickupArea": "",
+      "rideTime": "",
+      "rideSeats": 0,
+      "suggestion": "",
+      "music": ""
+    },
+    "needs": [
+      {
+        "id": "ice-choice",
+        "title": "Ice",
+        "effort": "Buy ready-made",
+        "budget": "Low"
+      },
+      {
+        "id": "vegan-side",
+        "title": "Dairy-free vegetable side",
+        "effort": "Cook something",
+        "budget": "Medium"
+      }
+    ],
+    "roles": [
+      {
+        "id": "setup",
+        "title": "Setup by 3 PM",
+        "mine": true,
+        "confirmed": true
+      },
+      {
+        "id": "cleanup",
+        "title": "Closing cleanup crew",
+        "mine": false,
+        "confirmed": false
+      }
+    ]
+  }
+}
