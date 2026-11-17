@@ -39,7 +39,7 @@ async function handler(req:Request){
   }
 
   if(seg[0]==='plans'&&seg.length===1){
-   if(req.method==='GET'){const {results}=await db.prepare('SELECT p.id,p.title,p.kind,p.date,p.place,p.budget,p.note,p.invite_url,p.created,p.made_it,(SELECT count(*) FROM guests g WHERE g.plan_id=p.id AND g.status=?) AS going FROM plans p WHERE p.owner=? OR p.id IN (SELECT plan_id FROM guests WHERE actor=?) ORDER BY p.created DESC').bind('in',actor,actor).all();return json({plans:results});}
+   if(req.method==='GET'){const {results}=await db.prepare('SELECT p.id,p.title,p.kind,p.date,p.place,p.budget,p.note,p.invite_url,p.created,p.made_it,(SELECT count(*) FROM guests g WHERE g.plan_id=p.id AND g.status=?) AS going,(SELECT count(*) FROM guests g WHERE g.plan_id=p.id AND g.status=?) AS maybe,(SELECT count(*) FROM tasks t WHERE t.plan_id=p.id AND t.claimed_by IS NULL) AS open_items,(SELECT t.title FROM tasks t WHERE t.plan_id=p.id AND t.claimed_by IS NULL ORDER BY t.rowid LIMIT 1) AS open_item,(SELECT count(*) FROM polls v WHERE v.plan_id=p.id AND v.decided_option IS NULL) AS open_votes FROM plans p WHERE p.owner=? OR p.id IN (SELECT plan_id FROM guests WHERE actor=?) ORDER BY p.created DESC').bind('in','maybe',actor,actor).all();return json({plans:results});}
    if(req.method==='POST'){
     const b=await body();const title=str(b.title,100),name=str(b.name,60);if(!title||!name)return json({error:'Give the plan a title and tell us your name.'},400);
     if(b.date&&Number.isNaN(Date.parse(b.date)))return json({error:'Choose a valid date.'},400);

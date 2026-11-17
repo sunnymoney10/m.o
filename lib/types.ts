@@ -1,4 +1,4 @@
-export type Plan={id:string;title:string;kind:string;date:string;place:string;budget:string;note:string;going?:number;invite_url?:string|null;made_it?:number};
+export type Plan={id:string;title:string;kind:string;date:string;place:string;budget:string;note:string;going?:number;maybe?:number;open_items?:number;open_item?:string|null;open_votes?:number;invite_url?:string|null;made_it?:number};
 export type Task={id:string;title:string;category:string;claimed_name:string|null;done:number;isMine:boolean};
 export type Guest={name:string;status:string;note:string;isMe:boolean;handle?:string|null;mo?:string|null;interests?:string[]};
 export type PollOption={id:string;label:string;votes:number;voters:string[];mine:boolean};

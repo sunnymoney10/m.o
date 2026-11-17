@@ -1,11 +1,11 @@
 'use client';
 import {useEffect,useState} from 'react';
-import {ArrowUpRight,ArrowLeft,Plus,CalendarDays,MapPin,Users,Check,Link as LinkIcon,CheckCircle2,Clock,ShoppingBag,ListTodo,X,Copy,ChevronRight,Heart,LoaderCircle,HelpCircle,LayoutGrid,CheckCheck,Pencil,Smile,PartyPopper} from 'lucide-react';
+import {ArrowUpRight,ArrowLeft,Plus,CalendarDays,MapPin,Users,Check,Link as LinkIcon,CheckCircle2,Clock,X,ChevronRight,LoaderCircle,HelpCircle,Pencil,House,UsersRound,Box,Soup,CakeSlice,CupSoda,Snowflake,Music,Car,BedDouble,Wallet,Utensils,ClipboardCheck,Salad,Wine,Ticket,Copy,Lock} from 'lucide-react';
 import type {Plan,Task,Guest,Detail,Me,Profile} from '@/lib/types';
 import {photoFor} from '@/lib/types';
 import {SetterPanel,Decisions,LivePlan,Replay} from '@/components/mo/plan-sections';
 import {ProfileView} from '@/components/mo/profile';
-import {Marks,BlobPhoto,BlobPair} from '@/components/mo/brand';
+import {Wordmark} from '@/components/mo/brand';
 
 const DEMOS:Detail[]=[
  {plan:{id:'demo-dinner',title:'Friendsgiving, with the usuals',kind:'gathering',date:'2026-11-26T18:00',place:'Kaela’s place',budget:'Everyone brings a dish',note:'Good food, questionable stories, and one very full table. Claim what you’re bringing so we have everything covered.'},host:true,
@@ -28,19 +28,27 @@ const DEMO_COPY=[['THE FRIENDSGIVING','Who’s bringing dessert?','A dinner like
 const initial={title:'',kind:'gathering',date:'',place:'',budget:'',note:'',inviteUrl:'',name:'',items:''};
 function pretty(date:string){if(!date)return 'Date to decide';const d=new Date(date);return Number.isNaN(+d)?'Date to decide':d.toLocaleDateString('en-US',{month:'short',day:'numeric',weekday:'short'})}
 function time(date:string){if(!date)return '';return new Date(date).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}
+function when(date:string){return pretty(date)+(date&&!Number.isNaN(+new Date(date))?' · '+time(date):'')}
+// Picks the plan that matters most right now: the next dated one that hasn't happened, else the newest undated one.
+function nextUp(plans:Plan[]){const now=Date.now()-6*3600e3;const live=plans.filter(p=>!p.made_it);const dated=live.filter(p=>p.date&&+new Date(p.date)>=now).sort((a,b)=>+new Date(a.date)-+new Date(b.date));return dated[0]||live.find(p=>!p.date)||null}
+// The one thing to sort out, from saved plan data only. Never a guess about who will do it.
+function sortOut(p:Plan):[string,string]|null{const n=p.open_items||0;if(n&&p.open_item)return [n===1?'One thing to sort out':n+' things to sort out',n===1?`${p.open_item} still needs a volunteer`:`${p.open_item} and ${n-1} more need a volunteer`];if(p.open_votes)return [p.open_votes===1?'One vote is still open':p.open_votes+' votes are still open','Lock it in when the group has weighed in'];if(!p.date)return ['One thing to sort out','The date still needs deciding'];if(!p.place)return ['One thing to sort out','The place still needs deciding'];return null}
+function itemIcon(title:string,category:string){const t=title.toLowerCase();const I=/ice\b/.test(t)?Snowflake:/drink|soda|juice|water|coffee|tea/.test(t)?CupSoda:/wine|beer|champagne|cocktail/.test(t)?Wine:/sweet|dessert|cake|pie|cookie|brownie/.test(t)?CakeSlice:/salad|veg|greens/.test(t)?Salad:/main|mac|side|dish|turkey|soup|stew|rice|bread|roll/.test(t)?Soup:/music|playlist|speaker|dj/.test(t)?Music:/ride|car|drive|carpool|pick ?up/.test(t)?Car:/stay|accommodation|airbnb|hotel|room|bed/.test(t)?BedDouble:/budget|money|pay|split|check/.test(t)?Wallet:/ticket|reserv|book/.test(t)?Ticket:/plate|cup|napkin|fork|utensil|chair|table/.test(t)?Utensils:category==='bring'?Box:ClipboardCheck;return <I size={22} strokeWidth={1.7}/>}
+const initials=(n:string)=>(n||'?').trim().slice(0,1).toUpperCase();
 
 export default function Home(){
- const [plans,setPlans]=useState<Plan[]>([]),[detail,setDetail]=useState<Detail|null>(null),[view,setView]=useState<'home'|'me'>('home'),[me,setMe]=useState<Me|null>(null),[meLoading,setMeLoading]=useState(false),[loading,setLoading]=useState(true),[busy,setBusy]=useState(false),[toast,setToast]=useState(''),[error,setError]=useState(''),[modal,setModal]=useState<'create'|'edit'|'help'|null>(null),[form,setForm]=useState(initial),[tab,setTab]=useState('all'),[addType,setAddType]=useState('bring'),[newItem,setNewItem]=useState(''),[name,setName]=useState(''),[rsvpNote,setRsvpNote]=useState(''),[showRSVP,setShowRSVP]=useState(false);
+ const [plans,setPlans]=useState<Plan[]>([]),[detail,setDetail]=useState<Detail|null>(null),[view,setView]=useState<'home'|'plans'|'me'>('home'),[me,setMe]=useState<Me|null>(null),[meLoading,setMeLoading]=useState(false),[loading,setLoading]=useState(true),[busy,setBusy]=useState(false),[toast,setToast]=useState(''),[error,setError]=useState(''),[modal,setModal]=useState<'create'|'edit'|'help'|null>(null),[form,setForm]=useState(initial),[tab,setTab]=useState('all'),[addType,setAddType]=useState('bring'),[newItem,setNewItem]=useState(''),[name,setName]=useState(''),[rsvpNote,setRsvpNote]=useState(''),[showRSVP,setShowRSVP]=useState(false),[ptab,setPtab]=useState<'overview'|'people'|'list'>('overview'),[hello,setHello]=useState('Hey');
  const demo=!!detail?.plan.id.startsWith('demo-');
  async function api(path:string,method='GET',data?:unknown){const r=await fetch('/api/'+path,{method,headers:{'Content-Type':'application/json'},...(data!=null?{body:JSON.stringify(data)}:{})});let j:any;try{j=await r.json()}catch{throw Error('The server did not respond. Please try again.')}if(!r.ok)throw Error(j.error||'Something went wrong.');return j}
  function notify(t:string){setToast(t);setTimeout(()=>setToast(''),4000)}
  async function list(){try{const d=await api('plans');setPlans(d.plans)}catch(e:any){setError(e.message)}finally{setLoading(false)}}
  async function loadMe(){setMeLoading(true);try{setMe(await api('me'))}catch(e:any){setError(e.message)}finally{setMeLoading(false)}}
- async function open(id:string,history=true){setError('');setView('home');if(id.startsWith('demo-')){setDetail(structuredClone(DEMOS.find(d=>d.plan.id===id)!));setName('You')}else{setBusy(true);try{const d=await api('plan/'+id);setDetail(d);const mine=d.guests.find((g:Guest)=>g.isMe);setName(mine?.name||localStorage.getItem('mo-name')||'');setRsvpNote(mine?.note||'')}catch(e:any){setError(e.message)}finally{setBusy(false)}}if(history)window.history.pushState({},'','/?plan='+id);window.scrollTo(0,0)}
- useEffect(()=>{list();const read=()=>{const q=new URLSearchParams(location.search),id=q.get('plan');if(id)open(id,false);else if(q.get('view')==='me'){setDetail(null);setView('me');loadMe()}else{setDetail(null);setView('home')}};read();window.addEventListener('popstate',read);return()=>window.removeEventListener('popstate',read)},[]);
+ async function open(id:string,history=true){setError('');setView('home');if(history)setPtab('overview');if(id.startsWith('demo-')){setDetail(structuredClone(DEMOS.find(d=>d.plan.id===id)!));setName('You')}else{setBusy(true);try{const d=await api('plan/'+id);setDetail(d);const mine=d.guests.find((g:Guest)=>g.isMe);setName(mine?.name||localStorage.getItem('mo-name')||'');setRsvpNote(mine?.note||'')}catch(e:any){setError(e.message)}finally{setBusy(false)}}if(history)window.history.pushState({},'','/?plan='+id);window.scrollTo(0,0)}
+ useEffect(()=>{list();api('me').then(setMe).catch(()=>{});const h=new Date().getHours();setHello(h<12?'Good morning':h<17?'Good afternoon':'Good evening');const read=()=>{const q=new URLSearchParams(location.search),id=q.get('plan');if(id)open(id,false);else if(q.get('view')==='me'){setDetail(null);setView('me');loadMe()}else if(q.get('view')==='plans'){setDetail(null);setView('plans')}else{setDetail(null);setView('home')}};read();window.addEventListener('popstate',read);return()=>window.removeEventListener('popstate',read)},[]);
  useEffect(()=>{if(!detail||demo)return;const interval=setInterval(()=>{if(document.visibilityState==='visible')api('plan/'+detail.plan.id).then(setDetail).catch(()=>{})},15000);return()=>clearInterval(interval)},[detail?.plan.id]);
  useEffect(()=>{if(!modal)return;const old=document.body.style.overflow;document.body.style.overflow='hidden';const previous=document.activeElement as HTMLElement|null;const esc=(e:KeyboardEvent)=>{if(e.key==='Escape')setModal(null);if(e.key==='Tab'){const nodes=Array.from(document.querySelectorAll<HTMLElement>('[role="dialog"] button:not(:disabled),[role="dialog"] input,[role="dialog"] textarea,[role="dialog"] select'));const first=nodes[0],last=nodes[nodes.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus()}}};window.addEventListener('keydown',esc);const timer=setTimeout(()=>document.querySelector<HTMLElement>('[role="dialog"] input, [role="dialog"] button')?.focus(),60);return()=>{document.body.style.overflow=old;clearTimeout(timer);window.removeEventListener('keydown',esc);previous?.focus()}},[modal]);
  function home(){setDetail(null);setView('home');setError('');window.history.pushState({},'','/');list();window.scrollTo(0,0)}
+ function plansView(){setDetail(null);setView('plans');setError('');window.history.pushState({},'','/?view=plans');list();window.scrollTo(0,0)}
  function profile(){setDetail(null);setView('me');setError('');window.history.pushState({},'','/?view=me');loadMe();window.scrollTo(0,0)}
  function create(kind='gathering'){setForm({...initial,kind,name:me?.profile?.name||localStorage.getItem('mo-name')||'',items:kind==='trip'?'Agree the accommodation budget\nChoose the accommodation\nOrganize the ride':'The main dish\nSomething sweet\nDrinks & ice'});setModal('create')}
  async function submit(e:React.FormEvent){e.preventDefault();setBusy(true);setError('');try{if(modal==='edit'&&detail){if(demo)setDetail({...detail,plan:{...detail.plan,...form}});else{await api('plan/'+detail.plan.id,'PATCH',{title:form.title,place:form.place,budget:form.budget,note:form.note,inviteUrl:form.inviteUrl,date:form.date?new Date(form.date).toISOString():''});await open(detail.plan.id,false)}}else{const d=await api('plans','POST',{...form,date:form.date?new Date(form.date).toISOString():'',tasks:form.items.split('\n').filter(t=>t.trim()).map(title=>({title,category:form.kind==='trip'?'todo':'bring'}))});localStorage.setItem('mo-name',form.name);await open(d.id);list()}setModal(null);notify(modal==='edit'?'Plan updated. Everyone’s on the same page.':'You started something. Invite your people.')}catch(e:any){setError(e.message)}finally{setBusy(false)}}
@@ -56,90 +64,116 @@ export default function Home(){
  const link=typeof location!=='undefined'&&p?location.origin+'/?plan='+p.id:'';
  const filtered=plans.filter(x=>tab==='all'||x.kind===tab);
  const where=detail?'plan':view;
+ const myName=me?.profile?.name||'';
+ const featured=nextUp(plans),others=plans.filter(x=>x.id!==featured?.id);
+ const host=guests[0],bringItems=tasks.filter(t=>t.category==='bring'),todoItems=tasks.filter(t=>t.category==='todo');
+ const listLabel=p?.kind==='trip'&&todoItems.length>=bringItems.length?'To-do list':'Bring list';
+ const navItems=[['home','Home',House,home],['plans','Plans',CalendarDays,plansView],['me','People',UsersRound,profile]] as const;
+ const navOn=(k:string)=>k==='plans'?where==='plans'||where==='plan':where===k;
+
+ const planRow=(x:Plan)=><button className="row-link" key={x.id} onClick={()=>open(x.id)}><img className="row-thumb" src={photoFor(x.kind,x.id)} alt="" loading="lazy"/><span className="row-text"><strong>{x.title}</strong><span>{pretty(x.date)} · {x.going||0} going{x.made_it?' · made it out':''}</span></span><ChevronRight size={20}/></button>;
+ const demoCards=<section className="demos" aria-labelledby="demos-title">
+  <div className="section-title"><h2 id="demos-title">Take m.o for a spin</h2><span className="fine">Fictional people · nothing saved</span></div>
+  <div className="demo-scroll">{DEMOS.map((d,i)=><button className="demo-card" key={d.plan.id} onClick={()=>open(d.plan.id)}><img src={['/photos/diner-table.jpg','/photos/picnic.jpg','/photos/diner-crew.jpg'][i]} alt="" loading="lazy"/><span className="eyebrow">{DEMO_COPY[i][0]}</span><strong>{DEMO_COPY[i][1]}</strong><span className="fine">{DEMO_COPY[i][2]}</span></button>)}</div>
+ </section>;
 
  return <div className="app">
-  <aside className="sidebar"><button className="wordmark" onClick={home} aria-label="mo. home">mo<span>.</span></button><span className="say">say it: em-oh</span>
-   <nav><button className={where==='home'?'nav active':'nav'} onClick={home}><LayoutGrid size={19}/><span>Your plans</span>{plans.length>0&&<span className="count">{plans.length}</span>}</button><button className={where==='me'?'nav active':'nav'} onClick={profile}><Smile size={19}/><span>Your mo.</span></button><button className="nav" onClick={()=>setModal('help')}><HelpCircle size={19}/><span>How it works</span></button></nav>
-   <div className="sidebar-note"><Marks/><p>Make it out<br/>the group<br/><strong>chat.</strong></p></div>
-   <div className="sidebar-foot"><span className="free-dot"/>Free for everyone you invite.</div>
-  </aside>
-  <div className="workspace">
-   <header className="topbar"><div className="crumb"><button onClick={home}>Your plans</button>{detail&&<><ChevronRight size={14}/><span>{p?.title}</span></>}{view==='me'&&!detail&&<><ChevronRight size={14}/><span>Your mo.</span></>}</div><span className="free-pill"><span/>FREE PREVIEW</span></header>
-   <main>
+  <nav className="tabbar" aria-label="Main">
+   <button className="rail-mark" onClick={home} aria-label="m.o home"><Wordmark/></button>
+   {navItems.map(([k,label,Icon,go])=><button key={k} className={'tab'+(navOn(k)?' on':'')} aria-current={navOn(k)?'page':undefined} onClick={go}><Icon size={22} strokeWidth={1.8}/><span>{label}</span></button>)}
+   <div className="rail-foot"><p>Make it out<br/>the groupchat.</p><button className="text-button" onClick={()=>setModal('help')}>How it works</button></div>
+  </nav>
+  <div className="frame">
+   <header className={'appbar'+(where==='plan'?' centered':'')}>
+    {where==='plan'?<button className="icon-button" aria-label="Back to plans" onClick={plansView}><ArrowLeft size={22}/></button>:null}
+    <button className="appbar-mark" onClick={home} aria-label="m.o home"><Wordmark/></button>
+    {where==='plan'&&detail!.host?<button className="icon-button" aria-label="Edit plan details" onClick={()=>{setForm({...initial,title:p!.title,kind:p!.kind,place:p!.place,budget:p!.budget,note:p!.note,date:p!.date?new Date(new Date(p!.date).getTime()-new Date(p!.date).getTimezoneOffset()*60000).toISOString().slice(0,16):'',name,inviteUrl:p!.invite_url||''});setModal('edit')}}><Pencil size={20}/></button>
+    :where==='plan'?<span className="icon-button" aria-hidden="true"/>
+    :<button className="me-dot" aria-label="Your m.o profile" onClick={profile}>{myName?initials(myName):<HelpCircle size={20}/>}</button>}
+   </header>
+   <main className="screen">
    {error&&<div className="error" role="alert">{error}<button onClick={()=>{setError('');list()}}>Try again</button></div>}
+
    {where==='me'?<ProfileView me={me} loading={meLoading} save={saveProfile} openPlan={id=>open(id)} start={()=>create()}/>
+
    :where==='home'?<>
-    <section className="hero">
-     <div className="hero-copy">
-      <span className="say-it">say it: em-oh</span>
-      <h1>Make it out<br/>the group chat<span>.</span></h1>
-      <p>One link for the plan, the votes, and who’s bringing what. Friends join from the group chat — no app, no account.</p>
-      <div className="hero-buttons"><button className="primary big" onClick={()=>create()}><Plus size={18}/>Start a plan</button><button className="ghost" onClick={profile}>What’s your mo? <ArrowUpRight size={16}/></button></div>
-     </div>
-     <div className="hero-art"><Marks className="m1" color="purple"/><BlobPair left="/photos/jules.jpg" right="/photos/mika.jpg" leftLabel="@jules" rightLabel="@mika"/><Marks className="m2"/><span className="scribble">okay,<br/>who’s coming?</span></div>
+    <section className="greeting"><h1>{hello}{myName?', '+myName:''}.</h1><p>{plans.length?'Here’s what’s coming together.':'Make it out the groupchat.'}</p></section>
+    {loading?<div className="loading"><LoaderCircle className="spin"/>Getting your plans…</div>
+    :featured?<article className="feature-card">
+     <button className="feature-open" onClick={()=>open(featured.id)} aria-label={'Open '+featured.title}><img src={photoFor(featured.kind,featured.id)} alt="" loading="lazy"/></button>
+     <div className="feature-body"><h2>{featured.title}</h2><p className="meta">{when(featured.date)}</p><p className="meta">{featured.going||0} going{featured.maybe?` · ${featured.maybe} still checking`:''}</p></div>
+     {(()=>{const s=sortOut(featured);return s?<div className="sort-out"><Box size={22} strokeWidth={1.7}/><div><strong>{s[0]}</strong><span>{s[1]}</span></div><button onClick={()=>open(featured.id)}>Review plan</button></div>
+      :<div className="sort-out settled"><CheckCircle2 size={22} strokeWidth={1.7}/><div><strong>Everything has a person</strong><span>Date, place and every item are covered</span></div><button onClick={()=>open(featured.id)}>View plan</button></div>})()}
+    </article>
+    :<article className="feature-card empty"><img src="/photos/diner-crew.jpg" alt="" loading="lazy"/><div className="feature-body"><h2>Your next “we should” starts here.</h2><p className="meta">A dinner, a trip, a whole lot of catching up. One link for the plan, the votes, and who’s bringing what.</p></div><span className="note-card">Saved you a seat.</span></article>}
+    {others.length>0&&<section className="row-list"><h2>Also on your list</h2>{others.slice(0,4).map(planRow)}{others.length>4&&<button className="text-button" onClick={plansView}>See all plans <ArrowUpRight size={15}/></button>}</section>}
+    <button className="primary block" onClick={()=>create()}>Start a plan</button>
+    {demoCards}
+   </>
+
+   :where==='plans'?<>
+    <section className="greeting"><h1>Plans</h1><p>Everything you’re setting or showing up to.</p></section>
+    {plans.length>0&&<div className="seg" role="group" aria-label="Filter plans">{[['all','All'],['gathering','Get-togethers'],['trip','Trips']].map(([key,label])=><button className={tab===key?'on':''} aria-pressed={tab===key} key={key} onClick={()=>setTab(key)}>{label}</button>)}</div>}
+    {loading?<div className="loading"><LoaderCircle className="spin"/>Getting your plans…</div>
+    :filtered.length?<div className="card-grid">{filtered.map(x=><button className="plan-card" key={x.id} onClick={()=>open(x.id)}><img src={photoFor(x.kind,x.id)} alt="" loading="lazy"/><span className="card-body"><strong>{x.title}</strong><span className="meta">{when(x.date)}</span><span className="meta">{x.place||'Place to decide'}</span><span className="card-foot"><span>{x.going||0} going</span>{x.made_it?<span className="chip-made">Made it out</span>:(x.open_items||0)>0?<span className="chip-open">{x.open_items} open</span>:null}</span></span></button>)}</div>
+    :<div className="empty-state"><h3>{plans.length?'Nothing here yet.':'No plans yet.'}</h3><p>Start one, then drop the link in the group chat. Friends join without an app or an account.</p></div>}
+    <button className="primary block" onClick={()=>create()}>Start a plan</button>
+    {demoCards}
+   </>
+
+   :<>
+    <div className="plan-photo"><img src={photoFor(p!.kind,p!.id)} alt=""/>{demo?<span className="demo-badge">Demo · changes aren’t saved</span>:p!.made_it?<span className="demo-badge made">Made it out</span>:null}</div>
+    <section className="plan-head">
+     <h1>{p!.title}</h1>
+     <p className="host-line"><span className="mini-avatar">{initials(host?.name||'?')}</span>Hosted by {host?.isMe?'you':host?.name||'the organizer'}</p>
+     <p className="meta-line"><CalendarDays size={20} strokeWidth={1.7}/>{when(p!.date)}</p>
+     <p className="meta-line"><MapPin size={20} strokeWidth={1.7}/>{p!.place||'Place to decide'}</p>
+     <div className="plan-actions"><button className="outline-button brick" onClick={demo?()=>create(p!.kind):share}>{demo?<Plus size={16}/>:<LinkIcon size={16}/>}{demo?'Make a real plan':'Copy invite link'}</button><button className="outline-button" onClick={calendar}><CalendarDays size={16}/>Add to calendar</button></div>
     </section>
-    <section className="plans-section">
-     <div className="section-title"><h2>Your next good time</h2>{plans.length>0&&<button className="text-button" onClick={()=>create()}>New plan <Plus size={16}/></button>}</div>
-     {plans.length>0&&<div className="filters" role="group" aria-label="Filter plans">{[['all','All'],['gathering','Get-togethers'],['trip','Trips']].map(([key,label])=><button className={tab===key?'selected':''} key={key} onClick={()=>setTab(key)}>{label}</button>)}</div>}
-     {loading?<div className="loading"><LoaderCircle className="spin"/>Getting your plans…</div>:filtered.length?<div className="card-grid">{filtered.map((x,i)=><button className="plan-card" key={x.id} onClick={()=>open(x.id)}><BlobPhoto src={photoFor(x.kind,x.id)} tone={i%2?'coral':'purple'}/><div className="card-body"><div className="card-date"><CalendarDays size={14}/>{pretty(x.date)}{x.made_it?<span className="made-chip">MADE IT OUT</span>:null}</div><h3>{x.title}</h3><div className="card-place"><MapPin size={14}/>{x.place||'Place to decide'}</div><div className="card-bottom"><span className="people-count"><Users size={15}/>{x.going||0} in</span><span className="round-arrow"><ArrowUpRight size={18}/></span></div></div></button>)}<button className="new-card" onClick={()=>create()}><span className="plus-ring"><Plus size={24}/></span><strong>Something in mind?</strong><span>Give it a plan.</span></button></div>
-     :<div className="empty-state"><Marks/><div><h3>Your next “we should” starts here.</h3><p>A dinner, a trip, a whole lot of catching up. Make a plan and bring your people into it.</p></div><button className="primary" onClick={()=>create()}>Create your first plan <ArrowUpRight size={16}/></button></div>}
-    </section>
-    <section className="example-section">
-     <div className="section-title"><div><span className="eyebrow">TAKE MO. FOR A SPIN</span><h2>Plan it. Live it. Replay it.</h2></div><span className="example-label">Interactive demos · fictional people</span></div>
-     <div className="demo-grid">{DEMOS.map((d,i)=><button className="demo-card" key={d.plan.id} onClick={()=>open(d.plan.id)}><BlobPhoto src={['/photos/diner-table.jpg','/photos/picnic.jpg','/photos/diner-crew.jpg'][i]} tone={i===1?'coral':'purple'}/><div><span className="eyebrow">{DEMO_COPY[i][0]}</span><h3>{DEMO_COPY[i][1]}</h3><p>{DEMO_COPY[i][2]}</p><span className="demo-link">Try it <ArrowUpRight size={15}/></span></div></button>)}</div>
-    </section>
-    <section className="strip" aria-label="Plan, live, replay">
-     {[['/photos/picnic.jpg','PLAN','Get people aligned and committed.'],['/photos/concert.jpg','LIVE','One current plan while it’s happening.'],['/photos/diner-table.jpg','REPLAY','Keep the memories. Start the next one.']].map(([src,t,s],i)=><figure key={t}><BlobPhoto src={src} tone={i===1?'coral':'purple'}/><figcaption><b>{t}</b>{s}</figcaption></figure>)}
-     <span className="strip-mark">mo<span>.</span></span>
-    </section>
-   </>:<>
-    <div className="detail-heading"><button className="back" onClick={home}><ArrowLeft size={17}/>All plans</button>{demo?<span className="demo-badge">Demo · changes aren’t saved</span>:<span className="saved-label"><CheckCheck size={15}/>Saved · shared plan</span>}</div>
-    <div className="plan-hero">
-     <div><span className="eyebrow">{p!.made_it?'MADE IT OUT':p!.kind==='trip'?'A LITTLE GETAWAY':'A GOOD REASON TO GET TOGETHER'}</span><h1>{p!.title}</h1>
-      <div className="plan-meta"><span><CalendarDays size={17}/>{pretty(p!.date)}{p!.date?' · '+time(p!.date):''}</span><span><MapPin size={17}/>{p!.place||'Place to decide'}</span></div>
-      <p>{p!.note||'The plan starts here. Add the details and invite your people.'}</p>
-      <div className="plan-buttons"><button className="primary" onClick={demo?()=>create(p!.kind):share}>{demo?<Plus size={16}/>:<LinkIcon size={16}/>} {demo?'Make a real plan':'Copy invite link'}</button><button className="outline-button" onClick={calendar}><CalendarDays size={16}/>Add to calendar</button>{detail!.host&&<button className="icon-button bordered" aria-label="Edit plan details" onClick={()=>{setForm({...initial,title:p!.title,kind:p!.kind,place:p!.place,budget:p!.budget,note:p!.note,date:p!.date?new Date(new Date(p!.date).getTime()-new Date(p!.date).getTimezoneOffset()*60000).toISOString().slice(0,16):'',name,inviteUrl:p!.invite_url||''});setModal('edit')}}><Pencil size={17}/></button>}</div>
-     </div>
-     <div className="detail-art"><BlobPhoto src={photoFor(p!.kind,p!.id)} tone={p!.kind==='trip'?'coral':'purple'}/><Marks className="m1"/><span className="art-stamp">{p!.made_it?'made it out.':p!.kind==='trip'?'out of office.':'pull up a chair.'}</span></div>
-    </div>
-    <div className="detail-grid"><div className="detail-main">
-     {(()=>{const S={setter:<SetterPanel key="setter" detail={detail!} link={link} notify={notify}/>,
-      rsvp:<section key="rsvp" className="panel rsvp-panel"><div className="section-title"><h2>We gonna mo?</h2><span className="soft-pill">{going} in · {guests.filter(g=>g.status==='maybe').length} maybe</span></div>
-      <p className="muted">A little commitment goes a long way.</p>
-      {(!mine_||showRSVP)&&<div className="rsvp-fields"><label>Your name<input maxLength={60} value={name} onChange={e=>setName(e.target.value)} placeholder="What should we call you?"/></label><label>A note for the group <small>(optional)</small><input maxLength={300} value={rsvpNote} onChange={e=>setRsvpNote(e.target.value)} placeholder="Dietary needs, timing, anything helpful…"/></label></div>}
-      <div className="rsvp-buttons">{([['in','I’m in',Check],['maybe','Let me check',Clock],['out','Can’t this time',X]] as const).map(([s,label,Icon])=><button key={s} disabled={busy} className={'rsvp-choice choice-'+s+(mine_?.status===s?' chosen':'')} onClick={()=>rsvp(s)}><Icon size={17}/>{label}</button>)}{mine_&&!showRSVP&&<button className="text-button small" onClick={()=>setShowRSVP(true)}>Edit my details</button>}</div>
-      <div className="guest-list">{guests.map((g,i)=><div className="guest" key={i}><span className={'avatar color-'+i%4}>{g.name.slice(0,1).toUpperCase()}</span><div className="guest-info"><strong>{g.name}{g.isMe?' (you)':''}{g.handle&&<em> @{g.handle}</em>}</strong>{g.mo&&<small className="guest-mo">“{g.mo}”</small>}{g.note&&<small>{g.note}</small>}</div><span className={'status '+g.status}>{g.status==='in'?'In':g.status==='maybe'?'Maybe':'Can’t go'}</span></div>)}</div>
-     </section>,
-      decisions:<Decisions key="decisions" detail={detail!} act={act} busy={busy} member={member}/>,
-      bring:<section key="bring" className="panel"><div className="section-title"><h2>Everyone brings something.</h2><ShoppingBag size={20}/></div><p className="muted">Claim a contribution. Save the group another text.</p>{tasks.filter(t=>t.category==='bring').length===0&&<p className="inline-empty">No contributions yet. Add what the group needs below.</p>}{tasks.filter(t=>t.category==='bring').map(t=><TaskRow key={t.id} task={t} host={detail!.host} busy={busy} act={taskAction}/>)}</section>,
-      todo:<section key="todo" className="panel"><div className="section-title"><h2>The little things to sort.</h2><ListTodo size={20}/></div><p className="muted">Give each loose end a person.</p>{tasks.filter(t=>t.category==='todo').length===0&&<p className="inline-empty">Nothing to sort yet. Add a responsibility below.</p>}{tasks.filter(t=>t.category==='todo').map(t=><TaskRow key={t.id} task={t} host={detail!.host} busy={busy} act={taskAction}/>)}
-      <form className="add-item" onSubmit={addItem}><label className="sr-only" htmlFor="item-kind">Item type</label><select id="item-kind" value={addType} onChange={e=>setAddType(e.target.value)}><option value="bring">To bring</option><option value="todo">To sort</option></select><label className="sr-only" htmlFor="item-title">New item</label><input id="item-title" value={newItem} onChange={e=>setNewItem(e.target.value)} placeholder="What else do we need?" maxLength={160} required/><button className="icon-button filled" aria-label="Add item" disabled={busy||!newItem.trim()}><Plus size={19}/></button></form></section>,
-      live:<LivePlan key="live" detail={detail!} act={act} busy={busy}/>,
-      replay:<Replay key="replay" detail={detail!} act={act} busy={busy} canPost={detail!.host||mine_?.status==='in'}/>};
-      // The plan reorders itself around what matters now: replay after it happens, the RSVP first for guests.
-      const order=p!.made_it?['replay','rsvp','live','setter','decisions','bring','todo']:detail!.host?['setter','rsvp','decisions','bring','todo','live','replay']:['rsvp','decisions','bring','todo','live','replay'];
-      return order.filter(k=>detail!.host||k!=='setter').map(k=>S[k as keyof typeof S])})()}
-    </div>
-    <aside className="plan-summary">
-     <section className="summary-card"><span className="eyebrow">A LITTLE CLOSER TO HAPPENING</span><div className="summary-number">{done}<span> / {tasks.length}</span></div><p>things taken care of</p><div className="progress-track"><span style={{width:(tasks.length?done/tasks.length*100:0)+'%'}}/></div><div className="summary-line"><Users size={16}/><span>{going} people in</span></div><div className="summary-line"><ShoppingBag size={16}/><span>{unclaimed.length} {unclaimed.length===1?'item needs':'items need'} a person</span></div><div className="summary-line"><PartyPopper size={16}/><span>{openDecisions} open {openDecisions===1?'decision':'decisions'}</span></div><div className="budget"><span className="eyebrow">THE MONEY PART</span><strong>{p!.budget||'Budget to agree'}</strong><small>Planning info only. No money is collected here.</small></div></section>
-     <section className="yours-card"><span className="eyebrow">YOUR LITTLE PART</span><h3>{mine.length?'You’ve got this.':'Pick your part.'}</h3>{mine.length?mine.map(t=><div key={t.id} className="your-item"><CheckCircle2 size={16}/><span>{t.title}</span></div>):<p>Claim something from the list and help make it happen.</p>}</section>
-     <section className="integration-card"><span className="eyebrow">ALREADY SENT AN INVITE?</span><h3>Keep your invitation. Bring the loose ends here.</h3><p>Add this plan as a Link tile in Apple Invites (or any invite) for votes, the bring-list and responsibilities.</p>{p!.invite_url&&<a className="text-button" href={p!.invite_url} target="_blank" rel="noopener noreferrer">Open original invitation <ArrowUpRight size={14}/></a>}<button className="text-button" onClick={share}>Copy coordination link <Copy size={14}/></button><small>RSVPs are separate. No automatic Apple sync.</small></section>
-     <p className="access-note">Anyone with this plan’s link can see it and respond. Share it with your people, not publicly.</p>
-    </aside></div>
+    <div className="seg plan-tabs" role="tablist" aria-label="Plan sections">{([['overview','Overview'],['people','People'],['list',listLabel]] as const).map(([k,label])=><button key={k} role="tab" aria-selected={ptab===k} className={ptab===k?'on':''} onClick={()=>setPtab(k)}>{label}{k==='list'&&unclaimed.length>0?<span className="tab-count">{unclaimed.length}</span>:null}</button>)}</div>
+
+    {ptab==='overview'&&<div className="stack">
+     {p!.note&&<p className="plan-note">{p!.note}</p>}
+     <section className="status-card"><div className="status-top"><div><span className="eyebrow">A LITTLE CLOSER TO HAPPENING</span><div className="status-number">{done}<span> / {tasks.length} taken care of</span></div></div></div><div className="progress-track"><span style={{width:(tasks.length?done/tasks.length*100:0)+'%'}}/></div>
+      <div className="status-grid"><button onClick={()=>setPtab('people')}><strong>{going}</strong><span>going</span></button><button onClick={()=>setPtab('list')}><strong>{unclaimed.length}</strong><span>{unclaimed.length===1?'needs a person':'need a person'}</span></button><div><strong>{openDecisions}</strong><span>open {openDecisions===1?'vote':'votes'}</span></div></div>
+      <div className="budget"><span className="eyebrow">THE MONEY PART</span><strong>{p!.budget||'Budget to agree'}</strong><small>Planning info only. No money is collected here.</small></div></section>
+     {(()=>{const S={setter:detail!.host?<SetterPanel key="setter" detail={detail!} link={link} notify={notify}/>:null,decisions:<Decisions key="decisions" detail={detail!} act={act} busy={busy} member={member}/>,live:<LivePlan key="live" detail={detail!} act={act} busy={busy}/>,replay:<Replay key="replay" detail={detail!} act={act} busy={busy} canPost={detail!.host||mine_?.status==='in'}/>};
+      // The plan reorders itself around what matters now: the replay leads once it has happened.
+      return (p!.made_it?['replay','live','setter','decisions']:['setter','decisions','live','replay']).map(k=>S[k as keyof typeof S])})()}
+     <section className="soft-card"><span className="eyebrow">ALREADY SENT AN INVITE?</span><h3>Keep your invitation. Bring the loose ends here.</h3><p>Add this plan as a Link tile in Apple Invites (or any invite) for votes, the bring list and responsibilities.</p>{p!.invite_url&&<a className="text-button" href={p!.invite_url} target="_blank" rel="noopener noreferrer">Open original invitation <ArrowUpRight size={14}/></a>}<button className="text-button" onClick={share}>Copy coordination link <Copy size={14}/></button><small>RSVPs are separate. No automatic Apple sync.</small></section>
+     <p className="access-note"><Lock size={12}/>Anyone with this plan’s link can see it and respond. Share it with your people, not publicly.</p>
+    </div>}
+
+    {ptab==='people'&&<section className="stack">
+     <div className="section-title"><h2>We gonna mo?</h2><span className="soft-pill">{going} in · {guests.filter(g=>g.status==='maybe').length} maybe</span></div>
+     {(!mine_||showRSVP)&&<div className="rsvp-fields"><label>Your name<input maxLength={60} value={name} onChange={e=>setName(e.target.value)} placeholder="What should we call you?"/></label><label>A note for the group <small>(optional)</small><input maxLength={300} value={rsvpNote} onChange={e=>setRsvpNote(e.target.value)} placeholder="Dietary needs, timing, anything helpful…"/></label></div>}
+     <div className="rsvp-buttons">{([['in','I’m in',Check],['maybe','Let me check',Clock],['out','Can’t this time',X]] as const).map(([s,label,Icon])=><button key={s} disabled={busy} aria-pressed={mine_?.status===s} className={'rsvp-choice choice-'+s+(mine_?.status===s?' chosen':'')} onClick={()=>rsvp(s)}><Icon size={17}/>{label}</button>)}{mine_&&!showRSVP&&<button className="text-button small" onClick={()=>setShowRSVP(true)}>Edit my details</button>}</div>
+     <div className="guest-list">{guests.map((g,i)=><div className="guest" key={i}><span className={'avatar tone-'+i%4}>{initials(g.name)}</span><div className="guest-info"><strong>{g.name}{g.isMe?' (you)':''}{i===0?<em> · host</em>:null}</strong>{g.handle&&<small>@{g.handle}</small>}{g.mo&&<small className="guest-mo">“{g.mo}”</small>}{g.note&&<small>{g.note}</small>}</div><span className={'status '+g.status}>{g.status==='in'?'Going':g.status==='maybe'?'Checking':'Can’t go'}</span></div>)}</div>
+    </section>}
+
+    {ptab==='list'&&<section className="stack">
+     <p className="list-lead">{bringItems.length?'Pick something you can bring.':'Give each loose end a person.'}</p>
+     {tasks.length===0&&<p className="inline-empty">Nothing on the list yet. Add what the group needs below.</p>}
+     {bringItems.length>0&&<div className="item-list">{bringItems.map(t=><TaskRow key={t.id} task={t} host={detail!.host} busy={busy} act={taskAction}/>)}</div>}
+     {todoItems.length>0&&<><h3 className="list-sub">{bringItems.length?'Loose ends':'Who’s handling what'}</h3><div className="item-list">{todoItems.map(t=><TaskRow key={t.id} task={t} host={detail!.host} busy={busy} act={taskAction}/>)}</div></>}
+     <form className="add-item" onSubmit={addItem}><label className="sr-only" htmlFor="item-kind">Item type</label><select id="item-kind" value={addType} onChange={e=>setAddType(e.target.value)}><option value="bring">To bring</option><option value="todo">To sort</option></select><label className="sr-only" htmlFor="item-title">New item</label><input id="item-title" value={newItem} onChange={e=>setNewItem(e.target.value)} placeholder="What else do we need?" maxLength={160} required/><button className="icon-button filled" aria-label="Add item" disabled={busy||!newItem.trim()}><Plus size={19}/></button></form>
+     <p className="fine center">You can change your contribution anytime.</p>
+     {mine.length>0&&<p className="fine center">You’ve got: {mine.map(t=>t.title).join(', ')}</p>}
+     <button className="outline-button brick block" onClick={()=>{setPtab('people');window.scrollTo(0,0)}}>{mine_?'View my RSVP':'RSVP to this plan'}</button>
+    </section>}
    </>}
-   <div className="bottom-note"><Heart size={14}/>For the friends who make things happen.</div>
+   <footer className="foot"><Wordmark/><span>Make it out the groupchat.</span><button onClick={()=>setModal('help')}>Free · What’s included?</button></footer>
    </main>
-   <footer><span className="footer-logo">mo<span>.</span></span><span>Make it out the group chat.</span><button onClick={()=>setModal('help')}>Free preview · What’s included?</button></footer>
   </div>
   {toast&&<div className="toast" role="status"><CheckCircle2 size={18}/>{toast}</div>}
   {modal&&<div className="modal-backdrop" onClick={e=>{if(e.target===e.currentTarget)setModal(null)}}><section className="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title"><button className="modal-close icon-button" aria-label="Close dialog" onClick={()=>setModal(null)}><X size={21}/></button>
-   {modal==='help'?<><span className="say-it">say it: em-oh</span><h2 id="modal-title">Less chasing.<br/>More showing up.</h2><p>mo. keeps the practical parts of getting together in one shared plan.</p>
-    <ol className="help-steps"><li><b>Start with the idea.</b><span>A dinner, a trip, or whatever you’ve been talking about.</span></li><li><b>Bring your people.</b><span>Drop one link in the group chat. Collect RSVPs and notes.</span></li><li><b>Decide together.</b><span>Vote on dates and places. The organizer locks in the winner.</span></li><li><b>Give everyone a part.</b><span>Claim what to bring and who handles what.</span></li><li><b>Make it out — then replay it.</b><span>Shout-outs, memories, and your mo. history.</span></li></ol>
-    <div className="help-note">Free. Real plans are saved online; demos are temporary. Group-chat updates are drafted from the plan — you copy and send them. ChatGPT tools can turn a conversation into a plan once the mo. plugin is connected. Automatic reminders, payments, bookings and photo uploads aren’t connected yet. Apple Invites can link here; RSVPs don’t sync. Anyone with a plan’s link can see it, so share links with your people.</div>
-    <button className="primary" onClick={()=>create()}>Start a plan <ArrowUpRight size={17}/></button></>
+   {modal==='help'?<><span className="say-it">say it: em-oh</span><h2 id="modal-title">Less chasing.<br/>More showing up.</h2><p>m.o keeps the practical parts of getting together in one shared plan.</p>
+    <ol className="help-steps"><li><b>Start with the idea.</b><span>A dinner, a trip, or whatever you’ve been talking about.</span></li><li><b>Bring your people.</b><span>Drop one link in the group chat. Collect RSVPs and notes.</span></li><li><b>Decide together.</b><span>Vote on dates and places. The organizer locks in the winner.</span></li><li><b>Give everyone a part.</b><span>Claim what to bring and who handles what.</span></li><li><b>Make it out — then replay it.</b><span>Shout-outs, memories, and your m.o history.</span></li></ol>
+    <div className="help-note">Free. Real plans are saved online; demos are temporary. Group-chat updates are drafted from the plan — you copy and send them. ChatGPT tools can turn a conversation into a plan once the m.o plugin is connected. Automatic reminders, payments, bookings and photo uploads aren’t connected yet. Apple Invites can link here; RSVPs don’t sync. Anyone with a plan’s link can see it, so share links with your people.</div>
+    <button className="primary block" onClick={()=>create()}>Start a plan</button></>
    :<><span className="eyebrow">{modal==='edit'?'KEEP EVERYONE IN THE LOOP':'FROM “WE SHOULD” TO “WE ARE”'}</span><h2 id="modal-title">{modal==='edit'?'A change of plans?':'What are we doing?'}</h2><p className="muted">A few details now. Figure the rest out together — you can put dates and places to a vote.</p>
-    <form onSubmit={submit} className="plan-form">{modal==='create'&&<div className="type-selector"><button type="button" className={form.kind==='gathering'?'chosen':''} onClick={()=>setForm({...form,kind:'gathering',items:'The main dish\nSomething sweet\nDrinks & ice'})}><ShoppingBag size={18}/>Get-together</button><button type="button" className={form.kind==='trip'?'chosen':''} onClick={()=>setForm({...form,kind:'trip',items:'Agree the accommodation budget\nChoose the accommodation\nOrganize the ride'})}><MapPin size={18}/>Trip</button></div>}
-     <label>Give it a name<input autoComplete="off" required maxLength={100} value={form.title} onChange={e=>setForm({...form,title:e.target.value})} placeholder="Friday dinner, Atlanta weekend, you name it…"/></label>
+    <form onSubmit={submit} className="plan-form">{modal==='create'&&<div className="type-selector"><button type="button" className={form.kind==='gathering'?'chosen':''} onClick={()=>setForm({...form,kind:'gathering',items:'The main dish\nSomething sweet\nDrinks & ice'})}><Soup size={18}/>Get-together</button><button type="button" className={form.kind==='trip'?'chosen':''} onClick={()=>setForm({...form,kind:'trip',items:'Agree the accommodation budget\nChoose the accommodation\nOrganize the ride'})}><MapPin size={18}/>Trip</button></div>}
+     <label>Give it a name<input autoComplete="off" required maxLength={100} value={form.title} onChange={e=>setForm({...form,title:e.target.value})} placeholder="Friendsgiving, Atlanta weekend, you name it…"/></label>
      {modal==='create'&&<label>Your name<input required maxLength={60} autoComplete="given-name" value={form.name} onChange={e=>setForm({...form,name:e.target.value})} placeholder="The person making this happen"/></label>}
      <div className="form-row"><label>When <small>(or vote later)</small><input type="datetime-local" value={form.date} onChange={e=>setForm({...form,date:e.target.value})}/></label><label>Where<input maxLength={160} value={form.place} onChange={e=>setForm({...form,place:e.target.value})} placeholder="A place, or vote later"/></label></div>
      <label>Budget or contribution<input maxLength={60} value={form.budget} onChange={e=>setForm({...form,budget:e.target.value})} placeholder="e.g. $40 each, or bring a dish"/></label>
@@ -152,4 +186,17 @@ export default function Home(){
   </section></div>}
  </div>
 }
-function TaskRow({task:t,host,busy,act}:{task:Task;host:boolean;busy:boolean;act:(t:Task,a:string)=>void}){return <div className={'task-row '+(t.done?'task-done':'')}><button className={'task-check '+(t.done?'checked':'')} disabled={busy||(!t.isMine&&!host)} onClick={()=>act(t,'done')} aria-label={(t.done?'Mark incomplete: ':'Mark complete: ')+t.title}>{t.done?<Check size={14}/>:null}</button><div className="task-info"><strong>{t.title}</strong><span>{t.claimed_name?`${t.claimed_name}${t.isMine?' (you)':''}`:'Still up for grabs'}</span></div>{!t.claimed_name?<button className="claim-button" disabled={busy} onClick={()=>act(t,'claim')}>I’ve got it <Plus size={13}/></button>:(t.isMine||host)?<button className="release-button" disabled={busy} onClick={()=>act(t,'release')}>Release</button>:<span className="covered"><Check size={13}/>Covered</span>}</div>}
+// One row of the bring list. Claiming records only the current person; everyone else sees who has it.
+function TaskRow({task:t,host,busy,act}:{task:Task;host:boolean;busy:boolean;act:(t:Task,a:string)=>void}){
+ const bring=t.category==='bring',who=t.isMine?'You':t.claimed_name;
+ const verb=t.done?(bring?'brought this':'handled this'):(bring?(t.isMine?'are bringing this':'is bringing this'):(t.isMine?'are on it':'is on it'));
+ return <div className={'item-row'+(t.done?' done':'')}>
+  <span className="item-icon">{itemIcon(t.title,t.category)}</span>
+  <div className="item-info"><strong>{t.title}</strong>
+   {t.claimed_name?<span className="by"><span className="mini-avatar">{initials(t.claimed_name)}</span>{t.isMine&&!t.done?(bring?'You’re bringing this':'You’re on it'):`${who} ${verb}`}</span>:<span>Still available</span>}
+   {t.claimed_name&&(t.isMine||host)&&<span className="item-tools"><button className="text-button small" disabled={busy} onClick={()=>act(t,'done')}>{t.done?'Not done yet':bring?'Mark brought':'Mark done'}</button><button className="text-button small quiet" disabled={busy} onClick={()=>act(t,'release')}>{t.isMine?'Let it go':'Release'}</button></span>}
+  </div>
+  {!t.claimed_name?<button className="claim-button" disabled={busy} onClick={()=>act(t,'claim')}>{bring?'I can bring this':'I’ll handle this'}</button>
+  :<span className={'check-badge'+(t.done?' done':'')} role="img" aria-label={t.done?'Done':'Covered'}><Check size={16} strokeWidth={3}/></span>}
+ </div>
+}

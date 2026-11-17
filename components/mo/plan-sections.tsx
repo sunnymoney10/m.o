@@ -26,7 +26,7 @@ export function SetterPanel({detail,link,notify}:{detail:Detail;link:string;noti
    <div className="bubble" aria-live="polite">{text}</div>
    <button className="primary" onClick={copy}><Copy size={16}/>Copy for the group chat</button>
   </div>}
-  <p className="setter-caption">Drafted from what’s saved in this plan — not an AI guess. You send it; mo. never messages anyone for you.</p>
+  <p className="setter-caption">Drafted from what’s saved in this plan — not an AI guess. You send it; m.o never messages anyone for you.</p>
  </section>
 }
 
@@ -105,7 +105,7 @@ export function Replay({detail,act,busy,canPost}:{detail:Detail;act:Act;busy:boo
  if(!made&&!past&&!detail.memories.length)return <section className="panel replay-panel quiet"><div className="section-title"><h2>Made it out.</h2><PartyPopper size={20}/></div><p className="muted">After the plan happens, this turns into your group’s replay — the photos, the stories, and a shout-out for whoever made it happen.</p></section>;
  return <section className={'panel replay-panel'+(made?' made':'')}>
   <div className="section-title"><h2>{made?'We made it out.':'How was it?'}</h2><PartyPopper size={20}/></div>
-  {detail.host&&<div className="made-row"><p className="muted">{made?'This plan is in everyone’s mo. history.':'Did it happen? Mark it so it lands in everyone’s history.'}</p><button className={made?'text-button':'primary'} disabled={busy} onClick={()=>act('','PATCH',{madeIt:!made},d=>{d.plan.made_it=made?0:1},made?'Unmarked.':'Made it out. 🎉')}>{made?'Undo':'We made it out'}</button></div>}
+  {detail.host&&<div className="made-row"><p className="muted">{made?'This plan is in everyone’s m.o history.':'Did it happen? Mark it so it lands in everyone’s history.'}</p><button className={made?'text-button':'primary'} disabled={busy} onClick={()=>act('','PATCH',{madeIt:!made},d=>{d.plan.made_it=made?0:1},made?'Unmarked.':'Made it out. 🎉')}>{made?'Undo':'We made it out'}</button></div>}
   {canPost&&<form className="memory-form" onSubmit={post}>
    <div className="type-selector small"><button type="button" className={kind==='memory'?'chosen':''} onClick={()=>setKind('memory')}><Camera size={15}/>A memory</button><button type="button" className={kind==='shoutout'?'chosen':''} onClick={()=>setKind('shoutout')}><PartyPopper size={15}/>A shout-out</button></div>
    <textarea rows={2} required maxLength={500} value={text} onChange={e=>setText(e.target.value)} placeholder={kind==='shoutout'?'Who made it happen? Give them their flowers.':'The moment you’ll still be talking about.'}/>
@@ -113,7 +113,7 @@ export function Replay({detail,act,busy,canPost}:{detail:Detail;act:Act;busy:boo
    <div className="form-bottom"><small className="hint">Visible to anyone with this plan’s link.</small><button className="primary" disabled={busy||!text.trim()}>Post</button></div>
   </form>}
   <div className="memory-grid">{detail.memories.map((m:Memory,i)=><article key={m.id} className={'memory '+m.kind+' tone-'+(i%3)}>
-   {m.photo_url&&/\.(jpe?g|png|webp|gif|avif)(\?|$)/i.test(m.photo_url)?<img className="blob-photo" src={m.photo_url} alt={'Photo from '+m.name} loading="lazy" referrerPolicy="no-referrer"/>:m.photo_url?<a className="album-link" href={m.photo_url} target="_blank" rel="noopener noreferrer"><Camera size={15}/>Open the photos<ExternalLink size={12}/></a>:null}
+   {m.photo_url&&/\.(jpe?g|png|webp|gif|avif)(\?|$)/i.test(m.photo_url)?<img className="memory-photo" src={m.photo_url} alt={'Photo from '+m.name} loading="lazy" referrerPolicy="no-referrer"/>:m.photo_url?<a className="album-link" href={m.photo_url} target="_blank" rel="noopener noreferrer"><Camera size={15}/>Open the photos<ExternalLink size={12}/></a>:null}
    {m.kind==='shoutout'&&<span className="shout-tag">SHOUT-OUT</span>}
    <p>{m.body}</p>
    <footer><span>{m.name}{m.isMine?' (you)':''}</span>{(m.isMine||detail.host)&&<button className="icon-button" aria-label="Remove" disabled={busy} onClick={()=>act('memories/'+m.id,'DELETE',null,d=>{d.memories=d.memories.filter(x=>x.id!==m.id)})}><Trash2 size={13}/></button>}</footer>
