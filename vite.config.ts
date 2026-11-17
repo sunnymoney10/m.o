@@ -45,6 +45,7 @@ export default defineConfig(async ({ command }) => {
 
   return {
     server: {
+      allowedHosts: ["terminal.local"],
       ...(managedLinux
         ? { host: "0.0.0.0", allowedHosts: ["terminal.local"] }
         : {}),

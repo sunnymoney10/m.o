@@ -14,13 +14,14 @@ export default function HostNavigation({active,onChange}:{active:string;onChange
  const [expanded,setExpanded]=useState(false);
  useEffect(()=>{if(tools.some(([id])=>id===active))setExpanded(true)},[active]);
  const buttons=(items:typeof planning)=>items.map(([id,label,Icon])=><button key={id} className={active===id?'active':''} aria-current={active===id?'page':undefined} onClick={()=>onChange(id)}><Icon size={18} aria-hidden="true"/><span>{label}</span></button>);
- return <aside className="host-nav"><div className="host-nav-brand"><a className="mo" href="/" aria-label="m.o home">m<span>.</span>o</a><span className="host-brand-caption">Make it out.</span></div>
+ return <aside className="host-nav"><div className="host-nav-brand"><a className="mo" href="/" aria-label="m.o home">m<span>.</span>o</a><span className="host-brand-caption">GOOD COMPANY</span></div>
   <nav className="host-desktop-nav" aria-label="Host desk sections">
    <div className="host-nav-group"><p className="host-nav-label">YOUR EVENT</p>{buttons(planning)}</div>
    <div className="host-nav-group"><p className="host-nav-label">GET IT TOGETHER</p>{buttons(coordination)}</div>
    <div className="host-nav-group"><button className="host-more-toggle" aria-expanded={expanded} aria-controls="host-extra-tools" onClick={()=>setExpanded(!expanded)}><MoreHorizontal size={18} aria-hidden="true"/><span>More tools</span><ChevronDown className={expanded?'rotated':''} size={14} aria-hidden="true"/></button><div id="host-extra-tools" hidden={!expanded}>{buttons(tools)}</div></div>
   </nav>
   <div className="host-mobile-nav"><label htmlFor="host-section">Workspace</label><select id="host-section" value={active} onChange={e=>onChange(e.target.value)}>{mobileGroups.map(group=><optgroup key={group.label} label={group.label}>{group.items.map(([id,label])=><option key={id} value={id}>{label}</option>)}</optgroup>)}</select></div>
+  <nav className="host-quick-nav" aria-label="Quick event navigation">{buttons([planning[0],planning[1],planning[2]])}</nav>
   <div className="nav-bottom"><button className={active==='Event details'?'active':''} aria-current={active==='Event details'?'page':undefined} onClick={()=>onChange('Event details')}><Settings2 size={18} aria-hidden="true"/><span>Event details</span></button><p><LockKeyhole size={13} aria-hidden="true"/>Private host workspace</p></div>
  </aside>;
 }
