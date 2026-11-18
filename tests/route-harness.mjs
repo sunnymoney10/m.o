@@ -12,6 +12,7 @@ globalThis.fetch=async (url,options={})=>{if(String(url).startsWith('http://127.
 await import('./api.mjs');
 await import('./features.mjs');
 await import('./friendsgiving.mjs');
+await import('./host-noted.mjs');
 console.log('Actual route handlers verified against SQLite with separate guest sessions.');
 
 const assert=(await import('node:assert/strict')).default;

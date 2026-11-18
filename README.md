@@ -11,6 +11,7 @@ The setter is the friend who makes an outing happen. m.o gives that person a sha
 - Create and edit a shared trip or get-together.
 - RSVP with the current participant’s name and optional note.
 - Guest list: the organizer adds the names they invited. A guest opening the link taps their name (or “I’m not on the list”), so the organizer sees who hasn’t replied. Someone who answered on another phone or browser can tap their name to continue there; their claims move with them. The organizer’s spot can’t be taken, and the organizer can remove anyone else.
+- Friends who never open the link: the host records what someone told them by text or in person (their answer, extra guests, dietary needs, staying over) and notes who said they’d bring an item. These are labelled “noted by the host, not confirmed” everywhere. That person sees a one-tap “Is that right?” when they do open the link. The host can copy a personal check-in message for anyone (m.o never sends it), and a host-only “Recent updates” list shows what changed, when, and whether the person did it themselves or the host noted it.
 - Extra guests: a guest can ask to bring up to four people; they count in the headcount only after the organizer approves.
 - Dietary needs and sleepover requests are visible only to the organizer and that guest. The address, arrival and house notes, and the itinerary are shared with the organizer and people who answered in or checking.
 - Claim, release, add and complete contributions and responsibilities.
@@ -64,6 +65,7 @@ node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1
 node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0003_overrated_molly_hayes.sql
 node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0004_ordinary_next_avengers.sql
 node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0005_colorful_blacklash.sql
+node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0006_overjoyed_synch.sql
 npm run dev
 ```
 
@@ -75,7 +77,7 @@ npm test
 npm run build
 ```
 
-With `npm run dev` running, `npm run journeys` replays the Friendsgiving phone journeys (a host; guests picking names, RSVPing with an extra guest, claiming, switching browsers and cancelling) using the preinstalled Playwright. Pass a folder to keep screenshots: `npm run journeys -- ./shots`.
+With `npm run dev` running, `npm run journeys` replays the Friendsgiving phone journeys (a host; guests picking names, RSVPing with an extra guest, claiming, switching browsers and cancelling) using the preinstalled Playwright. Pass a folder to keep screenshots: `npm run journeys -- ./shots`. `npm run journeys:quiet` replays the host recording answers for friends who never open the link, then one of them confirming later.
 
 GitHub Actions runs these checks on pushes to main and pull requests. No repository secrets are needed for these validation checks. No automatic deployment credentials are included.
 

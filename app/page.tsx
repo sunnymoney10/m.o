@@ -2,9 +2,10 @@
 import {useEffect,useState} from 'react';
 import {ArrowUpRight,ArrowLeft,Plus,CalendarDays,MapPin,Check,Link as LinkIcon,CheckCircle2,X,ChevronRight,LoaderCircle,HelpCircle,Pencil,House,UsersRound,Box,Soup,CakeSlice,CupSoda,Snowflake,Music,Car,BedDouble,Wallet,Utensils,ClipboardCheck,Salad,Wine,Ticket,Copy,Lock} from 'lucide-react';
 import type {Plan,Task,Guest,Detail,Me,Profile} from '@/lib/types';
+import {ago} from '@/lib/types';
 import {Scene,Face,sceneFor} from '@/components/mo/art';
 import {SetterPanel,Decisions,LivePlan,Replay} from '@/components/mo/plan-sections';
-import {PeopleTab} from '@/components/mo/people';
+import {PeopleTab,NotedBanner} from '@/components/mo/people';
 import {ProfileView} from '@/components/mo/profile';
 import {Wordmark} from '@/components/mo/brand';
 
@@ -58,7 +59,10 @@ export default function Home(){
  function profile(){setDetail(null);setView('me');setError('');window.history.pushState({},'','/?view=me');loadMe();window.scrollTo(0,0)}
  function create(kind='gathering'){setForm({...initial,kind,name:me?.profile?.name||localStorage.getItem('mo-name')||'',items:kind==='trip'?'Agree the accommodation budget\nChoose the accommodation\nOrganize the ride':'The main dish\nSomething sweet\nDrinks & ice'});setModal('create')}
  async function submit(e:React.FormEvent){e.preventDefault();setBusy(true);setError('');try{if(modal==='edit'&&detail){if(demo)setDetail({...detail,details:form.details,plan:{...detail.plan,title:form.title,place:form.place,budget:form.budget,note:form.note,date:form.date?new Date(form.date).toISOString():''}});else{await api('plan/'+detail.plan.id,'PATCH',{title:form.title,place:form.place,budget:form.budget,note:form.note,details:form.details,inviteUrl:form.inviteUrl,date:form.date?new Date(form.date).toISOString():''});await open(detail.plan.id,false)}}else{const d=await api('plans','POST',{...form,date:form.date?new Date(form.date).toISOString():'',tasks:form.items.split('\n').filter(t=>t.trim()).map(title=>({title,category:form.kind==='trip'?'todo':'bring'}))});localStorage.setItem('mo-name',form.name);await open(d.id);list()}setModal(null);notify(modal==='edit'?'Plan updated. Everyone’s on the same page.':'You started something. Invite your people.')}catch(e:any){setError(e.message)}finally{setBusy(false)}}
- async function taskAction(t:Task,action:string){if(busy)return;setBusy(true);try{if(demo){setDetail({...detail!,tasks:detail!.tasks.map(x=>x.id!==t.id?x:action==='claim'?{...x,claimed_name:name||'You',isMine:true}:action==='release'?{...x,claimed_name:null,isMine:false,done:0}:{...x,done:x.done?0:1})})}else{await api(`plan/${detail!.plan.id}/tasks/${t.id}`,'PATCH',{action});await open(detail!.plan.id,false)}notify(action==='claim'?`You’re bringing ${t.title}. Thank you.`:action==='release'?`${t.title} is open again.`:t.done?`${t.title} marked not done.`:`${t.title} is done.`)}catch(e:any){notify(e.message)}finally{setBusy(false)}}
+ async function taskAction(t:Task,action:string,extra:Record<string,string>={}){if(busy)return;setBusy(true);const person=detail!.guests.find(g=>g.id===extra.guestId);
+  try{if(demo){setDetail({...detail!,tasks:detail!.tasks.map(x=>x.id!==t.id?x:action==='claim'?{...x,claimed_name:name||'You',isMine:true,claim_source:''}:action==='assign'?{...x,claimed_name:person?.name||'Someone',isMine:!!person?.isMe,claim_source:person?.isMe?'':'host'}:action==='confirm'?{...x,claim_source:''}:action==='release'?{...x,claimed_name:null,isMine:false,done:0,claim_source:''}:{...x,done:x.done?0:1})})}
+  else{await api(`plan/${detail!.plan.id}/tasks/${t.id}`,'PATCH',{action,...extra});await open(detail!.plan.id,false)}
+  notify(action==='claim'?`You’re bringing ${t.title}. Thank you.`:action==='assign'?(person?.isMe?`You’re bringing ${t.title}.`:`Noted: ${person?.name||'They'} said they’d bring ${t.title}.`):action==='confirm'?`Confirmed. You’re bringing ${t.title}.`:action==='release'?`${t.title} is open again.`:t.done?`${t.title} marked not done.`:`${t.title} is done.`)}catch(e:any){notify(e.message)}finally{setBusy(false)}}
  async function addItem(e:React.FormEvent){e.preventDefault();if(!newItem.trim())return;setBusy(true);try{if(demo)setDetail({...detail!,tasks:[...detail!.tasks,{id:crypto.randomUUID(),title:newItem.trim(),category:addType,claimed_name:null,isMine:false,done:0}]});else{await api(`plan/${detail!.plan.id}/tasks`,'POST',{title:newItem,category:addType});await open(detail!.plan.id,false)}setNewItem('');notify('Added to the plan.')}catch(e:any){notify(e.message)}finally{setBusy(false)}}
  async function act(path:string,method:string,body:unknown,demoFn:(d:Detail)=>void,message?:string){if(!detail||busy)return false;setBusy(true);try{if(demo){const d=structuredClone(detail);demoFn(d);setDetail(d)}else{await api(`plan/${detail.plan.id}${path?'/'+path:''}`,method,body);await open(detail.plan.id,false)}if(message)notify(message);return true}catch(e:any){notify(e.message);return false}finally{setBusy(false)}}
  async function saveProfile(p:Profile){try{await api('me','PUT',p);localStorage.setItem('mo-name',p.name);await loadMe();notify('That’s your m.o.');return true}catch(e:any){notify(e.message);return false}}
@@ -136,6 +140,7 @@ export default function Home(){
      <div className="plan-actions"><button className="outline-button brick" onClick={demo?()=>create(p!.kind):share}>{demo?<Plus size={16}/>:<LinkIcon size={16}/>}{demo?'Make a real plan':'Copy invite link'}</button><button className="outline-button" onClick={calendar}><CalendarDays size={16}/>Add to calendar</button></div>
     </section>
     {ptab!=='people'&&!answered&&!detail!.host&&<section className="rsvp-prompt"><div><strong>{mine_?`Hi ${mine_.name}. Can you make it?`:'You’re invited.'}</strong><span>{detail!.hidden?'RSVP to get the address and arrival details.':'Say if you’re in, then pick something to bring.'}</span></div><button className="primary" onClick={()=>{setPtab('people');window.scrollTo(0,0)}}>RSVP</button></section>}
+    <NotedBanner detail={detail!} act={act} busy={busy} onChange={()=>{setPtab('people');window.scrollTo(0,0)}}/>
     <div className="seg plan-tabs" role="tablist" aria-label="Plan sections">{([['overview','Overview'],['people','People'],['list',listLabel]] as const).map(([k,label])=><button key={k} role="tab" aria-selected={ptab===k} className={ptab===k?'on':''} onClick={()=>setPtab(k)}>{label}{k==='list'&&unclaimed.length>0?<span className="tab-count">{unclaimed.length}</span>:null}</button>)}</div>
 
     {ptab==='overview'&&<div className="stack">
@@ -145,13 +150,15 @@ export default function Home(){
       <div className="status-grid"><button onClick={()=>setPtab('people')}><strong>{checking}</strong><span>checking</span></button><button onClick={()=>setPtab('people')}><strong>{noReply}</strong><span>no reply yet</span></button><button onClick={()=>setPtab('people')}><strong>{guests.filter(g=>g.status==='out').length}</strong><span>can’t go</span></button></div>
       <button className="status-items" onClick={()=>setPtab('list')}><span><strong>{covered} of {tasks.length}</strong> {listLabel.toLowerCase()} items covered</span><span className="progress-track"><span style={{width:(tasks.length?covered/tasks.length*100:0)+'%'}}/></span>{unclaimed.length>0&&<small>Still needed: {unclaimed.slice(0,4).map(t=>t.title).join(', ')}{unclaimed.length>4?` +${unclaimed.length-4} more`:''}</small>}</button>
       {p!.budget&&<div className="budget"><span className="eyebrow">THE MONEY PART</span><strong>{p!.budget}</strong><small>Planning info only. No money is collected here.</small></div>}</section>
-     {detail!.host&&(()=>{const requests=guests.filter(g=>g.extra_status==='requested'),diets=guests.filter(g=>g.dietary&&g.status!=='out'),staying=guests.filter(g=>g.staying&&g.status!=='out');
-      return (requests.length||diets.length||staying.length||noReply)?<section className="soft-card host-notes"><span className="eyebrow">ONLY YOU SEE THIS</span>
+     {detail!.host&&(()=>{const requests=guests.filter(g=>g.extra_status==='requested'),unconfirmed=guests.filter(g=>!g.isHost&&g.source==='host'),notedItems=tasks.filter(t=>t.claim_source==='host'),diets=guests.filter(g=>g.dietary&&g.status!=='out'),staying=guests.filter(g=>g.staying&&g.status!=='out');
+      return (requests.length||diets.length||staying.length||noReply||unconfirmed.length||notedItems.length)?<section className="soft-card host-notes"><span className="eyebrow">ONLY YOU SEE THIS</span>
        {requests.length>0&&<button className="host-line-item" onClick={()=>setPtab('people')}><strong>{requests.length} extra-guest {requests.length===1?'request':'requests'}</strong><span>{requests.map(g=>`${g.name} +${g.extra_count}`).join(', ')} · Review</span></button>}
+       {(unconfirmed.length>0||notedItems.length>0)&&<button className="host-line-item" onClick={()=>setPtab('people')}><strong>{unconfirmed.length+notedItems.length} noted by you, not confirmed yet</strong><span>{[...unconfirmed.map(g=>`${g.name}: ${g.status==='in'?'going':g.status==='maybe'?'checking':'can’t make it'}`),...notedItems.map(t=>`${t.claimed_name}: ${t.title}`)].join(' · ')} · Copy check-ins from People</span></button>}
        {noReply>0&&<button className="host-line-item" onClick={()=>setPtab('people')}><strong>{noReply} haven’t replied</strong><span>{guests.filter(g=>g.status==='invited').map(g=>g.name).join(', ')}</span></button>}
        {diets.length>0&&<div className="host-line-item"><strong>Dietary needs</strong><span>{diets.map(g=>`${g.name}: ${g.dietary}`).join(' · ')}</span></div>}
        {staying.length>0&&<div className="host-line-item"><strong>Staying over ({staying.length})</strong><span>{staying.map(g=>g.name).join(', ')}</span></div>}
       </section>:null})()}
+     {detail!.host&&!!detail!.activity?.length&&<section className="soft-card activity"><span className="eyebrow">RECENT UPDATES</span><ul>{detail!.activity.slice(0,8).map((a,i)=><li key={i}><span className={'who-dot '+(a.byHost?'noted':'confirmed')} aria-hidden="true"/><span>{a.text}</span><time dateTime={a.at}>{ago(a.at)}</time></li>)}</ul><small>Filled dot: someone did it themselves. Outlined dot: you made or noted the change.</small></section>}
      {(()=>{const S={setter:detail!.host?<SetterPanel key="setter" detail={detail!} link={link} notify={notify}/>:null,decisions:detail!.host||detail!.polls.length?<Decisions key="decisions" detail={detail!} act={act} busy={busy} member={member}/>:null,live:<LivePlan key="live" detail={detail!} act={act} busy={busy}/>,replay:!detail!.host&&!p!.made_it&&!detail!.memories.length?null:<Replay key="replay" detail={detail!} act={act} busy={busy} canPost={detail!.host||mine_?.status==='in'}/>};
       // The plan reorders itself around what matters now: the replay leads once it has happened.
       return (p!.made_it?['replay','live','setter','decisions']:['setter','decisions','live','replay']).map(k=>S[k as keyof typeof S])})()}
@@ -164,8 +171,8 @@ export default function Home(){
     {ptab==='list'&&<section className="stack">
      <p className="list-lead">{bringItems.length?'Pick something you can bring.':'Give each loose end a person.'}</p>
      {tasks.length===0&&<p className="inline-empty">Nothing on the list yet. Add what the group needs below.</p>}
-     {bringItems.length>0&&<div className="item-list">{bringItems.map(t=><TaskRow key={t.id} task={t} host={detail!.host} busy={busy} act={taskAction}/>)}</div>}
-     {todoItems.length>0&&<><h3 className="list-sub">{bringItems.length?'Loose ends':'Who’s handling what'}</h3><div className="item-list">{todoItems.map(t=><TaskRow key={t.id} task={t} host={detail!.host} busy={busy} act={taskAction}/>)}</div></>}
+     {bringItems.length>0&&<div className="item-list">{bringItems.map(t=><TaskRow key={t.id} task={t} host={detail!.host} busy={busy} act={taskAction} guests={guests} organizer={hostName||'The host'}/>)}</div>}
+     {todoItems.length>0&&<><h3 className="list-sub">{bringItems.length?'Loose ends':'Who’s handling what'}</h3><div className="item-list">{todoItems.map(t=><TaskRow key={t.id} task={t} host={detail!.host} busy={busy} act={taskAction} guests={guests} organizer={hostName||'The host'}/>)}</div></>}
      <form className="add-item" onSubmit={addItem}><label className="sr-only" htmlFor="item-kind">Item type</label><select id="item-kind" value={addType} onChange={e=>setAddType(e.target.value)}><option value="bring">To bring</option><option value="todo">To sort</option></select><label className="sr-only" htmlFor="item-title">New item</label><input id="item-title" value={newItem} onChange={e=>setNewItem(e.target.value)} placeholder="What else do we need?" maxLength={160} required/><button className="icon-button filled" aria-label="Add item" disabled={busy||!newItem.trim()}><Plus size={19}/></button></form>
      <p className="fine center">You can change your contribution anytime.</p>
      {mine.length>0&&<p className="fine center">You’ve got: {mine.map(t=>t.title).join(', ')}</p>}
@@ -198,17 +205,23 @@ export default function Home(){
  </div>
 }
 // One row of the bring list. Claiming records only the current person; everyone else sees who has it.
-function TaskRow({task:t,host,busy,act}:{task:Task;host:boolean;busy:boolean;act:(t:Task,a:string)=>void}){
- const bring=t.category==='bring',who=t.isMine?'You':t.claimed_name;
+// One row of the bring list. A guest's own claim records only their responsibility. When the host notes that
+// someone told them they'll bring something, the row says "noted by" until that person confirms it.
+function TaskRow({task:t,host,busy,act,guests,organizer}:{task:Task;host:boolean;busy:boolean;act:(t:Task,a:string,extra?:Record<string,string>)=>void;guests:Guest[];organizer:string}){
+ const bring=t.category==='bring',who=t.isMine?'You':t.claimed_name,noted=t.claim_source==='host';
  const verb=t.done?(bring?'brought this':'handled this'):(bring?(t.isMine?'are bringing this':'is bringing this'):(t.isMine?'are on it':'is on it'));
+ const options=guests.filter(g=>g.status!=='out'&&g.id);
  return <div className={'item-row'+(t.done?' done':'')}>
   <span className="item-icon">{itemIcon(t.title,t.category)}</span>
   <div className="item-info"><strong>{t.title}</strong>
    {t.claimed_name?<span className="by"><Face className="mini-avatar" seed={t.claimed_name}/>{t.isMine&&!t.done?(bring?'You’re bringing this':'You’re on it'):`${who} ${verb}`}</span>:<span>{t.done?'Handled':'Still available'}</span>}
-   {!t.claimed_name&&host&&<span className="item-tools"><button className="text-button small quiet" disabled={busy} onClick={()=>act(t,'done')}>{t.done?'Not done yet':'Already handled'}</button></span>}
-   {t.claimed_name&&(t.isMine||host)&&<span className="item-tools"><button className="text-button small" disabled={busy} onClick={()=>act(t,'done')}>{t.done?'Not done yet':bring?'Mark brought':'Mark done'}</button><button className="text-button small quiet" disabled={busy} onClick={()=>act(t,'release')}>{t.isMine?'Let it go':'Release'}</button></span>}
+   {t.claimed_name&&noted&&<span className="noted-tag">{t.isMine?`${organizer} noted this for you`:`Noted by ${host?'you':organizer} · not confirmed yet`}</span>}
+   {!t.claimed_name&&host&&<span className="item-tools">
+    {!t.done&&options.length>0&&<label className="assign"><span className="sr-only">Who said they’d bring {t.title}?</span><select disabled={busy} value="" onChange={e=>e.target.value&&act(t,'assign',{guestId:e.target.value})}><option value="">Who’s bringing it?</option>{options.map(g=><option key={g.id} value={g.id}>{g.isHost?'Me':g.name}</option>)}</select></label>}
+    <button className="text-button small quiet" disabled={busy} onClick={()=>act(t,'done')}>{t.done?'Not done yet':'Already handled'}</button></span>}
+   {t.claimed_name&&(t.isMine||host)&&<span className="item-tools">{t.isMine&&noted&&<button className="text-button small" disabled={busy} onClick={()=>act(t,'confirm')}>Yes, I’m bringing it</button>}<button className="text-button small" disabled={busy} onClick={()=>act(t,'done')}>{t.done?'Not done yet':bring?'Mark brought':'Mark done'}</button><button className="text-button small quiet" disabled={busy} onClick={()=>act(t,'release')}>{t.isMine?'Let it go':'Release'}</button></span>}
   </div>
   {!t.claimed_name&&t.done?<span className="check-badge done" role="img" aria-label="Done"><Check size={16} strokeWidth={3}/></span>:!t.claimed_name?<button className="claim-button" disabled={busy} onClick={()=>act(t,'claim')}>{bring?'I can bring this':'I’ll handle this'}</button>
-  :<span className={'check-badge'+(t.done?' done':'')} role="img" aria-label={t.done?'Done':'Covered'}><Check size={16} strokeWidth={3}/></span>}
+  :<span className={'check-badge'+(t.done?' done':'')+(noted&&!t.done?' noted':'')} role="img" aria-label={t.done?'Done':noted?'Noted, not confirmed':'Covered'}><Check size={16} strokeWidth={3}/></span>}
  </div>
 }

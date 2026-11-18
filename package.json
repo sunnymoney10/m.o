@@ -14,7 +14,8 @@
     "db:generate": "drizzle-kit generate",
     "check": "tsc --noEmit",
     "test": "node tests/route-harness.mjs",
-    "journeys": "node tests/e2e/friendsgiving.cjs"
+    "journeys": "node tests/e2e/friendsgiving.cjs",
+    "journeys:quiet": "node tests/e2e/quiet-friends.cjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
