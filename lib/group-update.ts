@@ -37,11 +37,11 @@ export function nudgeMaybes(d:UpdateInput,link:string){
 
 export function nextStep(d:UpdateInput){
  const p=d.plan,open=d.tasks.filter(t=>!t.claimed_name),pending=(d.polls||[]).filter(x=>!x.decided_option);
- if(!p.date)return pending.some(x=>x.kind==='date')?'A date vote is open. Lock in the winner once enough people have voted.':'Get a date on the table. Start a date vote before anyone books.';
- if(!p.place)return pending.some(x=>x.kind==='place')?'A place vote is open. Lock it in when the group leans one way.':'Give the idea a place. Share a shortlist as a vote.';
- if(pending.length)return `${pending.length} ${pending.length===1?'decision is':'decisions are'} still open. Nudge people to vote, then lock it in.`;
- if(!p.budget&&p.kind==='trip')return 'Talk money early. Agree what everyone is comfortable spending.';
- if(open.length)return `${open.length} ${open.length===1?'item needs':'items need'} a person. Post an update and ask the group to claim what they can.`;
- if(d.guests.some(g=>g.status==='maybe'||g.status==='invited'))return 'Some people haven’t confirmed. Send them a quick nudge.';
- return 'The essentials have owners. Check what still needs completing before you go.';
+ if(!p.date)return pending.some(x=>x.kind==='date')?'A date vote is open. Pick the final date once people have voted.':'Set a date, or start a vote on one.';
+ if(!p.place)return pending.some(x=>x.kind==='place')?'A place vote is open. Pick the final place once people have voted.':'Set a place, or start a vote on one.';
+ if(pending.length)return `${pending.length} ${pending.length===1?'decision is':'decisions are'} still open. Remind people to vote, then pick the final choice.`;
+ if(!p.budget&&p.kind==='trip')return 'Agree on a cost per person.';
+ if(open.length)return `${open.length} ${open.length===1?'item still needs':'items still need'} someone. Ask the group to pick what they can.`;
+ if(d.guests.some(g=>g.status==='maybe'||g.status==='invited'))return 'Some people haven’t answered. Send a reminder.';
+ return 'Everything is covered. Check nothing is left before the day.';
 }

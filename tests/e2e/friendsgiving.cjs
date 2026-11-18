@@ -18,7 +18,7 @@ const log=(...a)=>console.log(...a);
  await k.getByText('Add more details').click();await k.getByLabel(/Arrival and house notes/).fill('Park on Elm, not in the lot (they tow). Buzz 3B and take the stairs. Shoes off inside.');
  await k.getByLabel(/What’s the plan/).fill('Doors at 5, food at 6. Bring your appetite.');
  await shot(k,'k1-form');
- await k.getByRole('button',{name:/Let’s make it happen/}).click();await k.waitForTimeout(1800);const url=k.url();
+ await k.getByRole('button',{name:/Create plan/}).click();await k.waitForTimeout(1800);const url=k.url();
  // Ari adds the guest list
  await tab(k,'People');await k.getByRole('button',{name:/Add names to the guest list/}).click();
  await k.getByLabel(/Who did you invite/).fill('Tess\nJordan\nSam');await k.getByRole('button',{name:/^Add (\d+ people|to guest list)$/}).click();await k.waitForTimeout(1500);
@@ -56,7 +56,7 @@ await tab(j,'People');
  // Tess on a second browser
  const t2=await phone();await t2.goto(url);await t2.waitForTimeout(1500);await t2.locator('.rsvp-prompt .primary').click();await t2.waitForTimeout(300);
  await shot(t2,'t7-second-browser');
- await t2.getByRole('button',{name:'Already answered on another phone?'}).click();await t2.locator('.other-phone').getByRole('button',{name:'Tess',exact:true}).click();await t2.waitForTimeout(1500);
+ await t2.getByRole('button',{name:'Answered on another phone?'}).click();await t2.locator('.other-phone').getByRole('button',{name:'Tess',exact:true}).click();await t2.waitForTimeout(1500);
  log('T2 my rsvp:',await text(t2,'.my-rsvp'));
  await tab(t2,/Bring list/);log('T2 still has claim:',(await t2.locator('.item-list').first().innerText()).includes('You’re bringing'));
  await tab(t2,'People');await t2.getByRole('button',{name:'Change'}).click();await t2.getByRole('button',{name:'Can’t make it'}).click();await t2.getByRole('button',{name:'Send RSVP'}).click();await t2.waitForTimeout(1500);log('T2 cancel toast:',await toast(t2));

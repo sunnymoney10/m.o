@@ -13,7 +13,7 @@ async function shrink(file:File){
  ctx.drawImage(bitmap,(bitmap.width-side)/2,(bitmap.height-side)/2,side,side,0,0,size,size);bitmap.close?.();
  for(const [type,q] of [['image/webp',.82],['image/webp',.68],['image/jpeg',.8],['image/jpeg',.65],['image/jpeg',.5]] as const){
   const url=canvas.toDataURL(type,q);if(url.startsWith('data:'+type)&&url.length*.75<PHOTO_MAX_BYTES)return url}
- throw Error('That photo is too detailed to shrink. Try another.');
+ throw Error('That photo is too large. Try another one.');
 }
 const Swatches=({label,list,value,onPick}:{label:string;list:readonly (readonly [string,string])[];value:string;onPick:(k:string)=>void})=>
  <fieldset><legend>{label}</legend><div className="swatches">{list.map(([k,c])=><button type="button" key={k} className={'swatch'+(value===k?' on':'')} style={{background:c}} aria-label={label+': '+k.replace(/(\d)$/,' $1')} aria-pressed={value===k} onClick={()=>onPick(k)}/>)}</div></fieldset>;
@@ -27,7 +27,7 @@ export function AvatarPicker({seed,avatar,photo,canUpload,onAvatar,upload,remove
   <div className="avatar-preview"><Face className="avatar-big" seed={seed} avatar={avatar} photo={mode==='photo'?photo:null}/>
    <div className="seg small" role="group" aria-label="Picture type"><button type="button" className={mode==='draw'?'on':''} aria-pressed={mode==='draw'} onClick={()=>setMode('draw')}><Palette size={15}/>Draw me</button><button type="button" className={mode==='photo'?'on':''} aria-pressed={mode==='photo'} onClick={()=>setMode('photo')}><Camera size={15}/>Photo</button></div></div>
   {mode==='draw'?<div className="picker-rows">
-   {!avatar&&<p className="fine">You’re using a colourful default. Pick anything below to make it yours.</p>}
+   {!avatar&&<p className="fine">This is a random picture. Change anything below to make it yours.</p>}
    <Swatches label="Face" list={AVATAR.tones} value={avatar?a.tone:''} onPick={k=>set('tone',k)}/>
    <fieldset><legend>Hair</legend><div className="chips">{AVATAR.hair.map(([k,l])=><button type="button" key={k} className={'chip'+(avatar&&a.hair===k?' on':'')} aria-pressed={!!avatar&&a.hair===k} onClick={()=>set('hair',k)}>{l}</button>)}</div></fieldset>
    <Swatches label="Hair colour" list={AVATAR.hairColors} value={avatar?a.hairColor:''} onPick={k=>set('hairColor',k)}/>
@@ -35,13 +35,13 @@ export function AvatarPicker({seed,avatar,photo,canUpload,onAvatar,upload,remove
    <Swatches label="Background" list={AVATAR.backgrounds} value={avatar?a.bg:''} onPick={k=>set('bg',k)}/>
    <div className="chips"><button type="button" className={'chip'+(avatar&&a.glasses?' on':'')} aria-pressed={!!avatar&&a.glasses} onClick={()=>set('glasses',!a.glasses)}>Glasses</button><button type="button" className={'chip'+(avatar&&a.hoops?' on':'')} aria-pressed={!!avatar&&a.hoops} onClick={()=>set('hoops',!a.hoops)}>Hoop earrings</button></div>
    {avatar&&<button type="button" className="text-button small quiet" onClick={()=>onAvatar(null)}>Go back to the colourful default</button>}
-   {photo&&<p className="fine">Your photo is showing instead. Remove it under Photo to use this drawing.</p>}
+   {photo&&<p className="fine">Your photo shows instead of this. Remove the photo to use the drawing.</p>}
   </div>
   :<div className="picker-rows">
    {!canUpload?<p className="fine">Save your name and handle first, then add a photo.</p>:<>
     <label className="outline-button file-button">{busy?<LoaderCircle className="spin" size={16}/>:<Camera size={16}/>}{photo?'Choose a different photo':'Choose a photo'}<input type="file" accept="image/*" className="sr-only" disabled={busy} onChange={choose}/></label>
     {photo&&<button type="button" className="text-button small danger" disabled={busy} onClick={async()=>{setBusy(true);await remove();setBusy(false)}}><Trash2 size={14}/>Remove photo</button>}
-    <p className="fine">Cropped to a square and shrunk on your phone before it’s saved. People in plans you join can see it.</p>
+    <p className="fine">We crop and shrink it before saving. People in your plans can see it.</p>
    </>}
    {error&&<p className="form-error" role="alert">{error}</p>}
   </div>}
