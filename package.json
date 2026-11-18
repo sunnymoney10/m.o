@@ -13,7 +13,13 @@
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "drizzle-kit generate",
     "check": "tsc --noEmit",
-    "test": "node tests/route-harness.mjs"
+    "test": "node tests/route-harness.mjs",
+    "journeys": "node tests/e2e/friendsgiving.cjs",
+    "journeys:quiet": "node tests/e2e/quiet-friends.cjs",
+    "ux:metrics": "node tests/e2e/ux-metrics.cjs",
+    "journeys:profile": "node tests/e2e/profile-picture.cjs",
+    "a11y": "node tests/e2e/a11y.cjs",
+    "deploy": "node scripts/deploy-cloudflare.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

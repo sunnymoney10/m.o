@@ -22,6 +22,41 @@
       "when": 1794805200000,
       "tag": "0002_live_replay_profiles",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1794962491679,
+      "tag": "0003_overrated_molly_hayes",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1794965826080,
+      "tag": "0004_ordinary_next_avengers",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1794967407918,
+      "tag": "0005_colorful_blacklash",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1795017161421,
+      "tag": "0006_overjoyed_synch",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1795018140902,
+      "tag": "0007_keen_archangel",
+      "breakpoints": true
     }
   ]
 }
