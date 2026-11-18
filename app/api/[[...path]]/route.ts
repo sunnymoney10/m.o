@@ -66,7 +66,7 @@ async function handler(req:Request){
     const ms=await db.prepare('SELECT id,actor,name,kind,body,photo_url,created FROM memories WHERE plan_id=? ORDER BY created DESC').bind(id).all<any>();
     const {owner,...safe}=plan;
     const polls=ps.results.map((p:any)=>({id:p.id,question:p.question,kind:p.kind,decided_option:p.decided_option,options:os.results.filter((o:any)=>o.poll_id===p.id).map((o:any)=>{const votes=vs.results.filter((v:any)=>v.option_id===o.id);return {id:o.id,label:o.label,votes:votes.length,voters:votes.map((v:any)=>v.name||'Someone'),mine:votes.some((v:any)=>v.actor===actor)}})}));
-    return json({plan:safe,host,
+    return json({plan:safe,host,organizer:gs.results.find((g:any)=>g.actor===owner)?.name||null,
      guests:gs.results.map(({actor:a,interests,...g}:any)=>({...g,interests:interests?parseInterests(interests):[],isMe:a===actor})),
      tasks:ts.results.map(({claimed_by,...t}:any)=>({...t,isMine:claimed_by===actor})),
      polls,stops:ss.results,

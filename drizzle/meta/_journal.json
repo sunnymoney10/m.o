@@ -22,6 +22,13 @@
       "when": 1794805200000,
       "tag": "0002_live_replay_profiles",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1794962491679,
+      "tag": "0003_overrated_molly_hayes",
+      "breakpoints": true
     }
   ]
 }
