@@ -39,12 +39,12 @@ const plusLine=(g:Guest)=>g.extra_count?`+${g.extra_count}${g.extra_names?' · '
 function storedName(){try{return localStorage.getItem('mo-name')||''}catch{return ''}}
 function remember(n:string){try{localStorage.setItem('mo-name',n)}catch{}}
 
-export function PeopleTab({detail,act,busy,notify}:{detail:Detail;act:Act;busy:boolean;notify:(t:string)=>void}){
+export function PeopleTab({detail,act,busy,notify,startAdding=false,onRsvp}:{detail:Detail;act:Act;busy:boolean;notify:(t:string)=>void;startAdding?:boolean;onRsvp?:(status:string)=>void}){
  const host=detail.host,guests=detail.guests,me=guests.find(g=>g.isMe),answered=!!me&&me.status!=='invited';
  const [editing,setEditing]=useState(false),[notListed,setNotListed]=useState(false),[otherPhone,setOtherPhone]=useState(false);
  const [f,setF]=useState(()=>({name:me?.name||storedName(),status:me&&me.status!=='invited'?me.status:'',extra:me?.extra_count||0,extraNames:me?.extra_names||'',dietary:me?.dietary||'',staying:!!me?.staying,note:me?.note||''}));
  const [noting,setNoting]=useState<string|null>(null),[nf,setNf]=useState({status:'',extra:0,extraNames:'',dietary:'',staying:false,note:''});
- const [adding,setAdding]=useState(''),[addOpen,setAddOpen]=useState(false),[canPick,setCanPick]=useState(false);
+ const [adding,setAdding]=useState(''),[addOpen,setAddOpen]=useState(startAdding),[canPick,setCanPick]=useState(false);
  useEffect(()=>{setCanPick(!!contactsApi())},[]);
  const listed=new Set(guests.map(g=>g.name.toLowerCase())),toAdd=splitNames(adding),newNames=toAdd.filter(n=>!listed.has(n.toLowerCase()));
  async function fromContacts(){const api=contactsApi();if(!api)return;try{const picked=await api.select(['name'],{multiple:true});const names=picked.map(c=>c.name?.[0]||'').filter(Boolean);if(names.length)setAdding(a=>[a.trim(),...names].filter(Boolean).join('\n'))}catch{notify('Couldn’t open your contacts. Type or paste names instead.')}}
@@ -65,9 +65,10 @@ export function PeopleTab({detail,act,busy,notify}:{detail:Detail;act:Act;busy:b
   const out=f.status==='out',extra=out?0:f.extra,mineItems=detail.tasks.filter(t=>t.isMine).map(t=>t.title);
   const body={name:f.name.trim(),status:f.status,note:f.note,extraCount:extra,extraNames:extra?f.extraNames:'',dietary:f.dietary,staying:!out&&f.staying};
   const msg=out?(mineItems.length?`Got it. ${mineItems.join(', ')} ${mineItems.length===1?'is':'are'} open again for someone else.`:`Got it. Thanks for letting ${detail.organizer||'the host'} know.`)
-   :f.status==='in'?(extra&&!host?'You’re in. Your extra guest request went to '+(detail.organizer||'the host')+'.':'You’re in. See you there.'):'Saved. Update it when you know.';
+   :(()=>{const next=!mineItems.length&&detail.tasks.some(t=>!t.claimed_name)?' Now pick something to bring.':'';
+    return f.status==='in'?(extra&&!host?'You’re in. Your extra guest request went to '+(detail.organizer||'the host')+'.':'You’re in.')+(next||' See you there.'):'Saved. Update it when you know.'+next})();
   const ok=await act('rsvp','POST',body,d=>{const row:Guest={...(d.guests.find(g=>g.isMe)||{id:crypto.randomUUID(),isMe:true}),name:body.name,status:body.status,note:body.note,isMe:true,extra_count:extra,extra_names:body.extraNames,extra_status:extra?(host?'approved':'requested'):'',dietary:body.dietary,staying:body.staying};d.guests=[...d.guests.filter(g=>!g.isMe),row];if(out)d.tasks=d.tasks.map(t=>t.isMine?{...t,claimed_name:null,isMine:false,done:0}:t)},msg);
-  if(ok){remember(body.name);setEditing(false);setNotListed(false)}
+  if(ok){remember(body.name);setEditing(false);setNotListed(false);onRsvp?.(body.status)}
  }
  function startNote(g:Guest){setNoting(g.id||null);setNf({status:g.status==='invited'?'':g.status,extra:g.extra_count||0,extraNames:g.extra_names||'',dietary:g.dietary||'',staying:!!g.staying,note:g.note||''})}
  async function saveNote(e:React.FormEvent,g:Guest){e.preventDefault();if(!nf.status){notify('Choose what they told you.');return}
@@ -88,10 +89,10 @@ export function PeopleTab({detail,act,busy,notify}:{detail:Detail;act:Act;busy:b
   {/* Step 1 for a new guest: find your name on the host's list. */}
   {!host&&!me&&!notListed&&unanswered.length>0&&<div className="pick-card">
    <strong>Find your name</strong><span className="fine">{detail.organizer||'The host'} added these people. Tap yours.</span>
-   <div className="name-chips">{unanswered.map(g=><button key={g.id} className="name-chip" disabled={busy} onClick={()=>pick(g)}><Face className="mini-avatar" seed={g.name}/>{g.name}</button>)}</div>
+   <div className="name-chips">{unanswered.map(g=><button key={g.id} className="name-chip" disabled={busy} onClick={()=>pick(g)}><Face className="mini-avatar" seed={g.name} avatar={g.avatar} photo={g.photo}/>{g.name}</button>)}</div>
    <button className="text-button" onClick={()=>setNotListed(true)}>I’m not on the list</button>
   </div>}
-  {!host&&!me&&others.length>0&&<div className="other-phone">{otherPhone?<><span className="fine">Already answered on another phone or browser? Tap your name to continue here.</span><div className="name-chips">{others.map(g=><button key={g.id} className="name-chip" disabled={busy} onClick={()=>pick(g)}><Face className="mini-avatar" seed={g.name}/>{g.name}</button>)}</div></>
+  {!host&&!me&&others.length>0&&<div className="other-phone">{otherPhone?<><span className="fine">Already answered on another phone or browser? Tap your name to continue here.</span><div className="name-chips">{others.map(g=><button key={g.id} className="name-chip" disabled={busy} onClick={()=>pick(g)}><Face className="mini-avatar" seed={g.name} avatar={g.avatar} photo={g.photo}/>{g.name}</button>)}</div></>
    :<button className="text-button quiet" onClick={()=>setOtherPhone(true)}>Already answered on another phone?</button>}</div>}
 
   {/* Your RSVP, summarized once you've answered. */}
@@ -117,7 +118,7 @@ export function PeopleTab({detail,act,busy,notify}:{detail:Detail;act:Act;busy:b
   </form>}
 
   <div className="guest-list">{sorted.map(g=><div className="guest-block" key={g.id||g.name}><div className="guest">
-   <Face className="avatar" seed={g.handle||g.name}/>
+   <Face className="avatar" seed={g.handle||g.name} avatar={g.avatar} photo={g.photo}/>
    <div className="guest-info"><strong>{g.name}{g.isMe&&g.name!=='You'?' (you)':''}{g.isHost?<em> · host</em>:null}</strong>
     {g.extra_status==='approved'&&!!g.extra_count&&<small>{plusLine(g)}</small>}
     {host&&g.extra_status==='requested'&&<span className="request">Asks to bring {plusLine(g)}<span><button className="text-button small" disabled={busy} onClick={()=>decide(g,'approved')}>Approve</button><button className="text-button small quiet" disabled={busy} onClick={()=>decide(g,'declined')}>Decline</button></span></span>}

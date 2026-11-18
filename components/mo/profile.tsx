@@ -3,11 +3,12 @@ import {useEffect,useState} from 'react';
 import {Check,MapPin,Pencil,Plus,ArrowUpRight,LoaderCircle,Lock,UsersRound} from 'lucide-react';
 import type {Me,Profile} from '@/lib/types';
 import {INTERESTS,STYLES} from '@/lib/types';
-import {Scene} from './art';
+import {Scene,Face} from './art';
+import {AvatarPicker} from './avatar-picker';
 
 const empty:Profile={name:'',handle:'',mo:'',interests:[],style:'down'};
 
-export function ProfileView({me,loading,save,openPlan,start}:{me:Me|null;loading:boolean;save:(p:Profile)=>Promise<boolean>;openPlan:(id:string)=>void;start:()=>void}){
+export function ProfileView({me,loading,save,openPlan,start,uploadPhoto,removePhoto}:{me:Me|null;loading:boolean;save:(p:Profile)=>Promise<boolean>;openPlan:(id:string)=>void;start:()=>void;uploadPhoto:(dataUrl:string)=>Promise<boolean>;removePhoto:()=>Promise<boolean>}){
  const p=me?.profile,[editing,setEditing]=useState(false),[f,setF]=useState<Profile>(empty),[custom,setCustom]=useState(''),[busy,setBusy]=useState(false);
  useEffect(()=>{if(!loading&&me&&!me.profile){setF({...empty,name:localStorage.getItem('mo-name')||''});setEditing(true)}},[loading,me]);
  function edit(){setF(p?{...p}:{...empty,name:localStorage.getItem('mo-name')||''});setEditing(true)}
@@ -18,7 +19,7 @@ export function ProfileView({me,loading,save,openPlan,start}:{me:Me|null;loading
  const shown=editing?f:p;
  return <div className="profile-page">
   <section className="profile-top">
-   <div className="profile-cover"><Scene kind="portrait" seed={shown?.handle||shown?.name||'you'}/><span className="cover-note">What’s your m.o?</span></div>
+   <div className="profile-cover"><Scene kind="portrait" seed={shown?.handle||shown?.name||'you'} avatar={shown?.avatar}/>{p?.photo&&<Face className="cover-photo" seed={p.handle} photo={p.photo}/>}<span className="cover-note">What’s your m.o?</span></div>
    <h1 className={shown?.name?'':'empty'}>{shown?.name||'Your name'}</h1>
    <span className="handle">@{shown?.handle||'yourhandle'}</span>
    <p className={'mo-line'+(shown?.mo?'':' empty')}>{shown?.mo||'Add a line about what you’re down for.'}</p>
@@ -31,11 +32,12 @@ export function ProfileView({me,loading,save,openPlan,start}:{me:Me|null;loading
    <h2>{p?'Edit your m.o':'Make your m.o'}</h2>
    <div className="form-row"><label>Name<input required maxLength={60} value={f.name} onChange={e=>setF({...f,name:e.target.value})} placeholder="What friends call you"/></label>
     <label>Handle<div className="handle-input"><span>@</span><input required maxLength={24} pattern="@?[A-Za-z0-9_]{2,24}" value={f.handle} onChange={e=>setF({...f,handle:e.target.value.replace(/\s/g,'')})} placeholder="jules"/></div></label></div>
+   <AvatarPicker seed={f.handle||f.name||'you'} avatar={f.avatar} photo={p?.photo} canUpload={!!p} onAvatar={a=>setF(x=>({...x,avatar:a}))} upload={uploadPhoto} remove={removePhoto}/>
    <label>Your mo, in a line<input maxLength={80} value={f.mo} onChange={e=>setF({...f,mo:e.target.value})} placeholder="One more song. / Always down for a food run."/></label>
    <fieldset><legend>What you’re down for <small>(up to 8)</small></legend><div className="chips pick">{[...new Set([...INTERESTS,...f.interests])].map(t=><button type="button" key={t} aria-pressed={f.interests.includes(t)} className={'chip'+(f.interests.includes(t)?' on':'')} onClick={()=>toggle(t)}>{f.interests.includes(t)&&<Check size={12}/>}{t}</button>)}</div>
     <div className="suggest"><input aria-label="Add your own" maxLength={24} value={custom} onChange={e=>setCustom(e.target.value)} placeholder="Add your own"/><button type="button" className="icon-button" aria-label="Add interest" disabled={!custom.trim()} onClick={()=>{toggle(custom.trim());setCustom('')}}><Plus size={16}/></button></div></fieldset>
    <fieldset><legend>Your planning style</legend><div className="style-grid">{STYLES.map(([k,label,line])=><button type="button" key={k} className={'style-option'+(f.style===k?' on':'')} aria-pressed={f.style===k} onClick={()=>setF({...f,style:k})}><strong>{label}</strong><small>{line}</small></button>)}</div></fieldset>
-   <p className="hint"><Lock size={12}/> Your name, handle, line and interests show to people in plans you join. No scores, no rankings.</p>
+   <p className="hint"><Lock size={12}/> Your name, handle, picture, line and interests show to people in plans you join. No scores, no rankings.</p>
    <div className="form-bottom">{p?<button type="button" className="text-button" onClick={()=>setEditing(false)}>Cancel</button>:<span/>}<button className="primary" disabled={busy}>{busy?<LoaderCircle className="spin" size={16}/>:<ArrowUpRight size={16}/>}Save my m.o</button></div>
   </form>}
 

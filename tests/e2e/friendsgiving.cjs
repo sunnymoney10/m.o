@@ -15,7 +15,7 @@ const log=(...a)=>console.log(...a);
  await k.getByRole('button',{name:'Start a plan'}).first().click();
  await k.getByLabel('Give it a name').fill('Friendsgiving');await k.getByLabel('Your name').fill('Ari');
  await k.getByLabel(/When/).fill('2026-11-26T17:00');await k.getByLabel('Where').fill('1420 Elm St, Apt 3B, Philadelphia');
- await k.getByLabel(/Arrival and house notes/).fill('Park on Elm, not in the lot (they tow). Buzz 3B and take the stairs. Shoes off inside.');
+ await k.getByText('Add more details').click();await k.getByLabel(/Arrival and house notes/).fill('Park on Elm, not in the lot (they tow). Buzz 3B and take the stairs. Shoes off inside.');
  await k.getByLabel(/What’s the plan/).fill('Doors at 5, food at 6. Bring your appetite.');
  await shot(k,'k1-form');
  await k.getByRole('button',{name:/Let’s make it happen/}).click();await k.waitForTimeout(1800);const url=k.url();
@@ -33,12 +33,13 @@ const log=(...a)=>console.log(...a);
  await t.getByPlaceholder(/Their names/).fill('Ben');await t.getByLabel(/Dietary needs/).fill('Vegetarian');await t.getByLabel(/stay over/).check();
  await shot(t,'t4-form-filled');
  await t.getByRole('button',{name:'Send RSVP'}).click();await t.waitForTimeout(1500);log('T4 RSVP toast:',await toast(t));
- await shot(t,'t5-after');log('T5 my rsvp:',await text(t,'.my-rsvp'));
+ await tab(t,'People');await shot(t,'t5-after');log('T5 my rsvp:',await text(t,'.my-rsvp'));
  await tab(t,'Overview');await t.waitForTimeout(300);log('T5 address visible now:',(await t.locator('body').innerText()).includes('Buzz 3B'));await shot(t,'t6-overview');
  await tab(t,/Bring list/);await t.getByRole('button',{name:'I can bring this'}).first().click();await t.waitForTimeout(1500);log('T6 claim toast:',await toast(t));
  // Jordan picks name, still checking
  const j=await phone();await j.goto(url);await j.waitForTimeout(1200);await j.locator('.rsvp-prompt .primary').click();
  await j.getByRole('button',{name:'Jordan',exact:true}).click();await j.waitForTimeout(1200);await j.getByRole('button',{name:'Still checking'}).click();await j.getByRole('button',{name:'Send RSVP'}).click();await j.waitForTimeout(1500);
+await tab(j,'People');
  log('J sees Tess dietary?',(await j.locator('.guest-list').innerText()).includes('Vegetarian'),'| sees Ben pending?',(await j.locator('.guest-list').innerText()).includes('Ben'));
  // Ramon is not on the list
  const r=await phone();await r.goto(url);await r.waitForTimeout(1200);await r.locator('.rsvp-prompt .primary').click();await r.getByRole('button',{name:'I’m not on the list'}).click();

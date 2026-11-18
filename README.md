@@ -21,6 +21,7 @@ The setter is the friend who makes an outing happen. m.o gives that person a sha
 - Put dates, places or anything else to a group vote. Members vote and suggest options; only the organizer can lock one in, and a locked date or place updates the plan. Votes are suggestions, never commitments.
 - Keep a live plan: an organizer-maintained itinerary of timed stops and key HTTPS links.
 - Replay: after the plan, people who were in post memories (optional HTTPS photo/album link) and shout-outs; the organizer marks the plan “made it out.” Authors and the organizer can remove posts.
+- Profile pictures: choose your own avatar (face colour, including skin tones, hair, hair colour, top, background, glasses, hoops) or upload a photo. Photos are cropped and shrunk on the phone (a few KB), stored in D1, and served from a cached URL; people in plans you join can see them.
 - “What’s your mo?” profiles: name, unique handle, a one-line mo, interests and planning style. Shown to people in shared plans. The profile page lists plans you made it out to, places conquered, and private counts of what you hosted and took care of — no scores or rankings.
 - Home shows the next plan with one deterministic “thing to sort out” (an unclaimed item, an open vote, or a missing date/place) from saved data; plans have Overview, People and Bring list tabs.
 - Show missing decisions, the next useful coordination step, and copyable group-chat drafts (status update and a nudge for maybes). These are deterministic templates built from saved plan data, not an in-app AI model. m.o never sends messages.
@@ -66,6 +67,7 @@ node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1
 node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0004_ordinary_next_avengers.sql
 node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0005_colorful_blacklash.sql
 node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0006_overjoyed_synch.sql
+node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0007_keen_archangel.sql
 npm run dev
 ```
 
@@ -77,7 +79,7 @@ npm test
 npm run build
 ```
 
-With `npm run dev` running, `npm run journeys` replays the Friendsgiving phone journeys (a host; guests picking names, RSVPing with an extra guest, claiming, switching browsers and cancelling) using the preinstalled Playwright. Pass a folder to keep screenshots: `npm run journeys -- ./shots`. `npm run journeys:quiet` replays the host recording answers for friends who never open the link, then one of them confirming later.
+With `npm run dev` running, `npm run journeys` replays the Friendsgiving phone journeys (a host; guests picking names, RSVPing with an extra guest, claiming, switching browsers and cancelling) using the preinstalled Playwright. Pass a folder to keep screenshots: `npm run journeys -- ./shots`. `npm run journeys:profile -- <photo.jpg>` checks avatars and photo upload. `npm run ux:metrics` measures form fields, overview length and guest taps for before/after comparisons. `npm run journeys:quiet` replays the host recording answers for friends who never open the link, then one of them confirming later.
 
 GitHub Actions runs these checks on pushes to main and pull requests. No repository secrets are needed for these validation checks. No automatic deployment credentials are included.
 

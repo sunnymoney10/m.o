@@ -2,13 +2,15 @@
 // simple faces, drawn in the brand palette. Every scene is generated from a seed (a plan ID or a name),
 // so the same plan or person always gets the same picture, and nothing is a stock or rendered photo.
 import {useId} from 'react';
+import type {Avatar} from '@/lib/avatar';
+import {avatarColors} from '@/lib/avatar';
 
 const C={ink:'#3a1a2b',ink2:'#2a1120',paper:'#fffaf3',cream:'#f6eee4',brick:'#b23b28',brickSoft:'#f7e2da',butter:'#f5d36a',butterSoft:'#fbefc6',sky:'#c5d4f0',skySoft:'#e4ebf8',sky2:'#8ea4d8',blush:'#e8a598',sage:'#a9c4a0',line:'#e6d9ca'};
 const SKIN=['#f1c9a5','#d9a27a','#b8794f','#8d5636','#6b3d26','#4a2a1c'];
 const HAIR=['#2a1120','#3b2418','#1d1416','#5a3a22','#2a1120'],DARK_HAIR=['#1d1416','#120b0e','#2a1120'];
 const SHIRT=[C.brick,C.butter,C.sky2,C.ink,C.blush,C.sage,C.paper];
 const STYLES=['afro','curls','short','bun','cap','braids','fade','locs'] as const;
-type Look={skin:string;hair:string;style:typeof STYLES[number];shirt:string;hat:string;earring:boolean;glasses:boolean;armsUp:boolean};
+type Look={skin:string;hair:string;style:string;shirt:string;hat:string;earring:boolean;glasses:boolean;armsUp:boolean};
 
 function hash(s:string){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
 function rng(seed:string){let a=hash(seed);return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
@@ -26,7 +28,7 @@ function Head({l}:{l:Look}){
   :l.style==='locs'?<g fill={l.hair}>{[-22,-14,14,22].map((x,i)=><rect key={i} x={x-3.5} y="-12" width="7" height={i%3?34:40} rx="3.5"/>)}</g>:null;
  const top=l.style==='cap'?<g><path d="M-20 -3 A20 20 0 0 1 20 -3 Z" fill={l.hat}/><rect x="10" y="-6" width="22" height="6" rx="3" fill={l.hat}/></g>
   :l.style==='fade'?<path d="M-19 -4 A19 19 0 0 1 19 -4 C12 -12 -12 -12 -19 -4 Z" fill={l.hair} opacity=".85"/>
-  :l.style==='afro'?null
+  :l.style==='afro'||l.style==='none'?null
   :<path d="M-19.6 2 A19.6 19.6 0 0 1 19.6 2 C14 -9 -4 -12 -19.6 2 Z" fill={l.hair}/>;
  const deep=SKIN.indexOf(l.skin)>=4,feat=deep?'#120b0e':C.ink2;
  return <g>
@@ -110,13 +112,13 @@ function Night({r}:{r:R}){
   {xs.map((x,i)=><Person key={i} l={lookFor(r,r()<.7)} x={x} y={232} s={between(r,1,1.2)}/>)}
  </>
 }
-function Portrait({r,seed}:{r:R;seed:string}){
+function Portrait({r,seed,avatar}:{r:R;seed:string;avatar?:Avatar|null}){
  return <>
   <rect width="400" height="225" fill={C.sky}/>
   <circle cx="300" cy="70" r="44" fill={C.butter}/>
   <Lights r={r} y={30} amp={12}/>
   <Confetti r={r} n={10} top={50} bottom={160}/>
-  <Person l={faceLook(seed).look} x={200} y={262} s={1.55}/>
+  <Person l={avatar?chosenLook(avatar).look:faceLook(seed).look} x={200} y={262} s={1.55}/>
  </>
 }
 
@@ -128,15 +130,18 @@ function faceLook(seed:string){const r=rng('face:'+(seed||'?').trim().toLowerCas
 
 export type SceneKind='table'|'road'|'night'|'portrait';
 export function sceneFor(kind:string,madeIt?:number|boolean):SceneKind{return madeIt?'night':kind==='trip'?'road':'table'}
-export function Scene({kind,seed,className=''}:{kind:SceneKind;seed:string;className?:string}){
+export function Scene({kind,seed,className='',avatar}:{kind:SceneKind;seed:string;className?:string;avatar?:Avatar|null}){
  const r=rng(kind+':'+seed);
  return <svg className={'scene '+className} viewBox="0 0 400 225" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
-  {kind==='road'?<Road r={r}/>:kind==='night'?<Night r={r}/>:kind==='portrait'?<Portrait r={r} seed={seed}/>:<Table r={r}/>}
+  {kind==='road'?<Road r={r}/>:kind==='night'?<Night r={r}/>:kind==='portrait'?<Portrait r={r} seed={seed} avatar={avatar}/>:<Table r={r}/>}
  </svg>
 }
-/* An illustrated avatar for a person, seeded by their name or handle. */
-export function Face({seed,className=''}:{seed:string;className?:string}){
- const id=useId().replace(/:/g,''),{bg,look:l}=faceLook(seed);
+// A person's own avatar choice as a drawable look.
+function chosenLook(a:Avatar){const c=avatarColors(a);return {bg:c.bg,look:{skin:c.skin,hair:c.hair,style:a.hair,shirt:c.shirt,hat:a.shirt==='brick'?C.butter:C.brick,earring:a.hoops,glasses:a.glasses,armsUp:false} as Look}}
+/* A person's avatar: their uploaded photo, else the avatar they chose, else a colourful default seeded by their name. */
+export function Face({seed,className='',avatar,photo}:{seed:string;className?:string;avatar?:Avatar|null;photo?:string|null}){
+ const id=useId().replace(/:/g,''),{bg,look:l}=avatar?chosenLook(avatar):faceLook(seed);
+ if(photo)return <img className={'face photo '+className} src={photo} alt="" loading="lazy" decoding="async"/>;
  return <svg className={'face '+className} viewBox="0 0 100 100" aria-hidden="true" focusable="false">
   <defs><clipPath id={'f'+id}><circle cx="50" cy="50" r="50"/></clipPath></defs>
   <g clipPath={`url(#f${id})`}><rect width="100" height="100" fill={bg}/><Person l={l} x={50} y={150} s={1.25}/></g>

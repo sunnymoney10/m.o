@@ -1,5 +1,6 @@
 import {env} from 'cloudflare:workers';
 import {cleanName} from '../../../lib/names';
+import {cleanAvatar,parseAvatar,parsePhoto} from '../../../lib/avatar';
 export const dynamic='force-dynamic';
 function https(v:unknown){const s=str(v,1000);if(!s)return null;try{const u=new URL(s);return u.protocol==='https:'?u.href:null}catch{return null}}
 const invitation=https;
@@ -14,29 +15,45 @@ async function handler(req:Request){
  const cookies=req.headers.get('cookie')||''; let session=cookies.match(/(?:^|; )mo_session=([a-f0-9-]{36})(?:;|$)/)?.[1]; const fresh=!session;session ||=crypto.randomUUID();
  const actor=req.headers.get('oai-authenticated-user-id')||session;
  const json=(obj:unknown,status=200)=>new Response(JSON.stringify(obj),{status,headers:{'Content-Type':'application/json','Cache-Control':'no-store',...(fresh?{'Set-Cookie':`mo_session=${session}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=31536000`}:{})}});
+ // Serves a stored data-URL photo as an image. Cached by the browser; the URL changes when the photo changes.
+ const image=(dataUrl:string|undefined)=>{const p=parsePhoto(dataUrl);if(!p)return new Response('Not found',{status:404,headers:{'Cache-Control':'no-store'}});return new Response(p.bytes.buffer as ArrayBuffer,{headers:{'Content-Type':p.type,'Cache-Control':'private, max-age=31536000, immutable','X-Content-Type-Options':'nosniff','Content-Security-Policy':"default-src 'none'"}})};
  try{
   const url=new URL(req.url); const seg=url.pathname.split('/').filter(Boolean).slice(1);const db=env.DB;
   if(req.method!=='GET' && req.headers.get('origin')!==url.origin)return json({error:'Please submit from this site.'},403);
   if(!db)return json({error:'The shared database is not connected yet.'},503);
-  if(req.headers.get('content-length') && Number(req.headers.get('content-length'))>16000)return json({error:'That request is too large.'},413);
+  const maxBody=seg.join('/')==='me/photo'?72000:16000;
+  if(req.headers.get('content-length') && Number(req.headers.get('content-length'))>maxBody)return json({error:'That request is too large.'},413);
   const body=async()=>{if(req.method==='GET'||req.method==='DELETE')return {} as any;try{return await req.json() as any}catch{return {} as any}};
 
   // ---- Your m.o profile ----
+  // ---- Profile photo: a small image resized on the phone, stored in the database (no file storage service) ----
+  if(seg[0]==='me'&&seg[1]==='photo'&&seg.length===2){
+   if(req.method==='GET'){const r=await db.prepare('SELECT photo FROM profiles WHERE actor=?').bind(actor).first<any>();return image(r?.photo)}
+   if(req.method==='PUT'){
+    const b=await body();const photo=parsePhoto(b.photo);if(!photo)return json({error:'Choose a JPEG, PNG or WebP photo under 48 KB. m.o shrinks it for you before upload.'},400);
+    const has=await db.prepare('SELECT actor FROM profiles WHERE actor=?').bind(actor).first();if(!has)return json({error:'Save your name and handle first, then add a photo.'},400);
+    await db.prepare('UPDATE profiles SET photo=?,photo_updated=? WHERE actor=?').bind(b.photo,new Date().toISOString(),actor).run();return json({ok:true});
+   }
+   if(req.method==='DELETE'){await db.prepare("UPDATE profiles SET photo='',photo_updated='' WHERE actor=?").bind(actor).run();return json({ok:true})}
+  }
   if(seg[0]==='me'&&seg.length===1){
    if(req.method==='GET'){
-    const p=await db.prepare('SELECT name,handle,mo,interests,style FROM profiles WHERE actor=?').bind(actor).first<any>();
+    const p=await db.prepare('SELECT name,handle,mo,interests,style,avatar,photo_updated FROM profiles WHERE actor=?').bind(actor).first<any>();
     const {results:history}=await db.prepare("SELECT p.id,p.title,p.kind,p.date,p.place FROM plans p JOIN guests g ON g.plan_id=p.id AND g.actor=? WHERE p.made_it=1 AND g.status='in' ORDER BY p.date DESC").bind(actor).all<any>();
     const done=await db.prepare('SELECT count(*) AS n FROM tasks WHERE claimed_by=? AND done=1').bind(actor).first<any>();
     const hosted=await db.prepare('SELECT count(*) AS n FROM plans WHERE owner=? AND made_it=1').bind(actor).first<any>();
     const cities=[...new Set(history.map((h:any)=>String(h.place||'').trim()).filter(Boolean))];
-    return json({profile:p?{...p,interests:parseInterests(p.interests)}:null,history,cities,contributed:done?.n||0,hosted:hosted?.n||0});
+    return json({profile:p?{name:p.name,handle:p.handle,mo:p.mo,style:p.style,interests:parseInterests(p.interests),avatar:parseAvatar(p.avatar),photo:p.photo_updated?'/api/me/photo?v='+encodeURIComponent(p.photo_updated):null}:null,history,cities,contributed:done?.n||0,hosted:hosted?.n||0});
    }
    if(req.method==='PUT'){
     const b=await body();const name=str(b.name,60),handle=str(b.handle,24).toLowerCase().replace(/^@/,''),mo=str(b.mo,80),style=STYLES.includes(b.style)?b.style:'down';
     if(!name)return json({error:'Tell people what to call you.'},400);
     if(!HANDLE.test(handle))return json({error:'Handles use 2–24 lowercase letters, numbers or underscores.'},400);
+    // Keep the saved avatar unless a new, valid one is sent; null clears it.
+    const kept=await db.prepare('SELECT avatar FROM profiles WHERE actor=?').bind(actor).first<any>();const chosen=b.avatar===undefined?undefined:cleanAvatar(b.avatar);
+    const avatarJson=chosen===undefined?(kept?.avatar||''):chosen?JSON.stringify(chosen):'';
     const taken=await db.prepare('SELECT actor FROM profiles WHERE handle=? AND actor<>?').bind(handle,actor).first();if(taken)return json({error:'That handle is taken. Try another.'},409);
-    await db.batch([db.prepare('INSERT INTO profiles (actor,name,handle,mo,interests,style,updated) VALUES (?,?,?,?,?,?,?) ON CONFLICT(actor) DO UPDATE SET name=excluded.name,handle=excluded.handle,mo=excluded.mo,interests=excluded.interests,style=excluded.style,updated=excluded.updated').bind(actor,name,handle,mo,JSON.stringify(interestsOf(b.interests)),style,new Date().toISOString()),db.prepare('UPDATE guests SET name=? WHERE actor=?').bind(name,actor),db.prepare('UPDATE tasks SET claimed_name=? WHERE claimed_by=?').bind(name,actor),db.prepare('UPDATE memories SET name=? WHERE actor=?').bind(name,actor)]);
+    await db.batch([db.prepare('INSERT INTO profiles (actor,name,handle,mo,interests,style,updated,avatar) VALUES (?,?,?,?,?,?,?,?) ON CONFLICT(actor) DO UPDATE SET name=excluded.name,handle=excluded.handle,mo=excluded.mo,interests=excluded.interests,style=excluded.style,updated=excluded.updated,avatar=excluded.avatar').bind(actor,name,handle,mo,JSON.stringify(interestsOf(b.interests)),style,new Date().toISOString(),avatarJson),db.prepare('UPDATE guests SET name=? WHERE actor=?').bind(name,actor),db.prepare('UPDATE tasks SET claimed_name=? WHERE claimed_by=?').bind(name,actor),db.prepare('UPDATE memories SET name=? WHERE actor=?').bind(name,actor)]);
     return json({ok:true});
    }
   }
@@ -75,7 +92,7 @@ async function handler(req:Request){
    const answer=(status:string,count:number,names:string)=>(status==='in'?'going':status==='maybe'?'still checking':status==='out'?'can’t make it':'no reply yet')+(count?` (+${count}${names?' '+names:''})`:'');
 
    if(seg.length===2 && req.method==='GET'){
-    const gs=await db.prepare('SELECT g.id,g.name,g.status,g.note,g.actor,g.extra_count,g.extra_names,g.extra_status,g.dietary,g.staying,g.source,g.updated,pr.handle,pr.mo,pr.interests FROM guests g LEFT JOIN profiles pr ON pr.actor=g.actor WHERE g.plan_id=? ORDER BY g.rowid').bind(id).all<any>();
+    const gs=await db.prepare('SELECT g.id,g.name,g.status,g.note,g.actor,g.extra_count,g.extra_names,g.extra_status,g.dietary,g.staying,g.source,g.updated,pr.handle,pr.mo,pr.interests,pr.avatar,pr.photo_updated FROM guests g LEFT JOIN profiles pr ON pr.actor=g.actor WHERE g.plan_id=? ORDER BY g.rowid').bind(id).all<any>();
     const ts=await db.prepare('SELECT * FROM tasks WHERE plan_id=? ORDER BY rowid').bind(id).all<any>();
     const ps=await db.prepare('SELECT * FROM polls WHERE plan_id=? ORDER BY created').bind(id).all<any>();
     const os=await db.prepare('SELECT o.id,o.poll_id,o.label FROM poll_options o JOIN polls p ON p.id=o.poll_id WHERE p.plan_id=? ORDER BY o.rowid').bind(id).all<any>();
@@ -91,7 +108,7 @@ async function handler(req:Request){
     return json({plan:safe,host,activity:acts,organizer:gs.results.find((g:any)=>g.actor===owner)?.name||null,
      details:insider?details:'',hidden,
      // Dietary needs, sleepover requests and pending plus-ones are visible only to the organizer and the guest.
-     guests:gs.results.map(({actor:a,interests,dietary,staying,extra_count,extra_names,extra_status,...g}:any)=>{const own=a===actor,see=host||own,extra=see||extra_status==='approved';return {...g,isHost:a===owner,interests:interests?parseInterests(interests):[],isMe:own,extra_count:extra?extra_count:0,extra_names:extra?extra_names:'',extra_status:extra?extra_status:'',...(see?{dietary,staying:!!staying}:{})}}),
+     guests:gs.results.map(({actor:a,interests,dietary,staying,extra_count,extra_names,extra_status,avatar,photo_updated,...g}:any)=>{const own=a===actor,see=host||own,extra=see||extra_status==='approved';return {...g,avatar:parseAvatar(avatar),photo:photo_updated?`/api/plan/${id}/guests/${g.id}/photo?v=${encodeURIComponent(photo_updated)}`:null,isHost:a===owner,interests:interests?parseInterests(interests):[],isMe:own,extra_count:extra?extra_count:0,extra_names:extra?extra_names:'',extra_status:extra?extra_status:'',...(see?{dietary,staying:!!staying}:{})}}),
      tasks:ts.results.map(({claimed_by,...t}:any)=>({...t,isMine:claimed_by===actor})),
      polls,stops:insider?ss.results:[],
      memories:ms.results.map(({actor:a,...m}:any)=>({...m,isMine:a===actor}))});
@@ -148,6 +165,10 @@ async function handler(req:Request){
    }
    if(seg[2]==='guests'&&seg[3]){
     const row=await db.prepare('SELECT * FROM guests WHERE plan_id=? AND id=?').bind(id,str(seg[3],40)).first<any>();if(!row)return json({error:'That person is no longer on the list.'},404);
+    if(seg[4]==='photo'&&req.method==='GET'){
+     // Anyone with the plan link can see guests' profile photos, like their names.
+     const r=await db.prepare('SELECT photo FROM profiles WHERE actor=?').bind(row.actor).first<any>();return image(r?.photo);
+    }
     if(seg[4]==='pick'&&req.method==='POST'){
      // Picking a name on the organizer's list moves that spot (and any claims) to this phone.
      if(row.actor===plan.owner)return json({error:'That’s the organizer. Pick your own name.'},403);
