@@ -1,6 +1,6 @@
 'use client';
 import {useEffect,useState} from 'react';
-import {ArrowUpRight,ArrowLeft,Plus,CalendarDays,MapPin,Check,Link as LinkIcon,CheckCircle2,X,ChevronRight,LoaderCircle,HelpCircle,Pencil,House,UsersRound,Box,Soup,CakeSlice,CupSoda,Snowflake,Music,Car,BedDouble,Wallet,Utensils,ClipboardCheck,Salad,Wine,Ticket,Copy,Lock} from 'lucide-react';
+import {Trash2,ArrowUpRight,ArrowLeft,Plus,CalendarDays,MapPin,Check,Link as LinkIcon,CheckCircle2,X,ChevronRight,LoaderCircle,HelpCircle,Pencil,House,UsersRound,Box,Soup,CakeSlice,CupSoda,Snowflake,Music,Car,BedDouble,Wallet,Utensils,ClipboardCheck,Salad,Wine,Ticket,Copy,Lock} from 'lucide-react';
 import type {Plan,Task,Guest,Detail,Me,Profile} from '@/lib/types';
 import {ago} from '@/lib/types';
 import {Scene,Face,sceneFor} from '@/components/mo/art';
@@ -55,6 +55,9 @@ export default function Home(){
   for(const e of ['pointerdown','keydown','focus'])window.addEventListener(e,active);document.addEventListener('visibilitychange',seen);
   return()=>{clearInterval(interval);for(const e of ['pointerdown','keydown','focus'])window.removeEventListener(e,active);document.removeEventListener('visibilitychange',seen)}},[detail?.plan.id]);
  useEffect(()=>{if(!modal)return;const old=document.body.style.overflow;document.body.style.overflow='hidden';const previous=document.activeElement as HTMLElement|null;const esc=(e:KeyboardEvent)=>{if(e.key==='Escape')setModal(null);if(e.key==='Tab'){const nodes=Array.from(document.querySelectorAll<HTMLElement>('[role="dialog"] button:not(:disabled),[role="dialog"] input,[role="dialog"] textarea,[role="dialog"] select'));const first=nodes[0],last=nodes[nodes.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus()}}};window.addEventListener('keydown',esc);const timer=setTimeout(()=>document.querySelector<HTMLElement>('[role="dialog"] input, [role="dialog"] button')?.focus(),60);return()=>{document.body.style.overflow=old;clearTimeout(timer);window.removeEventListener('keydown',esc);previous?.focus()}},[modal]);
+ async function deletePlan(){if(!detail)return;if(!confirm(`Delete “${detail.plan.title}”? Everyone’s answers and the bring list will be removed. This can’t be undone.`))return;
+  if(demo){setModal(null);home();notify('Demo closed. Demos aren’t saved.');return}
+  setBusy(true);try{await api('plan/'+detail.plan.id,'DELETE');try{localStorage.removeItem('mo-shared-'+detail.plan.id)}catch{}setModal(null);home();notify('Plan deleted.')}catch(e:any){notify(e.message)}finally{setBusy(false)}}
  function home(){setDetail(null);setView('home');setError('');window.history.pushState({},'','/');list();window.scrollTo(0,0)}
  function openEdit(){const p=detail!.plan;setForm({...initial,title:p.title,kind:p.kind,place:p.place,budget:p.budget,note:p.note,details:detail!.details||'',date:p.date?new Date(new Date(p.date).getTime()-new Date(p.date).getTimezoneOffset()*60000).toISOString().slice(0,16):'',name,inviteUrl:p.invite_url||''});setModal('edit')}
  function goTab(tab:'people'|'list',opts:{add?:boolean}={}){setOpenAdd(!!opts.add);setPtab(tab);window.scrollTo(0,0)}
@@ -221,6 +224,7 @@ export default function Home(){
      {modal==='create'&&<label>{form.kind==='trip'?'Things to sort':'Things to bring'} <small>(one per line)</small><textarea rows={3} maxLength={4000} value={form.items} onChange={e=>setForm({...form,items:e.target.value})}/></label>}
      </div></details>
      {error&&<p className="form-error" role="alert">{error}</p>}
+     {modal==='edit'&&<div className="danger-zone"><button type="button" className="text-button danger" disabled={busy} onClick={deletePlan}><Trash2 size={15}/>Delete this plan</button><small>Removes the plan and everyone’s answers for good.</small></div>}
      <div className="form-bottom"><span>Free to use.</span><button className="primary" disabled={busy}>{busy?<LoaderCircle className="spin" size={18}/>:<ArrowUpRight size={18}/>} {modal==='edit'?'Save changes':'Create plan'}</button></div>
     </form></>}
   </section></div>}

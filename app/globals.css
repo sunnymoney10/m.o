@@ -535,3 +535,7 @@ legend{font-weight:600;font-size:14px;margin-bottom:8px;color:var(--ink)}
 .primary,.outline-button,.text-button,.claim-button,.chip,.name-chip,.swatch,.rsvp-choice,.seg button,.tab,.plan-card,.demo-card,.row-link,.status-grid>button,.status-items,.icon-button,.host-line-item,.style-option,.type-selector button,.feature-open,.me-dot{transition:transform .2s ease-out,background-color .15s,box-shadow .15s}
 :is(.primary,.outline-button,.text-button,.claim-button,.chip,.name-chip,.swatch,.rsvp-choice,.seg button,.tab,.plan-card,.demo-card,.row-link,.status-grid>button,.status-items,.icon-button,.host-line-item,.style-option,.type-selector button,.feature-open,.me-dot):active:not(:disabled){transform:scale(.97);transition-duration:.12s}
 @media(prefers-reduced-motion:reduce){:is(.primary,.outline-button,.text-button,.claim-button,.chip,.name-chip,.swatch,.rsvp-choice,.seg button,.tab,.plan-card,.demo-card,.row-link,.status-grid>button,.status-items,.icon-button,.host-line-item,.style-option,.type-selector button,.feature-open,.me-dot):active:not(:disabled){transform:none;opacity:.8}}
+
+/* delete plan */
+.danger-zone{display:grid;gap:2px;justify-items:start;padding-top:12px;border-top:1.5px solid var(--line)}
+.danger-zone small{color:var(--muted)}

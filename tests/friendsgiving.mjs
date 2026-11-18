@@ -72,4 +72,10 @@ globalThis.__moTestEnv.DAILY_NEW_PLANS='1';
 r=await request(crypto.randomUUID(),'plans','POST',{title:'Over the ceiling',name:'Someone'});assert.equal(r.status,429,'site-wide daily plan ceiling');
 r=await request(crypto.randomUUID(),`plan/${id}/rsvp`,'POST',{name:'Late guest',status:'maybe'});assert.equal(r.status,200,'RSVPs unaffected by the ceiling');
 delete globalThis.__moTestEnv.DAILY_NEW_PLANS;
-console.log('PASS: Friendsgiving guest list, name pick across browsers, plus-one approval, private address and dietary details, cancellations, host removal and the site-wide plan ceiling.');
+// Deleting a plan: guests can't; the host can, and everything goes.
+r=await request(tess2,'plan/'+id,'DELETE');assert.equal(r.status,403,'guests cannot delete');
+r=await request(ari,'plan/'+id,'DELETE');assert.equal(r.status,200);
+r=await request(ari,'plan/'+id);assert.equal(r.status,404,'plan is gone');
+r=await request(ari,'plans');assert.ok(!r.body.plans.some(p=>p.id===id),'gone from the host list');
+r=await request(tess2,'plans');assert.ok(!r.body.plans.some(p=>p.id===id),'gone from guest lists');
+console.log('PASS: Friendsgiving guest list, name pick across browsers, plus-one approval, private address and dietary details, cancellations, host removal, the site-wide plan ceiling and plan deletion.');
