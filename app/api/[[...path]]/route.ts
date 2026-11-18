@@ -6,6 +6,8 @@ const invitation=https;
 function str(v:unknown,max=300){return typeof v==='string'?v.trim().slice(0,max):''}
 const STYLES=['setter','details','down','wildcard','snacks'];
 const HANDLE=/^[a-z0-9_]{2,24}$/;
+// Optional DAILY_NEW_PLANS environment variable overrides the site-wide daily ceiling on new plans.
+const dailyNewPlans=()=>Number((env as {DAILY_NEW_PLANS?:string})?.DAILY_NEW_PLANS)||500;
 function interestsOf(v:unknown){return Array.isArray(v)?[...new Set(v.map(x=>str(x,24)).filter(Boolean))].slice(0,8):[]}
 function parseInterests(s:string){try{const v=JSON.parse(s);return Array.isArray(v)?v:[]}catch{return []}}
 async function handler(req:Request){
@@ -54,6 +56,8 @@ async function handler(req:Request){
     const b=await body();const title=str(b.title,100),name=str(b.name,60);if(!title||!name)return json({error:'Give the plan a title and tell us your name.'},400);
     if(b.date&&Number.isNaN(Date.parse(b.date)))return json({error:'Choose a valid date.'},400);
     if(b.inviteUrl&&!invitation(b.inviteUrl))return json({error:'Use a valid HTTPS invitation link.'},400);
+    // Site-wide ceiling so scripted abuse can't run usage past the free tier; never limits RSVPs or existing plans.
+    const today=await db.prepare('SELECT count(*) AS n FROM plans WHERE created>?').bind(new Date(Date.now()-86400000).toISOString()).first<any>();if((today?.n||0)>=dailyNewPlans())return json({error:'m.o has reached today’s limit for new plans. Please try again tomorrow.'},429);
     const recent=await db.prepare('SELECT count(*) AS n FROM plans WHERE owner=? AND created>?').bind(actor,new Date(Date.now()-86400000).toISOString()).first<any>();if((recent?.n||0)>=20)return json({error:'You’ve started a lot of plans today. Try again tomorrow.'},429);
     const id=crypto.randomUUID();const kind=b.kind==='trip'?'trip':'gathering';const taskList=Array.isArray(b.tasks)?b.tasks.slice(0,30):[];
     const statements=[db.prepare('INSERT INTO plans (id,owner,title,kind,date,place,budget,note,invite_url,created,details) VALUES (?,?,?,?,?,?,?,?,?,?,?)').bind(id,actor,title,kind,str(b.date,40),str(b.place,160),str(b.budget,60),str(b.note,2000),invitation(b.inviteUrl),new Date().toISOString(),str(b.details,1000)),db.prepare('INSERT INTO guests (plan_id,actor,name,status,note,id) VALUES (?,?,?,?,?,?)').bind(id,actor,name,'in','',crypto.randomUUID())];

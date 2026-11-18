@@ -67,4 +67,9 @@ assert.ok(!leaks(r.body,ari,tess,tess2,jordan,'invite:'),'organizer view never i
 // Arrival notes edit.
 r=await request(ari,'plan/'+id,'PATCH',{details:'Park on Elm. Buzz 3B. Shoes off.'});assert.equal(r.status,200);
 r=await request(ari,'plan/'+id);assert.equal(r.body.details,'Park on Elm. Buzz 3B. Shoes off.');assert.equal(r.body.plan.place,'1420 Elm St, Apt 3B','other fields kept');
-console.log('PASS: Friendsgiving guest list, name pick across browsers, plus-one approval, private address and dietary details, cancellations and host removal.');
+// Site-wide daily ceiling on new plans protects the free tier; RSVPs keep working at the ceiling.
+globalThis.__moTestEnv.DAILY_NEW_PLANS='1';
+r=await request(crypto.randomUUID(),'plans','POST',{title:'Over the ceiling',name:'Someone'});assert.equal(r.status,429,'site-wide daily plan ceiling');
+r=await request(crypto.randomUUID(),`plan/${id}/rsvp`,'POST',{name:'Late guest',status:'maybe'});assert.equal(r.status,200,'RSVPs unaffected by the ceiling');
+delete globalThis.__moTestEnv.DAILY_NEW_PLANS;
+console.log('PASS: Friendsgiving guest list, name pick across browsers, plus-one approval, private address and dietary details, cancellations, host removal and the site-wide plan ceiling.');

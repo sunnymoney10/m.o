@@ -1,13 +1,18 @@
-name: Validate mo.
+name: Validate m.o
 on:
   push:
     branches: [main]
   pull_request:
 permissions:
   contents: read
+# Cancel superseded runs so pushes in quick succession don't each use Actions minutes.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   validate:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

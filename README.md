@@ -31,6 +31,17 @@ The setter is the friend who makes an outing happen. m.o gives that person a sha
 
 The owner has approved a public pilot. The Site audience itself is changed in the Sites access controls (not in this repo). Once public, anyone possessing a plan’s UUID link can read that plan and respond as a guest; guest sessions can only write their own RSVP, votes, claims and posts. Basic abuse caps apply: 20 new plans per person per day, 150 guests and 100 items per plan, plus existing caps on votes, stops and memories. Do not publish private demo/test data or reuse preview sessions as production guests.
 
+## Running at $0
+
+m.o is built to need nothing paid:
+
+- **No paid services or keys.** No AI provider, email, SMS, maps, payments or file storage (R2 is off). Group-chat drafts are templates, Maps is a plain link, and avatars and artwork are SVG drawn in code. Fonts load from Google Fonts (free).
+- **Bounded database use.** Every per-plan query uses an index (migrations 0003–0005), so a request's cost doesn't grow with the total number of plans. An open plan refreshes every 30 seconds while visible and pauses after 10 minutes without interaction.
+- **Abuse ceilings.** 20 new plans per person per day, a site-wide ceiling of 500 new plans per day (override with a `DAILY_NEW_PLANS` environment variable), and per-plan caps on guests (150), items (100), votes, stops and memories. RSVPs and existing plans are never blocked by the site-wide ceiling.
+- **CI.** One GitHub Actions job on pushes to `main` and on pull requests, with superseded runs cancelled and a 15-minute timeout. Free for public repositories; private repositories use the account’s included Actions minutes.
+
+What this repo can’t control: the hosting platform’s own plan and usage limits. Check the Site’s hosting account for its free allowance and set any spending limit there.
+
 ## Reuse
 
 The app uses open-source React, Vinext/Vite, Drizzle (schema/migrations), Zod (ChatGPT tool input validation), and Lucide (icons). Source dependencies and versions are in package.json/package-lock.json; their upstream licenses remain in the packages. Public invitation repos were researched as architectural references; this is not a fork of Apple Invites, Gathio, or OpenInvite.
@@ -52,6 +63,7 @@ node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1
 node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0002_live_replay_profiles.sql
 node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0003_overrated_molly_hayes.sql
 node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0004_ordinary_next_avengers.sql
+node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0005_colorful_blacklash.sql
 npm run dev
 ```
 
