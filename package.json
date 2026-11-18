@@ -17,7 +17,8 @@
     "journeys": "node tests/e2e/friendsgiving.cjs",
     "journeys:quiet": "node tests/e2e/quiet-friends.cjs",
     "ux:metrics": "node tests/e2e/ux-metrics.cjs",
-    "journeys:profile": "node tests/e2e/profile-picture.cjs"
+    "journeys:profile": "node tests/e2e/profile-picture.cjs",
+    "a11y": "node tests/e2e/a11y.cjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

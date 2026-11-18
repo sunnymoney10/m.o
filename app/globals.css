@@ -236,7 +236,7 @@ legend{font-weight:600;font-size:14px;margin-bottom:8px;color:var(--ink)}
 .avatar-preview{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
 .avatar-big{width:96px;height:96px}
 .seg.small{flex:1;min-width:200px}
-.seg.small button{min-height:38px;font-size:14px}
+.seg.small button{min-height:44px;font-size:14px}
 .picker-rows{display:grid;gap:14px}
 .swatches{display:flex;flex-wrap:wrap;gap:8px}
 .swatch{width:34px;height:34px;border-radius:50%;box-shadow:inset 0 0 0 1.5px #0002}
@@ -336,7 +336,7 @@ legend{font-weight:600;font-size:14px;margin-bottom:8px;color:var(--ink)}
 .row-tools{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:4px}
 .row-tools .text-button{gap:5px}
 .note-form{display:grid;gap:14px;margin:0 0 14px;padding:16px;border-radius:18px;background:var(--cream)}
-.noted-banner{display:grid;gap:12px;padding:16px 18px;border-radius:var(--radius);background:var(--butter-soft);border:1.5px dashed #c9a43a}
+.noted-banner{display:grid;gap:12px;padding:16px 18px;border-radius:var(--radius);background:var(--butter-soft);border:1.5px dashed #7a5600}
 .noted-banner div:first-child{display:grid;gap:2px}
 .noted-banner strong{color:var(--ink);font-size:17px}
 .noted-actions{display:flex;flex-wrap:wrap;gap:8px}
@@ -344,7 +344,7 @@ legend{font-weight:600;font-size:14px;margin-bottom:8px;color:var(--ink)}
 .assign{display:block;min-width:0;max-width:100%}
 .assign select{width:100%;max-width:220px;padding:6px 10px;font-size:13px;border-radius:10px;font-weight:600;color:var(--ink)}
 .item-tools{flex-wrap:wrap;align-items:center;min-width:0}
-.check-badge.noted{background:transparent;border:2px dashed #c9a43a;color:#7a5600}
+.check-badge.noted{background:transparent;border:2px dashed #7a5600;color:#7a5600}
 .activity ul{list-style:none;margin:0;padding:0;display:grid}
 .activity li{display:grid;grid-template-columns:auto 1fr auto;align-items:baseline;gap:10px;padding:8px 0;border-top:1.5px solid var(--line);font-size:15px}
 .activity li:first-child{border-top:0}
@@ -520,3 +520,18 @@ legend{font-weight:600;font-size:14px;margin-bottom:8px;color:var(--ink)}
  .primary.block{max-width:none}
 }
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* ---------- tap targets: everything tappable is at least 44px (Apple HIG) ---------- */
+.text-button,.foot button,.appbar-mark,.rail-mark,.claim-button,.chip,.name-chip,.status-grid>button,.status-items,.seg button,.rsvp-choice,.outline-button,.primary,.lock-button,.vote-button,.style-option,.type-selector button,.draft-tabs button{min-height:44px}
+.text-button,.foot button,.appbar-mark{display:inline-flex;align-items:center}
+.text-button.small{padding-block:0}
+.swatch{width:44px;height:44px}
+.assign select{min-height:44px}
+.vote-button{min-width:44px}
+.status-grid>*{align-content:center}
+.row-tools,.item-tools{gap:0 16px}
+
+/* ---------- shared press effect: every tap is answered ---------- */
+.primary,.outline-button,.text-button,.claim-button,.chip,.name-chip,.swatch,.rsvp-choice,.seg button,.tab,.plan-card,.demo-card,.row-link,.status-grid>button,.status-items,.icon-button,.host-line-item,.style-option,.type-selector button,.feature-open,.me-dot{transition:transform .2s ease-out,background-color .15s,box-shadow .15s}
+:is(.primary,.outline-button,.text-button,.claim-button,.chip,.name-chip,.swatch,.rsvp-choice,.seg button,.tab,.plan-card,.demo-card,.row-link,.status-grid>button,.status-items,.icon-button,.host-line-item,.style-option,.type-selector button,.feature-open,.me-dot):active:not(:disabled){transform:scale(.97);transition-duration:.12s}
+@media(prefers-reduced-motion:reduce){:is(.primary,.outline-button,.text-button,.claim-button,.chip,.name-chip,.swatch,.rsvp-choice,.seg button,.tab,.plan-card,.demo-card,.row-link,.status-grid>button,.status-items,.icon-button,.host-line-item,.style-option,.type-selector button,.feature-open,.me-dot):active:not(:disabled){transform:none;opacity:.8}}

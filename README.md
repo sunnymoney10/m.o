@@ -79,7 +79,7 @@ npm test
 npm run build
 ```
 
-With `npm run dev` running, `npm run journeys` replays the Friendsgiving phone journeys (a host; guests picking names, RSVPing with an extra guest, claiming, switching browsers and cancelling) using the preinstalled Playwright. Pass a folder to keep screenshots: `npm run journeys -- ./shots`. `npm run journeys:profile -- <photo.jpg>` checks avatars and photo upload. `npm run ux:metrics` measures form fields, overview length and guest taps for before/after comparisons. `npm run journeys:quiet` replays the host recording answers for friends who never open the link, then one of them confirming later.
+With `npm run dev` running, `npm run journeys` replays the Friendsgiving phone journeys (a host; guests picking names, RSVPing with an extra guest, claiming, switching browsers and cancelling) using the preinstalled Playwright. Pass a folder to keep screenshots: `npm run journeys -- ./shots`. `npm run journeys:profile -- <photo.jpg>` checks avatars and photo upload. `npm run a11y` checks 44px tap targets and large text. `npm run ux:metrics` measures form fields, overview length and guest taps for before/after comparisons. `npm run journeys:quiet` replays the host recording answers for friends who never open the link, then one of them confirming later.
 
 GitHub Actions runs these checks on pushes to main and pull requests. No repository secrets are needed for these validation checks. No automatic deployment credentials are included.
 
