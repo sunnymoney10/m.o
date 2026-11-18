@@ -68,6 +68,6 @@ Use `sites-preview start /workspace/sites/mo` for managed browser QA. Apply pend
 
 ## Deliberately unresolved
 
-Photo uploads are not stored by m.o; replay photos are HTTPS links. Demo photos in `public/photos` are cropped from the m.o brand mockup.
+Photo uploads are not stored by m.o; replay photos are HTTPS links. Illustrations are m.o’s own: flat cut-paper scenes and characters drawn as SVG in `components/mo/art.tsx`, seeded by plan ID or name so each plan and person keeps a consistent picture. No stock or generated photos are bundled.
 
 No payment processing, paid tier, booked inventory, affiliate revenue, social-platform scraping, automatic message sending, or automatic Apple/Google Calendar sync is implemented. The consumer core is free. A 30-day revenue route still requires validation and actual commercial terms; this prototype does not establish revenue or demand.

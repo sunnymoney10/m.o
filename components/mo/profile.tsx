@@ -2,7 +2,8 @@
 import {useEffect,useState} from 'react';
 import {Check,MapPin,Pencil,Plus,ArrowUpRight,LoaderCircle,Lock,UsersRound} from 'lucide-react';
 import type {Me,Profile} from '@/lib/types';
-import {INTERESTS,STYLES,photoFor} from '@/lib/types';
+import {INTERESTS,STYLES} from '@/lib/types';
+import {Scene} from './art';
 
 const empty:Profile={name:'',handle:'',mo:'',interests:[],style:'down'};
 
@@ -17,7 +18,7 @@ export function ProfileView({me,loading,save,openPlan,start}:{me:Me|null;loading
  const shown=editing?f:p;
  return <div className="profile-page">
   <section className="profile-top">
-   <div className="profile-cover" aria-hidden="true"><span className="profile-initial">{(shown?.name||'?').slice(0,1).toUpperCase()}</span><span className="cover-note">What’s your m.o?</span></div>
+   <div className="profile-cover"><Scene kind="portrait" seed={shown?.handle||shown?.name||'you'}/><span className="cover-note">What’s your m.o?</span></div>
    <h1>{shown?.name||'Your name'}</h1>
    <span className="handle">@{shown?.handle||'yourhandle'}</span>
    <p className="mo-line">{shown?.mo||'Sunday dinners. Extra chairs.'}</p>
@@ -41,7 +42,7 @@ export function ProfileView({me,loading,save,openPlan,start}:{me:Me|null;loading
   <section className="made-section">
    <div className="section-title"><h2>Made it out</h2><span className="soft-pill">{me?.history.length||0} {me?.history.length===1?'plan':'plans'}</span></div>
    {me?.history.length?<div className="history-grid">{me.history.map(h=><button key={h.id} className="history-card" onClick={()=>openPlan(h.id)}>
-    <img src={photoFor(h.kind,h.id)} alt="" loading="lazy"/>
+    <Scene kind="night" seed={h.id}/>
     <strong>{h.title}</strong><small>{h.date?new Date(h.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):''}{h.place?' · '+h.place:''}</small></button>)}</div>
    :<div className="empty-state"><div><h3>Your history starts with one plan.</h3><p>When a plan you’re in gets marked “we made it out,” it lands here.</p></div><button className="outline-button" onClick={start}>Start a plan <ArrowUpRight size={15}/></button></div>}
    <p className="shared-note"><UsersRound size={18} strokeWidth={1.8}/>Shared with people in your plans</p>

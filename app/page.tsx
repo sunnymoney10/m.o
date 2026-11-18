@@ -2,7 +2,7 @@
 import {useEffect,useState} from 'react';
 import {ArrowUpRight,ArrowLeft,Plus,CalendarDays,MapPin,Users,Check,Link as LinkIcon,CheckCircle2,Clock,X,ChevronRight,LoaderCircle,HelpCircle,Pencil,House,UsersRound,Box,Soup,CakeSlice,CupSoda,Snowflake,Music,Car,BedDouble,Wallet,Utensils,ClipboardCheck,Salad,Wine,Ticket,Copy,Lock} from 'lucide-react';
 import type {Plan,Task,Guest,Detail,Me,Profile} from '@/lib/types';
-import {photoFor} from '@/lib/types';
+import {Scene,Face,sceneFor} from '@/components/mo/art';
 import {SetterPanel,Decisions,LivePlan,Replay} from '@/components/mo/plan-sections';
 import {ProfileView} from '@/components/mo/profile';
 import {Wordmark} from '@/components/mo/brand';
@@ -22,7 +22,7 @@ const DEMOS:Detail[]=[
   guests:[{name:'You',status:'in',note:'',isMe:true},{name:'Jules',status:'in',note:'',isMe:false,handle:'jules',mo:'One more song.',interests:['Live music','Late nights']},{name:'Mika',status:'in',note:'',isMe:false,handle:'mika',mo:'Down for whatever.',interests:['Food runs','Karaoke']}],
   tasks:[{id:'r1',title:'Grab a big booth',category:'todo',claimed_name:'Mika',done:1,isMine:false},{id:'r2',title:'Split the check',category:'todo',claimed_name:'Jules',done:1,isMine:false}],
   polls:[],stops:[],
-  memories:[{id:'m1',name:'Jules',kind:'shoutout',body:'Mika called the diner at 11:40 and somehow got us the big booth. Legend.',photo_url:null,created:'2026-11-08T05:00:00.000Z',isMine:false},{id:'m2',name:'Mika',kind:'memory',body:'Three milkshakes, one straw fight, zero regrets.',photo_url:'/photos/diner-table.jpg',created:'2026-11-08T04:00:00.000Z',isMine:false},{id:'m3',name:'Jules',kind:'memory',body:'The booth photo. Frame it.',photo_url:'/photos/diner-crew.jpg',created:'2026-11-08T03:00:00.000Z',isMine:false}]}
+  memories:[{id:'m1',name:'Jules',kind:'shoutout',body:'Mika called the diner at 11:40 and somehow got us the big booth. Legend.',photo_url:null,created:'2026-11-08T05:00:00.000Z',isMine:false},{id:'m2',name:'Mika',kind:'memory',body:'Three milkshakes, one straw fight, zero regrets.',photo_url:null,created:'2026-11-08T04:00:00.000Z',isMine:false},{id:'m3',name:'Jules',kind:'memory',body:'The booth photo. Frame it.',photo_url:null,created:'2026-11-08T03:00:00.000Z',isMine:false}]}
 ];
 const DEMO_COPY=[['THE FRIENDSGIVING','Who’s bringing dessert?','A dinner like Kaela’s, without asking everyone twice.'],['THE WEEKEND AWAY','Which weekend? Where are we staying?','Eight people, two votes, one link.'],['THE REPLAY','We made it out.','Shout-outs and photos after the night.']];
 const initial={title:'',kind:'gathering',date:'',place:'',budget:'',note:'',inviteUrl:'',name:'',items:''};
@@ -34,7 +34,6 @@ function nextUp(plans:Plan[]){const now=Date.now()-6*3600e3;const live=plans.fil
 // The one thing to sort out, from saved plan data only. Never a guess about who will do it.
 function sortOut(p:Plan):[string,string]|null{const n=p.open_items||0;if(n&&p.open_item)return [n===1?'One thing to sort out':n+' things to sort out',n===1?`${p.open_item} still needs a volunteer`:`${p.open_item} and ${n-1} more need a volunteer`];if(p.open_votes)return [p.open_votes===1?'One vote is still open':p.open_votes+' votes are still open','Lock it in when the group has weighed in'];if(!p.date)return ['One thing to sort out','The date still needs deciding'];if(!p.place)return ['One thing to sort out','The place still needs deciding'];return null}
 function itemIcon(title:string,category:string){const t=title.toLowerCase(),has=(re:string)=>new RegExp('\\b(?:'+re+')\\b').test(t);const I=has('ice|ice bags?')?Snowflake:has('drinks?|sodas?|juice|water|coffee|tea|lemonade|seltzer')?CupSoda:has('wine|beers?|champagne|cocktails?|prosecco')?Wine:has('sweets?|something sweet|desserts?|cakes?|pies?|cookies?|brownies?|cupcakes?')?CakeSlice:has('salads?|veggies|vegetables|greens')?Salad:has('main|main dish|mac|mac and cheese|sides?|dish|turkey|ham|soup|stew|rice|bread|rolls?|stuffing|casserole|chicken')?Soup:has('music|playlist|speakers?|dj')?Music:has('rides?|cars?|drive|driving|carpool|pick ?up')?Car:has('stay|accommodation|airbnb|hotel|rooms?|beds?|lodging')?BedDouble:has('budget|money|pay|split|split the check|venmo')?Wallet:has('tickets?|reservations?|reserve|book|booking')?Ticket:has('plates?|cups?|napkins?|forks?|utensils?|chairs?|folding chairs|tables?|cutlery')?Utensils:category==='bring'?Box:ClipboardCheck;return <I size={22} strokeWidth={1.7}/>}
-const initials=(n:string)=>(n||'?').trim().slice(0,1).toUpperCase();
 
 export default function Home(){
  const [plans,setPlans]=useState<Plan[]>([]),[detail,setDetail]=useState<Detail|null>(null),[view,setView]=useState<'home'|'plans'|'me'>('home'),[me,setMe]=useState<Me|null>(null),[meLoading,setMeLoading]=useState(false),[loading,setLoading]=useState(true),[busy,setBusy]=useState(false),[toast,setToast]=useState(''),[error,setError]=useState(''),[modal,setModal]=useState<'create'|'edit'|'help'|null>(null),[form,setForm]=useState(initial),[tab,setTab]=useState('all'),[addType,setAddType]=useState('bring'),[newItem,setNewItem]=useState(''),[name,setName]=useState(''),[rsvpNote,setRsvpNote]=useState(''),[showRSVP,setShowRSVP]=useState(false),[ptab,setPtab]=useState<'overview'|'people'|'list'>('overview'),[hello,setHello]=useState('Hey');
@@ -71,10 +70,10 @@ export default function Home(){
  const navItems=[['home','Home',House,home],['plans','Plans',CalendarDays,plansView],['me','People',UsersRound,profile]] as const;
  const navOn=(k:string)=>k==='plans'?where==='plans'||where==='plan':where===k;
 
- const planRow=(x:Plan)=><button className="row-link" key={x.id} onClick={()=>open(x.id)}><img className="row-thumb" src={photoFor(x.kind,x.id)} alt="" loading="lazy"/><span className="row-text"><strong>{x.title}</strong><span>{pretty(x.date)} · {x.going||0} going{x.made_it?' · made it out':''}</span></span><ChevronRight size={20}/></button>;
+ const planRow=(x:Plan)=><button className="row-link" key={x.id} onClick={()=>open(x.id)}><Scene className="row-thumb" kind={sceneFor(x.kind,x.made_it)} seed={x.id}/><span className="row-text"><strong>{x.title}</strong><span>{pretty(x.date)} · {x.going||0} going{x.made_it?' · made it out':''}</span></span><ChevronRight size={20}/></button>;
  const demoCards=<section className="demos" aria-labelledby="demos-title">
   <div className="section-title"><h2 id="demos-title">Take m.o for a spin</h2><span className="fine">Fictional people · nothing saved</span></div>
-  <div className="demo-scroll">{DEMOS.map((d,i)=><button className="demo-card" key={d.plan.id} onClick={()=>open(d.plan.id)}><img src={['/photos/diner-table.jpg','/photos/picnic.jpg','/photos/diner-crew.jpg'][i]} alt="" loading="lazy"/><span className="eyebrow">{DEMO_COPY[i][0]}</span><strong>{DEMO_COPY[i][1]}</strong><span className="fine">{DEMO_COPY[i][2]}</span></button>)}</div>
+  <div className="demo-scroll">{DEMOS.map((d,i)=><button className="demo-card" key={d.plan.id} onClick={()=>open(d.plan.id)}><Scene kind={sceneFor(d.plan.kind,d.plan.made_it)} seed={d.plan.id}/><span className="eyebrow">{DEMO_COPY[i][0]}</span><strong>{DEMO_COPY[i][1]}</strong><span className="fine">{DEMO_COPY[i][2]}</span></button>)}</div>
  </section>;
 
  return <div className="app">
@@ -89,7 +88,7 @@ export default function Home(){
     <button className="appbar-mark" onClick={home} aria-label="m.o home"><Wordmark/></button>
     {where==='plan'&&detail!.host?<button className="icon-button" aria-label="Edit plan details" onClick={()=>{setForm({...initial,title:p!.title,kind:p!.kind,place:p!.place,budget:p!.budget,note:p!.note,date:p!.date?new Date(new Date(p!.date).getTime()-new Date(p!.date).getTimezoneOffset()*60000).toISOString().slice(0,16):'',name,inviteUrl:p!.invite_url||''});setModal('edit')}}><Pencil size={20}/></button>
     :where==='plan'?<span className="icon-button" aria-hidden="true"/>
-    :<button className="me-dot" aria-label="Your m.o profile" onClick={profile}>{myName?initials(myName):<HelpCircle size={20}/>}</button>}
+    :<button className="me-dot" aria-label="Your m.o profile" onClick={profile}>{myName?<Face seed={me?.profile?.handle||myName}/>:<HelpCircle size={20}/>}</button>}
    </header>
    <main className="screen">
    {error&&<div className="error" role="alert">{error}<button onClick={()=>{setError('');list()}}>Try again</button></div>}
@@ -100,12 +99,12 @@ export default function Home(){
     <section className="greeting"><h1>{hello}{myName?', '+myName:''}.</h1><p>{featured?'Here’s what’s coming together.':plans.length?'Everything you set has happened. What’s next?':'Make it out the groupchat.'}</p></section>
     {loading?<div className="loading"><LoaderCircle className="spin"/>Getting your plans…</div>
     :featured?<article className="feature-card">
-     <button className="feature-open" onClick={()=>open(featured.id)} aria-label={'Open '+featured.title}><img src={photoFor(featured.kind,featured.id)} alt="" loading="lazy"/></button>
+     <button className="feature-open" onClick={()=>open(featured.id)} aria-label={'Open '+featured.title}><Scene kind={sceneFor(featured.kind,featured.made_it)} seed={featured.id}/></button>
      <div className="feature-body"><h2>{featured.title}</h2><p className="meta">{when(featured.date)}</p><p className="meta">{featured.going||0} going{featured.maybe?` · ${featured.maybe} still checking`:''}</p></div>
      {(()=>{const s=sortOut(featured);return s?<div className="sort-out"><Box size={22} strokeWidth={1.7}/><div><strong>{s[0]}</strong><span>{s[1]}</span></div><button onClick={async()=>{await open(featured.id);if(featured.open_items)setPtab('list')}}>Review plan</button></div>
       :<div className="sort-out settled"><CheckCircle2 size={22} strokeWidth={1.7}/><div><strong>Everything has a person</strong><span>Date, place and every item are covered</span></div><button onClick={()=>open(featured.id)}>View plan</button></div>})()}
     </article>
-    :<article className="feature-card empty"><img src="/photos/diner-crew.jpg" alt="" loading="lazy"/><div className="feature-body"><h2>Your next “we should” starts here.</h2><p className="meta">A dinner, a trip, a whole lot of catching up. One link for the plan, the votes, and who’s bringing what.</p></div><span className="note-card">Saved you a seat.</span></article>}
+    :<article className="feature-card empty"><Scene kind="table" seed="welcome"/><div className="feature-body"><h2>Your next “we should” starts here.</h2><p className="meta">A dinner, a trip, a whole lot of catching up. One link for the plan, the votes, and who’s bringing what.</p></div><span className="note-card">Saved you a seat.</span></article>}
     {others.length>0&&<section className="row-list"><h2>Also on your list</h2>{others.slice(0,4).map(planRow)}{others.length>4&&<button className="text-button" onClick={plansView}>See all plans <ArrowUpRight size={15}/></button>}</section>}
     <button className="primary block" onClick={()=>create()}>Start a plan</button>
     {demoCards}
@@ -115,17 +114,17 @@ export default function Home(){
     <section className="greeting"><h1>Plans</h1><p>Everything you’re setting or showing up to.</p></section>
     {plans.length>0&&<div className="seg" role="group" aria-label="Filter plans">{[['all','All'],['gathering','Get-togethers'],['trip','Trips']].map(([key,label])=><button className={tab===key?'on':''} aria-pressed={tab===key} key={key} onClick={()=>setTab(key)}>{label}</button>)}</div>}
     {loading?<div className="loading"><LoaderCircle className="spin"/>Getting your plans…</div>
-    :filtered.length?<div className="card-grid">{filtered.map(x=><button className="plan-card" key={x.id} onClick={()=>open(x.id)}><img src={photoFor(x.kind,x.id)} alt="" loading="lazy"/><span className="card-body"><strong>{x.title}</strong><span className="meta">{when(x.date)}</span><span className="meta">{x.place||'Place to decide'}</span><span className="card-foot"><span>{x.going||0} going</span>{x.made_it?<span className="chip-made">Made it out</span>:(x.open_items||0)>0?<span className="chip-open">{x.open_items} open</span>:null}</span></span></button>)}</div>
+    :filtered.length?<div className="card-grid">{filtered.map(x=><button className="plan-card" key={x.id} onClick={()=>open(x.id)}><Scene kind={sceneFor(x.kind,x.made_it)} seed={x.id}/><span className="card-body"><strong>{x.title}</strong><span className="meta">{when(x.date)}</span><span className="meta">{x.place||'Place to decide'}</span><span className="card-foot"><span>{x.going||0} going</span>{x.made_it?<span className="chip-made">Made it out</span>:(x.open_items||0)>0?<span className="chip-open">{x.open_items} open</span>:null}</span></span></button>)}</div>
     :<div className="empty-state"><h3>{plans.length?'Nothing here yet.':'No plans yet.'}</h3><p>Start one, then drop the link in the group chat. Friends join without an app or an account.</p></div>}
     <button className="primary block" onClick={()=>create()}>Start a plan</button>
     {demoCards}
    </>
 
    :<>
-    <div className="plan-photo"><img src={photoFor(p!.kind,p!.id)} alt=""/>{demo?<span className="demo-badge">Demo · changes aren’t saved</span>:p!.made_it?<span className="demo-badge made">Made it out</span>:null}</div>
+    <div className="plan-photo"><Scene kind={sceneFor(p!.kind,p!.made_it)} seed={p!.id}/>{demo?<span className="demo-badge">Demo · changes aren’t saved</span>:p!.made_it?<span className="demo-badge made">Made it out</span>:null}</div>
     <section className="plan-head">
      <h1>{p!.title}</h1>
-     <p className="host-line"><span className="mini-avatar">{initials(hostName||'?')}</span>Hosted by {hostIsMe?'you':hostName||'the organizer'}</p>
+     <p className="host-line"><Face className="mini-avatar" seed={hostName||'?'}/>Hosted by {hostIsMe?'you':hostName||'the organizer'}</p>
      <p className="meta-line"><CalendarDays size={20} strokeWidth={1.7}/>{when(p!.date)}</p>
      <p className="meta-line"><MapPin size={20} strokeWidth={1.7}/>{p!.place||'Place to decide'}</p>
      <div className="plan-actions"><button className="outline-button brick" onClick={demo?()=>create(p!.kind):share}>{demo?<Plus size={16}/>:<LinkIcon size={16}/>}{demo?'Make a real plan':'Copy invite link'}</button><button className="outline-button" onClick={calendar}><CalendarDays size={16}/>Add to calendar</button></div>
@@ -149,7 +148,7 @@ export default function Home(){
      <div className="section-title"><h2>We gonna mo?</h2><span className="soft-pill">{going} in · {guests.filter(g=>g.status==='maybe').length} maybe</span></div>
      {(!mine_||showRSVP)&&<div className="rsvp-fields"><label>Your name<input maxLength={60} value={name} onChange={e=>setName(e.target.value)} placeholder="What should we call you?"/></label><label>A note for the group <small>(optional)</small><input maxLength={300} value={rsvpNote} onChange={e=>setRsvpNote(e.target.value)} placeholder="Dietary needs, timing, anything helpful…"/></label></div>}
      <div className="rsvp-buttons">{([['in','I’m in',Check],['maybe','Let me check',Clock],['out','Can’t this time',X]] as const).map(([s,label,Icon])=><button key={s} disabled={busy} aria-pressed={mine_?.status===s} className={'rsvp-choice choice-'+s+(mine_?.status===s?' chosen':'')} onClick={()=>rsvp(s)}><Icon size={17}/>{label}</button>)}{mine_&&!showRSVP&&<button className="text-button small" onClick={()=>setShowRSVP(true)}>Edit my details</button>}</div>
-     <div className="guest-list">{guests.map((g,i)=><div className="guest" key={i}><span className={'avatar tone-'+i%4}>{initials(g.name)}</span><div className="guest-info"><strong>{g.name}{g.isMe?' (you)':''}{g.name===hostName?<em> · host</em>:null}</strong>{g.handle&&<small>@{g.handle}</small>}{g.mo&&<small className="guest-mo">“{g.mo}”</small>}{g.note&&<small>{g.note}</small>}</div><span className={'status '+g.status}>{g.status==='in'?'Going':g.status==='maybe'?'Checking':'Can’t go'}</span></div>)}</div>
+     <div className="guest-list">{guests.map((g,i)=><div className="guest" key={i}><Face className="avatar" seed={g.handle||g.name}/><div className="guest-info"><strong>{g.name}{g.isMe&&g.name!=='You'?' (you)':''}{g.name===hostName?<em> · host</em>:null}</strong>{g.handle&&<small>@{g.handle}</small>}{g.mo&&<small className="guest-mo">“{g.mo}”</small>}{g.note&&<small>{g.note}</small>}</div><span className={'status '+g.status}>{g.status==='in'?'Going':g.status==='maybe'?'Checking':'Can’t go'}</span></div>)}</div>
     </section>}
 
     {ptab==='list'&&<section className="stack">
@@ -194,7 +193,7 @@ function TaskRow({task:t,host,busy,act}:{task:Task;host:boolean;busy:boolean;act
  return <div className={'item-row'+(t.done?' done':'')}>
   <span className="item-icon">{itemIcon(t.title,t.category)}</span>
   <div className="item-info"><strong>{t.title}</strong>
-   {t.claimed_name?<span className="by"><span className="mini-avatar">{initials(t.claimed_name)}</span>{t.isMine&&!t.done?(bring?'You’re bringing this':'You’re on it'):`${who} ${verb}`}</span>:<span>{t.done?'Handled':'Still available'}</span>}
+   {t.claimed_name?<span className="by"><Face className="mini-avatar" seed={t.claimed_name}/>{t.isMine&&!t.done?(bring?'You’re bringing this':'You’re on it'):`${who} ${verb}`}</span>:<span>{t.done?'Handled':'Still available'}</span>}
    {!t.claimed_name&&host&&<span className="item-tools"><button className="text-button small quiet" disabled={busy} onClick={()=>act(t,'done')}>{t.done?'Not done yet':'Already handled'}</button></span>}
    {t.claimed_name&&(t.isMine||host)&&<span className="item-tools"><button className="text-button small" disabled={busy} onClick={()=>act(t,'done')}>{t.done?'Not done yet':bring?'Mark brought':'Mark done'}</button><button className="text-button small quiet" disabled={busy} onClick={()=>act(t,'release')}>{t.isMine?'Let it go':'Release'}</button></span>}
   </div>

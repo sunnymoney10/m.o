@@ -9,7 +9,5 @@ export type Detail={plan:Plan;host:boolean;organizer?:string|null;guests:Guest[]
 export type Act=(path:string,method:string,body:unknown,demo:(d:Detail)=>void,message?:string)=>Promise<boolean>;
 export type Profile={name:string;handle:string;mo:string;interests:string[];style:string};
 export type Me={profile:Profile|null;history:{id:string;title:string;kind:string;date:string;place:string}[];cities:string[];contributed:number;hosted:number};
-export const PHOTOS={trip:['/photos/picnic.jpg','/photos/concert.jpg'],gathering:['/photos/diner-crew.jpg','/photos/diner-table.jpg']} as const;
-export function photoFor(kind:string,id=''){const set=kind==='trip'?PHOTOS.trip:PHOTOS.gathering;let h=0;for(const c of id)h=(h*31+c.charCodeAt(0))>>>0;return set[h%set.length]}
 export const INTERESTS=['Live music','Food runs','Day trips','Game nights','Brunch','Road trips','Hikes','Beach days','Karaoke','Museums','Sports','Dinner parties','Creative projects','Late nights'];
 export const STYLES:[string,string,string][]=[['setter','The setter','I make it happen'],['details','Needs the details','Send me the plan'],['down','Down for whatever','Just tell me when'],['wildcard','The wildcard','Bringing the story'],['snacks','Brings the snacks','Never shows up empty-handed']];
