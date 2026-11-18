@@ -11,7 +11,7 @@ const isoOrBlank=(local:string)=>local?new Date(local).toISOString():'';
 export function SetterPanel({detail,link,notify}:{detail:Detail;link:string;notify:(t:string)=>void}){
  const p=detail.plan,[which,setWhich]=useState<'update'|'nudge'>('update');
  const update=groupUpdate(detail,link),nudge=nudgeMaybes(detail,link),text=which==='nudge'&&nudge?nudge:update;
- const checks:[boolean,string,string][]=[[!!p.date,'Date is set','A date needs deciding'],[!!p.place,'Place is noted','A place needs deciding'],[!!p.budget,'Budget is noted','Budget needs a conversation']];
+ const checks:[boolean,string,string][]=[[!!p.date,'Date is set','A date needs deciding'],[!!p.place,'Place is noted','A place needs deciding'],...(p.kind==='trip'?[[!!p.budget,'Budget is noted','Budget needs a conversation'] as [boolean,string,string]]:[])];
  async function copy(){try{await navigator.clipboard.writeText(text);notify('Copied. Paste it in the group chat.')}catch{notify('Select the message and copy it.')}}
  return <section className="setter-panel">
   <span className="eyebrow">THE SETTER’S VIEW</span>
@@ -21,7 +21,7 @@ export function SetterPanel({detail,link,notify}:{detail:Detail;link:string;noti
   {detail.host&&<div className="chat-draft">
    <div className="draft-tabs" role="tablist" aria-label="Message drafts">
     <button role="tab" aria-selected={which==='update'} className={which==='update'?'on':''} onClick={()=>setWhich('update')}><MessageCircle size={14}/>Group update</button>
-    {nudge&&<button role="tab" aria-selected={which==='nudge'} className={which==='nudge'?'on':''} onClick={()=>setWhich('nudge')}>Nudge the maybes</button>}
+    {nudge&&<button role="tab" aria-selected={which==='nudge'} className={which==='nudge'?'on':''} onClick={()=>setWhich('nudge')}>Nudge who hasn’t confirmed</button>}
    </div>
    <div className="bubble" aria-live="polite">{text}</div>
    <button className="primary" onClick={copy}><Copy size={16}/>Copy for the group chat</button>

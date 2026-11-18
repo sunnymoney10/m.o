@@ -1,11 +1,11 @@
-export type Plan={id:string;title:string;kind:string;date:string;place:string;budget:string;note:string;going?:number;maybe?:number;open_items?:number;open_item?:string|null;open_votes?:number;invite_url?:string|null;made_it?:number};
+export type Plan={id:string;title:string;kind:string;date:string;place:string;budget:string;note:string;going?:number;maybe?:number;open_items?:number;open_item?:string|null;open_votes?:number;invited?:number;invite_url?:string|null;made_it?:number};
 export type Task={id:string;title:string;category:string;claimed_name:string|null;done:number;isMine:boolean};
-export type Guest={name:string;status:string;note:string;isMe:boolean;handle?:string|null;mo?:string|null;interests?:string[]};
+export type Guest={id?:string;name:string;status:string;note:string;isMe:boolean;isHost?:boolean;extra_count?:number;extra_names?:string;extra_status?:string;dietary?:string;staying?:boolean;handle?:string|null;mo?:string|null;interests?:string[]};
 export type PollOption={id:string;label:string;votes:number;voters:string[];mine:boolean};
 export type Poll={id:string;question:string;kind:'date'|'place'|'choice';decided_option:string|null;options:PollOption[]};
 export type Stop={id:string;at:string;title:string;detail:string;url:string|null};
 export type Memory={id:string;name:string;kind:'memory'|'shoutout';body:string;photo_url:string|null;created:string;isMine:boolean};
-export type Detail={plan:Plan;host:boolean;organizer?:string|null;guests:Guest[];tasks:Task[];polls:Poll[];stops:Stop[];memories:Memory[]};
+export type Detail={plan:Plan;host:boolean;organizer?:string|null;details?:string;hidden?:boolean;guests:Guest[];tasks:Task[];polls:Poll[];stops:Stop[];memories:Memory[]};
 export type Act=(path:string,method:string,body:unknown,demo:(d:Detail)=>void,message?:string)=>Promise<boolean>;
 export type Profile={name:string;handle:string;mo:string;interests:string[];style:string};
 export type Me={profile:Profile|null;history:{id:string;title:string;kind:string;date:string;place:string}[];cities:string[];contributed:number;hosted:number};

@@ -11,6 +11,7 @@ const originalFetch=globalThis.fetch;
 globalThis.fetch=async (url,options={})=>{if(String(url).startsWith('http://127.0.0.1:4173/api/')){const req=new Request(url,options);return route[req.method](req)}return originalFetch(url,options)};
 await import('./api.mjs');
 await import('./features.mjs');
+await import('./friendsgiving.mjs');
 console.log('Actual route handlers verified against SQLite with separate guest sessions.');
 
 const assert=(await import('node:assert/strict')).default;

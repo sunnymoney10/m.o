@@ -40,7 +40,7 @@ export async function POST(req:Request){let message:any;try{message=await req.js
  if(tool.name==='update_plan_item'){path=`plan/${a.plan_id}/tasks/${a.task_id}`;method='PATCH';body={action:a.action}}
  const u=new URL('/api/'+path,req.url);const request=new Request(u,{method,headers:{'Content-Type':'application/json',Origin:u.origin,'oai-authenticated-user-id':actor},...(body?{body:JSON.stringify(body)}:{})});
  const result=await (method==='GET'?GET:method==='PATCH'?PATCH:apiPost)(request);const data:any=await result.json();if(tool.name==='create_plan'&&data.id)data.url=u.origin+'/?plan='+data.id;
- if(tool.name==='draft_group_update'&&result.ok){const link=u.origin+'/?plan='+a.plan_id;return reply({isError:false,content:[{type:'text',text:JSON.stringify({group_update:groupUpdate(data,link),nudge_maybes:nudgeMaybes(data,link)||null,next_step:nextStep(data),note:'Drafts only. The user sends them; mo. does not.'})}]})}
+ if(tool.name==='draft_group_update'&&result.ok){const link=u.origin+'/?plan='+a.plan_id;return reply({isError:false,content:[{type:'text',text:JSON.stringify({group_update:groupUpdate(data,link),nudge_maybes:nudgeMaybes(data,link)||null,next_step:nextStep(data),note:'Drafts only. The user sends them; m.o does not.'})}]})}
  return reply({isError:!result.ok,content:[{type:'text',text:JSON.stringify(data)}]});
  }catch(e:any){return reply({isError:true,content:[{type:'text',text:e instanceof z.ZodError?'Invalid plan details: '+e.issues.map(i=>i.path.join('.')+': '+i.message).join('; '):'Could not complete this plan action. Please try again.'}]})}
 }
