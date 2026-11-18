@@ -115,6 +115,16 @@ async function handler(req:Request){
    }
    const b=await body();
 
+   if(seg.length===2&&req.method==='DELETE'){
+    // Only the host can delete a plan. Everything in it goes: guests, items, votes, schedule, memories, updates.
+    if(!host)return json({error:'Only the host can delete this plan.'},403);
+    await db.batch([
+     db.prepare('DELETE FROM poll_votes WHERE poll_id IN (SELECT id FROM polls WHERE plan_id=?)').bind(id),
+     db.prepare('DELETE FROM poll_options WHERE poll_id IN (SELECT id FROM polls WHERE plan_id=?)').bind(id),
+     ...['polls','tasks','stops','memories','activity','guests'].map(t=>db.prepare(`DELETE FROM ${t} WHERE plan_id=?`).bind(id)),
+     db.prepare('DELETE FROM plans WHERE id=?').bind(id)]);
+    return json({ok:true});
+   }
    if(seg.length===2&&req.method==='PATCH'){
     if(!host)return json({error:'Only the organizer can change the plan details.'},403);
     const m={...plan,inviteUrl:plan.invite_url,madeIt:!!plan.made_it,...b};if(typeof m.details!=='string')m.details=plan.details;

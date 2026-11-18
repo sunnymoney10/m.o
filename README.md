@@ -8,7 +8,7 @@ The setter is the friend who makes an outing happen. m.o gives that person a sha
 
 ## Working scope
 
-- Create and edit a shared trip or get-together.
+- Create, edit and delete a shared trip or get-together (only the host can delete; everything in the plan is removed).
 - RSVP with the current participant’s name and optional note.
 - Guest list: the organizer adds the names they invited. A guest opening the link taps their name (or “I’m not on the list”), so the organizer sees who hasn’t replied. Someone who answered on another phone or browser can tap their name to continue there; their claims move with them. The organizer’s spot can’t be taken, and the organizer can remove anyone else.
 - Friends who never open the link: the host records what someone told them by text or in person (their answer, extra guests, dietary needs, staying over) and notes who said they’d bring an item. These are labelled “noted by the host, not confirmed” everywhere. That person sees a one-tap “Is that right?” when they do open the link. The host can copy a personal check-in message for anyone (m.o never sends it), and a host-only “Recent updates” list shows what changed, when, and whether the person did it themselves or the host noted it.
@@ -71,7 +71,7 @@ node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1
 npm run dev
 ```
 
-Local identity is simulated by the development adapter; hosted identity comes from Sites. The production Site is https://mo-make-it-out-kofi.kofigladney.chatgpt.site. Hosting configuration is retained so this code maps to the existing deployment. GitHub commits do not automatically deploy that Site.
+The live app is https://mo.mymoapp.workers.dev (Cloudflare Workers + D1, free plan). Every push to `main` deploys automatically through `.github/workflows/deploy.yml`: checks, tests and build run first, then new D1 migrations are applied, then the Worker is deployed. Settings are in `cloudflare.json`; the `CLOUDFLARE_API_TOKEN` repository secret holds the deploy key. A person is identified by a browser cookie, so the host manages a plan from the browser they created it in.
 
 ```sh
 npm run check
@@ -81,13 +81,13 @@ npm run build
 
 With `npm run dev` running, `npm run journeys` replays the Friendsgiving phone journeys (a host; guests picking names, RSVPing with an extra guest, claiming, switching browsers and cancelling) using the preinstalled Playwright. Pass a folder to keep screenshots: `npm run journeys -- ./shots`. `npm run journeys:profile -- <photo.jpg>` checks avatars and photo upload. `npm run a11y` checks 44px tap targets and large text. `npm run ux:metrics` measures form fields, overview length and guest taps for before/after comparisons. `npm run journeys:quiet` replays the host recording answers for friends who never open the link, then one of them confirming later.
 
-GitHub Actions runs these checks on pushes to main and pull requests. No repository secrets are needed for these validation checks. No automatic deployment credentials are included.
+GitHub Actions runs these checks on pull requests, and again before every deploy from `main`.
 
 ## Development and checks
 
 Use the Sites build/install helpers for this checkout. `npm run db:generate` appends database migrations. `npx tsc --noEmit` checks types. `node tests/route-harness.mjs` exercises the actual API and MCP route handlers against SQLite: persistence, RSVP changes, exclusive claims, authorization, partial plan updates, cross-origin protection, and MCP input validation. It creates only in-memory test data.
 
-Use `sites-preview start /workspace/sites/mo` for managed browser QA. Apply pending local migrations with the starter’s documented Wrangler command. Production migrations apply through Sites publishing. Do not create schema at request time.
+Use `sites-preview start /workspace/sites/mo` for managed browser QA. Apply pending local migrations with the starter’s documented Wrangler command. Production migrations apply automatically during the deploy from `main` (`npm run deploy`). Do not create schema at request time.
 
 ## Deliberately unresolved
 
