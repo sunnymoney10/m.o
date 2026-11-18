@@ -19,11 +19,11 @@ export function ProfileView({me,loading,save,openPlan,start}:{me:Me|null;loading
  return <div className="profile-page">
   <section className="profile-top">
    <div className="profile-cover"><Scene kind="portrait" seed={shown?.handle||shown?.name||'you'}/><span className="cover-note">What’s your m.o?</span></div>
-   <h1>{shown?.name||'Your name'}</h1>
+   <h1 className={shown?.name?'':'empty'}>{shown?.name||'Your name'}</h1>
    <span className="handle">@{shown?.handle||'yourhandle'}</span>
-   <p className="mo-line">{shown?.mo||'Sunday dinners. Extra chairs.'}</p>
+   <p className={'mo-line'+(shown?.mo?'':' empty')}>{shown?.mo||'Add a line about what you’re down for.'}</p>
    {!!shown?.interests.length&&<div className="chips">{shown.interests.map(t=><span className="chip" key={t}>{t}</span>)}</div>}
-   {style&&<span className="style-tag">{style[1]} · {style[2]}</span>}
+   {style&&(p||editing)&&<span className="style-tag">{style[1]} · {style[2]}</span>}
    {!editing&&<div className="profile-actions"><button className="primary plum" onClick={edit}><Pencil size={16}/>{p?'Edit my m.o':'Make my m.o'}</button><button className="outline-button" onClick={start}><Plus size={16}/>Start a plan</button></div>}
   </section>
 

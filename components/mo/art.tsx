@@ -121,7 +121,10 @@ function Portrait({r,seed}:{r:R;seed:string}){
 }
 
 const FACE_BG=[C.butter,C.sky,C.brickSoft,C.butterSoft,C.skySoft];
-function faceLook(seed:string){const r=rng('face:'+(seed||'?').trim().toLowerCase());return {bg:pick(r,FACE_BG),look:lookFor(r)}}
+// Avatars stand for real people, so the app never assigns them a human skin tone: faces use brand colours
+// (a face tone that differs from the background). The fictional crowds in scenes keep a diverse range of skin tones.
+const FACE_TONES=[C.butter,C.sky,C.sky2,C.sage],NEAR:Record<string,string>={[C.butterSoft]:C.butter,[C.skySoft]:C.sky};
+function faceLook(seed:string){const r=rng('face:'+(seed||'?').trim().toLowerCase());const bg=pick(r,FACE_BG),look=lookFor(r),tones=FACE_TONES.filter(t=>t!==bg&&t!==NEAR[bg]&&t!==look.shirt);return {bg,look:{...look,skin:pick(r,tones)}}}
 
 export type SceneKind='table'|'road'|'night'|'portrait';
 export function sceneFor(kind:string,madeIt?:number|boolean):SceneKind{return madeIt?'night':kind==='trip'?'road':'table'}

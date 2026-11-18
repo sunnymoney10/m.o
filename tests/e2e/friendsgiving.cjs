@@ -1,4 +1,4 @@
-// Friendsgiving phone journeys: Kaela hosts, Tess, Jordan and Ramon respond. Needs `npm run dev` running.
+// Friendsgiving phone journeys: Ari hosts, Tess, Jordan and Ramon respond. Needs `npm run dev` running.
 // Usage: npm run journeys [-- <screenshot dir>]
 const {chromium,devices}=require('playwright');
 const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173',O=process.argv[2]||require('node:os').tmpdir();
@@ -10,16 +10,16 @@ const log=(...a)=>console.log(...a);
  const toast=async p=>{try{return await p.locator('.toast').last().innerText({timeout:3000})}catch{return '(no toast)'}};
  const text=async(p,sel)=>(await p.locator(sel).first().innerText()).replace(/\n+/g,' | ');
  const tab=(p,n)=>p.getByRole('tab',{name:n}).click();
- // Kaela creates the plan
+ // Ari creates the plan
  const k=await phone();await k.goto(B);await k.waitForTimeout(1200);
  await k.getByRole('button',{name:'Start a plan'}).first().click();
- await k.getByLabel('Give it a name').fill('Friendsgiving');await k.getByLabel('Your name').fill('Kaela');
+ await k.getByLabel('Give it a name').fill('Friendsgiving');await k.getByLabel('Your name').fill('Ari');
  await k.getByLabel(/When/).fill('2026-11-26T17:00');await k.getByLabel('Where').fill('1420 Elm St, Apt 3B, Philadelphia');
  await k.getByLabel(/Arrival and house notes/).fill('Park on Elm, not in the lot (they tow). Buzz 3B and take the stairs. Shoes off inside.');
  await k.getByLabel(/What’s the plan/).fill('Doors at 5, food at 6. Bring your appetite.');
  await shot(k,'k1-form');
  await k.getByRole('button',{name:/Let’s make it happen/}).click();await k.waitForTimeout(1800);const url=k.url();
- // Kaela adds the guest list
+ // Ari adds the guest list
  await tab(k,'People');await k.getByRole('button',{name:/Add names to the guest list/}).click();
  await k.getByLabel(/Who did you invite/).fill('Tess\nJordan\nSam');await k.getByRole('button',{name:/^Add (\d+ people|to guest list)$/}).click();await k.waitForTimeout(1500);
  log('K guest list toast:',await toast(k));log('K people:',await text(k,'.guest-list'));await shot(k,'k2-guestlist');
@@ -43,13 +43,13 @@ const log=(...a)=>console.log(...a);
  // Ramon is not on the list
  const r=await phone();await r.goto(url);await r.waitForTimeout(1200);await r.locator('.rsvp-prompt .primary').click();await r.getByRole('button',{name:'I’m not on the list'}).click();
  await r.getByPlaceholder('What should we call you?').fill('Ramon');await r.getByRole('button',{name:'I’m in'}).click();await r.getByRole('button',{name:'Send RSVP'}).click();await r.waitForTimeout(1500);log('R toast:',await toast(r));
- // Kaela's overview
+ // Ari's overview
  await k.reload();await k.waitForTimeout(1500);await shot(k,'k3-overview');
  log('K headcount:',await text(k,'.status-card'));log('K host notes:',await text(k,'.host-notes'));
  await tab(k,'People');await k.getByRole('button',{name:'Approve'}).click();await k.waitForTimeout(1500);log('K approve toast:',await toast(k));
  log('K people:',await text(k,'.guest-list'));await shot(k,'k4-people');
  await tab(k,'Overview');log('K headcount after approve:',await text(k,'.status-number'));
- // Kaela changes the time
+ // Ari changes the time
  await k.getByRole('button',{name:'Edit plan details'}).click();await k.getByLabel(/When/).fill('2026-11-26T18:00');await k.getByRole('button',{name:/Save changes/}).click();await k.waitForTimeout(1500);
  await t.reload();await t.waitForTimeout(1500);log('T sees new time:',await t.locator('.meta-line').first().innerText());
  // Tess on a second browser

@@ -356,6 +356,7 @@ legend{font-weight:600;font-size:14px;margin-bottom:8px;color:var(--ink)}
 .cover-note{position:absolute;left:14px;bottom:12px;font-family:var(--hand);font-size:24px;color:var(--ink);background:var(--paper);padding:2px 12px;border-radius:6px;transform:rotate(-3deg);box-shadow:0 4px 12px #0002}
 .profile-top h1{font-size:38px}
 .handle{color:var(--text);font-size:17px;margin-top:-4px}
+.profile-top .empty{color:var(--muted)}
 .mo-line{font-size:20px;color:var(--text);margin:6px 0 8px}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
 .chip{display:inline-flex;align-items:center;gap:4px;border:1.5px solid var(--ink);color:var(--ink);border-radius:999px;padding:6px 14px;font-size:15px;font-weight:500;background:transparent}

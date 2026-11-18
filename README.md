@@ -4,7 +4,7 @@ A free, organizer-first coordination MVP. Pronounced “em-oh.”
 
 ## Product center
 
-The setter is the friend who makes an outing happen. m.o gives that person a shared, current plan and helps other people take responsibility. The initial situations are a group trip (Malcom) and Friendsgiving contribution tracking (Kaela). Demo dates, guests and details are fictional.
+The setter is the friend who makes an outing happen. m.o gives that person a shared, current plan and helps other people take responsibility. The initial situations are a group trip with shared accommodation and a Friendsgiving potluck where the host keeps asking who’s bringing what. Demo dates, guests and details are fictional.
 
 ## Working scope
 
@@ -63,7 +63,7 @@ npm test
 npm run build
 ```
 
-With `npm run dev` running, `npm run journeys` replays the Friendsgiving phone journeys (Kaela hosting; guests picking names, RSVPing with an extra guest, claiming, switching browsers and cancelling) using the preinstalled Playwright. Pass a folder to keep screenshots: `npm run journeys -- ./shots`.
+With `npm run dev` running, `npm run journeys` replays the Friendsgiving phone journeys (a host; guests picking names, RSVPing with an extra guest, claiming, switching browsers and cancelling) using the preinstalled Playwright. Pass a folder to keep screenshots: `npm run journeys -- ./shots`.
 
 GitHub Actions runs these checks on pushes to main and pull requests. No repository secrets are needed for these validation checks. No automatic deployment credentials are included.
 
