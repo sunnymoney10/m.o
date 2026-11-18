@@ -1,10 +1,10 @@
-# mo. — Make it out the group chat
+# m.o — Make it out the groupchat
 
 A free, organizer-first coordination MVP. Pronounced “em-oh.”
 
 ## Product center
 
-The setter is the friend who makes an outing happen. mo. gives that person a shared, current plan and helps other people take responsibility. The initial situations are a group trip (Malcom) and Friendsgiving contribution tracking (Kaela). Demo dates, guests and details are fictional.
+The setter is the friend who makes an outing happen. m.o gives that person a shared, current plan and helps other people take responsibility. The initial situations are a group trip (Malcom) and Friendsgiving contribution tracking (Kaela). Demo dates, guests and details are fictional.
 
 ## Working scope
 
@@ -18,9 +18,10 @@ The setter is the friend who makes an outing happen. mo. gives that person a sha
 - Keep a live plan: an organizer-maintained itinerary of timed stops and key HTTPS links.
 - Replay: after the plan, people who were in post memories (optional HTTPS photo/album link) and shout-outs; the organizer marks the plan “made it out.” Authors and the organizer can remove posts.
 - “What’s your mo?” profiles: name, unique handle, a one-line mo, interests and planning style. Shown to people in shared plans. The profile page lists plans you made it out to, places conquered, and private counts of what you hosted and took care of — no scores or rankings.
-- Show missing decisions, the next useful coordination step, and copyable group-chat drafts (status update and a nudge for maybes). These are deterministic templates built from saved plan data, not an in-app AI model. mo. never sends messages.
+- Home shows the next plan with one deterministic “thing to sort out” (an unclaimed item, an open vote, or a missing date/place) from saved data; plans have Overview, People and Bring list tabs.
+- Show missing decisions, the next useful coordination step, and copyable group-chat drafts (status update and a nudge for maybes). These are deterministic templates built from saved plan data, not an in-app AI model. m.o never sends messages.
 - Download an ICS calendar entry. This is a one-time calendar export, not continuous calendar sync.
-- Save an existing HTTPS invitation URL and link back to it. A mo. plan can be added manually as an Apple Invites Link tile. Apple RSVPs are not automatically synchronized.
+- Save an existing HTTPS invitation URL and link back to it. An m.o plan can be added manually as an Apple Invites Link tile. Apple RSVPs are not automatically synchronized.
 - Expose eleven authenticated MCP tools through the Site’s ChatGPT plugin. ChatGPT can structure a user’s supplied conversation, create/read/update plans, add unclaimed items, start organizer votes, record the caller’s own RSVP, votes and commitments, add itinerary stops, and draft a group-chat update from saved data. It must not invent commitments, book anything, or send invitations automatically.
 
 ## Access
@@ -67,6 +68,6 @@ Use `sites-preview start /workspace/sites/mo` for managed browser QA. Apply pend
 
 ## Deliberately unresolved
 
-Photo uploads are not stored by mo.; replay photos are HTTPS links. Demo photos in `public/photos` are cropped from the mo. brand mockup.
+Photo uploads are not stored by m.o; replay photos are HTTPS links. Demo photos in `public/photos` are cropped from the m.o brand mockup.
 
 No payment processing, paid tier, booked inventory, affiliate revenue, social-platform scraping, automatic message sending, or automatic Apple/Google Calendar sync is implemented. The consumer core is free. A 30-day revenue route still requires validation and actual commercial terms; this prototype does not establish revenue or demand.

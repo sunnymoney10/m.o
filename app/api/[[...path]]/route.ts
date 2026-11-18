@@ -18,7 +18,7 @@ async function handler(req:Request){
   if(req.headers.get('content-length') && Number(req.headers.get('content-length'))>16000)return json({error:'That request is too large.'},413);
   const body=async()=>{if(req.method==='GET'||req.method==='DELETE')return {} as any;try{return await req.json() as any}catch{return {} as any}};
 
-  // ---- Your mo. profile ----
+  // ---- Your m.o profile ----
   if(seg[0]==='me'&&seg.length===1){
    if(req.method==='GET'){
     const p=await db.prepare('SELECT name,handle,mo,interests,style FROM profiles WHERE actor=?').bind(actor).first<any>();

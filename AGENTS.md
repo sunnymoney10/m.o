@@ -1,6 +1,6 @@
-# mo. project instructions
+# m.o project instructions
 
-mo. is pronounced em-oh. The promise is “Make it out the group chat.”
+m.o (written with the dot between the letters) is pronounced em-oh. The promise is “Make it out the groupchat.”
 
 ## Product center
 
