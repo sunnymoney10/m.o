@@ -2,10 +2,16 @@
 // The People tab: a guest finds their name, RSVPs (with extra guests, dietary needs and a sleepover request),
 // and the organizer manages the guest list. Dietary needs, sleepovers and pending extra guests are shown
 // only to the organizer and the guest themselves; the server enforces the same rule.
-import {useState} from 'react';
-import {Check,Clock,X,Plus,Minus,Trash2,Moon,Utensils,UserPlus,LoaderCircle} from 'lucide-react';
+import {useEffect,useState} from 'react';
+import {Check,Clock,X,Plus,Minus,Trash2,Moon,Utensils,UserPlus,LoaderCircle,Contact} from 'lucide-react';
 import type {Act,Detail,Guest} from '@/lib/types';
 import {Face} from './art';
+import {splitNames} from '@/lib/names';
+
+// The browser contact picker (Chrome on Android). Not available in Safari on iPhone by default, so the button only
+// appears where it works. We ask for names only; numbers and emails are never requested or stored.
+type ContactsManager={select:(props:string[],opts:{multiple:boolean})=>Promise<{name?:string[]}[]>};
+const contactsApi=()=>typeof navigator!=='undefined'&&'contacts' in navigator&&typeof window!=='undefined'&&'ContactsManager' in window?(navigator as unknown as {contacts:ContactsManager}).contacts:null;
 
 const ORDER:Record<string,number>={in:1,maybe:2,invited:3,out:4};
 const STATUS:Record<string,string>={in:'Going',maybe:'Checking',invited:'No reply yet',out:'Can’t go'};
@@ -17,7 +23,10 @@ export function PeopleTab({detail,act,busy,notify}:{detail:Detail;act:Act;busy:b
  const host=detail.host,guests=detail.guests,me=guests.find(g=>g.isMe),answered=!!me&&me.status!=='invited';
  const [editing,setEditing]=useState(false),[notListed,setNotListed]=useState(false),[otherPhone,setOtherPhone]=useState(false);
  const [f,setF]=useState(()=>({name:me?.name||storedName(),status:me&&me.status!=='invited'?me.status:'',extra:me?.extra_count||0,extraNames:me?.extra_names||'',dietary:me?.dietary||'',staying:!!me?.staying,note:me?.note||''}));
- const [adding,setAdding]=useState(''),[addOpen,setAddOpen]=useState(false);
+ const [adding,setAdding]=useState(''),[addOpen,setAddOpen]=useState(false),[canPick,setCanPick]=useState(false);
+ useEffect(()=>{setCanPick(!!contactsApi())},[]);
+ const listed=new Set(guests.map(g=>g.name.toLowerCase())),toAdd=splitNames(adding),newNames=toAdd.filter(n=>!listed.has(n.toLowerCase()));
+ async function fromContacts(){const api=contactsApi();if(!api)return;try{const picked=await api.select(['name'],{multiple:true});const names=picked.map(c=>c.name?.[0]||'').filter(Boolean);if(names.length)setAdding(a=>[a.trim(),...names].filter(Boolean).join('\n'))}catch{notify('Couldn’t open your contacts. Type or paste names instead.')}}
  const sorted=[...guests].sort((a,b)=>(a.isHost?0:ORDER[a.status]||5)-(b.isHost?0:ORDER[b.status]||5));
  const unanswered=guests.filter(g=>g.status==='invited'&&!g.isMe),others=guests.filter(g=>!g.isHost&&!g.isMe&&g.status!=='invited');
  const going=guests.filter(g=>g.status==='in').reduce((n,g)=>n+1+(g.extra_status==='approved'?g.extra_count||0:0),0);
@@ -38,7 +47,7 @@ export function PeopleTab({detail,act,busy,notify}:{detail:Detail;act:Act;busy:b
   const ok=await act('rsvp','POST',body,d=>{const row:Guest={...(d.guests.find(g=>g.isMe)||{id:crypto.randomUUID(),isMe:true}),name:body.name,status:body.status,note:body.note,isMe:true,extra_count:extra,extra_names:body.extraNames,extra_status:extra?(host?'approved':'requested'):'',dietary:body.dietary,staying:body.staying};d.guests=[...d.guests.filter(g=>!g.isMe),row];if(out)d.tasks=d.tasks.map(t=>t.isMine?{...t,claimed_name:null,isMine:false,done:0}:t)},msg);
   if(ok){remember(body.name);setEditing(false);setNotListed(false)}
  }
- async function addNames(e:React.FormEvent){e.preventDefault();const names=adding.split(/\n|,/).map(x=>x.trim()).filter(Boolean);if(!names.length)return;
+ async function addNames(e:React.FormEvent){e.preventDefault();const names=newNames;if(!names.length){notify(toAdd.length?'They’re already on the list.':'Add at least one name.');return}
   const ok=await act('guests','POST',{names},d=>{const have=new Set(d.guests.map(g=>g.name.toLowerCase()));for(const n of names)if(!have.has(n.toLowerCase())){have.add(n.toLowerCase());d.guests.push({id:crypto.randomUUID(),name:n,status:'invited',note:'',isMe:false})}},'Added to the guest list.');
   if(ok){setAdding('');setAddOpen(false)}}
  const decide=(g:Guest,decision:'approved'|'declined')=>act(`guests/${g.id}/extra`,'POST',{decision},d=>{const x=d.guests.find(y=>y.id===g.id);if(x)x.extra_status=decision},decision==='approved'?`${g.name}’s extra guest is approved.`:'Request declined.');
@@ -94,8 +103,11 @@ export function PeopleTab({detail,act,busy,notify}:{detail:Detail;act:Act;busy:b
   </div>)}</div>
 
   {host&&(addOpen?<form className="add-guests" onSubmit={addNames}>
-   <label>Who did you invite? <small>One name per line. Guests tap their name when they open the link, so you can see who hasn’t replied.</small><textarea rows={4} maxLength={3000} value={adding} onChange={e=>setAdding(e.target.value)} placeholder={'Tess\nJordan\nSam'}/></label>
-   <div className="form-bottom"><button type="button" className="text-button" onClick={()=>setAddOpen(false)}>Cancel</button><button className="primary" disabled={busy||!adding.trim()}>Add to guest list</button></div>
+   {canPick&&<button type="button" className="outline-button" onClick={fromContacts}><Contact size={16}/>Choose from contacts</button>}
+   <label>Who did you invite? <small>{canPick?'Or type and paste names. ':''}One per line, or separated by commas. You can paste from your group chat; phone numbers and emails are removed. Guests tap their name when they open the link, so you can see who hasn’t replied.</small><textarea rows={4} maxLength={3000} value={adding} onChange={e=>setAdding(e.target.value)} placeholder={'Tess\nJordan\nSam'}/></label>
+   {toAdd.length>0&&<p className="name-preview" aria-live="polite">{newNames.length?<>Will add {newNames.length}: <strong>{newNames.join(', ')}</strong></>:'Everyone here is already on the list.'}{toAdd.length>newNames.length&&newNames.length>0?` (${toAdd.length-newNames.length} already listed)`:''}</p>}
+   <p className="fine">Only names are saved. m.o doesn’t store numbers or message anyone.</p>
+   <div className="form-bottom"><button type="button" className="text-button" onClick={()=>{setAddOpen(false);setAdding('')}}>Cancel</button><button className="primary" disabled={busy||!newNames.length}>{newNames.length>1?`Add ${newNames.length} people`:'Add to guest list'}</button></div>
   </form>:<button className="outline-button" onClick={()=>setAddOpen(true)}><UserPlus size={16}/>Add names to the guest list</button>)}
  </section>
 }

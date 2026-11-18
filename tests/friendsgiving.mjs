@@ -7,6 +7,9 @@ const leaks=(obj,...ids)=>ids.some(x=>JSON.stringify(obj).includes(x));
 
 let r=await request(kaela,'plans','POST',{title:'QA Friendsgiving',name:'Kaela',date:'2026-11-26T22:00:00Z',place:'1420 Elm St, Apt 3B',details:'Park on Elm. Buzz 3B.',tasks:[{title:'Ice',category:'bring'},{title:'Pie',category:'bring'}]});assert.equal(r.status,201);const id=r.body.id;
 r=await request(kaela,`plan/${id}/guests`,'POST',{names:['Tess','Jordan','tess','']});assert.equal(r.body.added,2,'dedupes names');
+r=await request(kaela,`plan/${id}/guests`,'POST',{names:['Sam Lee +1 (215) 555-0134','sam@example.com','🎉 Rio 🎉','- Dee','555 0199']});assert.equal(r.body.added,3,'only real names are added');
+{const g=(await request(kaela,'plan/'+id)).body.guests.map(x=>x.name);assert.ok(g.includes('Sam Lee')&&g.includes('Rio')&&g.includes('Dee'));assert.ok(!JSON.stringify(g).match(/555|@|🎉/),'no numbers, emails or emoji stored');
+ for(const n of ['Sam Lee','Rio','Dee']){const row=(await request(kaela,'plan/'+id)).body.guests.find(x=>x.name===n);await request(kaela,`plan/${id}/guests/${row.id}`,'DELETE')}}
 r=await request(tess,`plan/${id}/guests`,'POST',{names:['Sneaky']});assert.equal(r.status,403,'only host adds invitees');
 
 // A first-time guest sees the invitation but not the address or arrival notes.

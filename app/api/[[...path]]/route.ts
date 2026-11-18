@@ -1,4 +1,5 @@
 import {env} from 'cloudflare:workers';
+import {cleanName} from '../../../lib/names';
 export const dynamic='force-dynamic';
 function https(v:unknown){const s=str(v,1000);if(!s)return null;try{const u=new URL(s);return u.protocol==='https:'?u.href:null}catch{return null}}
 const invitation=https;
@@ -115,7 +116,8 @@ async function handler(req:Request){
    // ---- Guest list: the organizer's invitees, picking your name, plus-one decisions, removal ----
    if(seg[2]==='guests'&&seg.length===3&&req.method==='POST'){
     if(!host)return json({error:'Only the organizer can add to the guest list.'},403);
-    const names=[...new Set((Array.isArray(b.names)?b.names:[]).map((x:unknown)=>str(x,60)).filter(Boolean))].slice(0,50) as string[];
+    // Names only: phone numbers, emails and emoji are stripped before anything is stored.
+    const names=[...new Set((Array.isArray(b.names)?b.names:[]).map((x:unknown)=>cleanName(str(x,200))).filter((n:string)=>/\p{L}/u.test(n)))].slice(0,50) as string[];
     if(!names.length)return json({error:'Add at least one name.'},400);
     const {results:existing}=await db.prepare('SELECT lower(name) AS n FROM guests WHERE plan_id=?').bind(id).all<any>();const have=new Set(existing.map((x:any)=>x.n));
     const fresh=names.filter(n=>{const k=n.toLowerCase();if(have.has(k))return false;have.add(k);return true});if(existing.length+fresh.length>150)return json({error:'A plan can have up to 150 people.'},400);

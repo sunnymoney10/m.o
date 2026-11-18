@@ -253,6 +253,9 @@ legend{font-weight:600;font-size:14px;margin-bottom:8px;color:var(--ink)}
 .request{display:grid;gap:2px;font-size:14px;font-weight:600;color:var(--brick)}
 .request span{display:flex;gap:16px}
 .private{display:inline-flex!important;align-items:center;gap:5px;color:var(--sky-ink)!important}
+.name-preview{font-size:14px;color:var(--text)}
+.name-preview strong{color:var(--ink)}
+.add-guests>.outline-button{justify-self:start}
 .add-guests{display:grid;gap:12px;background:var(--paper);border-radius:var(--radius);padding:18px;box-shadow:0 1px 0 var(--line)}
 .getting-there h3{font-size:20px}
 .arrival{white-space:pre-wrap;color:var(--text)!important;font-size:16px!important}
