@@ -17,7 +17,8 @@ export function DeclinedCard({detail,host,onChange}:{detail:Detail;host:string;o
  return <section ref={r} className="answer-card declined" aria-labelledby="declined-title">
   <Heart size={26} strokeWidth={1.8} aria-hidden="true"/>
   <h2 id="declined-title">Thanks for letting {host||'them'} know</h2>
-  <p>Maybe next time. You won’t get any more tasks for {detail.plan.title}.</p>
+  <p className="next-time">Make it out next time!</p>
+  <p>You won’t get any more tasks for {detail.plan.title}.</p>
   <span className="eyebrow">CHANGED YOUR MIND?</span>
   <div className="quick-answers"><button className="primary" onClick={()=>onChange('in')}><Check size={17}/>I can make it</button><button className="outline-button" onClick={()=>onChange('maybe')}><Clock size={17}/>Still checking</button></div>
  </section>

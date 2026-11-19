@@ -626,3 +626,4 @@ html,body{overflow-x:clip}
 .answer-card .chip{min-height:44px}
 .answer-card .check-day{font-size:15px}
 .check-due{display:inline-flex!important;align-items:center;gap:5px;font-size:13px!important;font-weight:700;color:var(--brick)!important}
+.answer-card .next-time{font-size:22px;font-weight:800;color:var(--ink)}

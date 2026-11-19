@@ -13,7 +13,7 @@ const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173',O=process.argv[2]||requ
  const t=await phone();await t.goto(`${B}/?plan=${id}&g=${ids.Tess}`);await t.waitForTimeout(2000);
  await t.getByRole('button',{name:'Can’t make it'}).first().click();await t.waitForTimeout(2000);
  const tt=await t.locator('main').innerText();
- check(/Thanks for letting Kaela know/.test(tt)&&/Maybe next time/.test(tt),'can’t make it: thank-you and “maybe next time”');
+ check(/Thanks for letting Kaela know/.test(tt)&&/Make it out next time!/.test(tt),'can’t make it: thank-you and “Make it out next time!”');
  check(await t.getByRole('tab').count()===0&&!tt.includes('Pie')&&!tt.includes('12 Oak'),'no tabs, no bring list and no address after saying no');
  await t.screenshot({path:O+'/ans-declined.png'});
  await t.getByRole('button',{name:'I can make it'}).click();await t.waitForTimeout(2000);
