@@ -46,4 +46,6 @@ Typing in a box is counted separately from taps. "Send in Messages" counts as on
 
 Done outside the backlog (2026-11-19): trip "Search Airbnb / Search hotels" links (level 3, host and guest journeys), and Escape no longer closes the plan form while suggestions are open (level 3).
 
+Fixed 2026-11-19 (found by the owner on a real iPhone): the schedule only made the trip's days obvious as a blank box that also overflowed the screen. It now has a Day picker for every trip day plus a Time box, and the width check covers the schedule and vote forms (level 3).
+
 Not this release: trip sections, event search (waiting on Ticketmaster key approval), reminder texts.

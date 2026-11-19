@@ -4,6 +4,7 @@ import {Check,Lock,LockOpen,Plus,Trash2,Vote,Route,ExternalLink,Camera,PartyPopp
 import type {Act,Detail,Poll,Stop,Memory} from '@/lib/types';
 import {groupUpdate,nudgeMaybes,nextStep,optionLabel} from '@/lib/group-update';
 import {smsHref} from '@/lib/invite';
+import {multiDay} from '@/lib/when';
 
 const uid=()=>crypto.randomUUID();
 const isoOrBlank=(local:string)=>local?new Date(local).toISOString():'';
@@ -76,25 +77,35 @@ function PollCard({poll:p,host,busy,member,act}:{poll:Poll;host:boolean;busy:boo
 
 /* ---------------- Live plan: itinerary & key links ---------------- */
 export function LivePlan({detail,act,busy}:{detail:Detail;act:Act;busy:boolean}){
- const [open,setOpen]=useState(false),[f,setF]=useState({at:'',title:'',detail:'',url:''});
+ // The plan's days: every day from start to end for a trip, otherwise the one day (or a free date when there's no date yet).
+ const p=detail.plan,ymd=(d:Date)=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+ const planDays:string[]=[];if(p.date&&!Number.isNaN(+new Date(p.date))){const a=new Date(p.date),b=multiDay(p.date,p.end_date)?new Date(p.end_date!):a;for(let d=new Date(a.getFullYear(),a.getMonth(),a.getDate());d<=b&&planDays.length<61;d.setDate(d.getDate()+1))planDays.push(ymd(d))}
+ const dayName=(k:string)=>new Date(k+'T12:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+ const blank={day:planDays[0]||'',time:'',title:'',detail:'',url:''};
+ const [open,setOpen]=useState(false),[f,setF]=useState(blank);
  const days=new Map<string,Stop[]>();for(const s of detail.stops){const k=s.at?new Date(s.at).toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'}):'Anytime';days.set(k,[...(days.get(k)||[]),s])}
- async function add(e:React.FormEvent){e.preventDefault();const at=isoOrBlank(f.at);const ok=await act('stops','POST',{...f,at},d=>{d.stops.push({id:uid(),at,title:f.title.trim(),detail:f.detail.trim(),url:f.url.trim()||null});d.stops.sort((a,b)=>(a.at?0:1)-(b.at?0:1)||a.at.localeCompare(b.at))},'Added to the schedule.');if(ok){setF({at:'',title:'',detail:'',url:''});setOpen(false)}}
+ async function add(e:React.FormEvent){e.preventDefault();const at=f.day?isoOrBlank(f.day+'T'+(f.time||'00:00')):'';const ok=await act('stops','POST',{title:f.title,detail:f.detail,url:f.url,at},d=>{d.stops.push({id:uid(),at,title:f.title.trim(),detail:f.detail.trim(),url:f.url.trim()||null});d.stops.sort((a,b)=>(a.at?0:1)-(b.at?0:1)||a.at.localeCompare(b.at))},'Added to the schedule.');if(ok){setF({...blank,day:f.day});setOpen(false)}}
  if(!detail.host&&detail.stops.length===0)return null;
  return <section className="panel live-panel">
   <div className="section-title"><h2>Schedule</h2><Route size={20}/></div>
-  <p className="muted">Times, places and links for the day.</p>
+  <p className="muted">{planDays.length>1?'Times, places and links for each day of the trip.':'Times, places and links for the day.'}</p>
   {detail.stops.length===0&&<p className="inline-empty">Add times, reservations or links people will need.</p>}
   {[...days].map(([day,stops])=><div className="day" key={day}><span className="day-label">{day}</span>{stops.map(s=><div className="stop" key={s.id}>
-   <span className="stop-time">{s.at?new Date(s.at).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}):'—'}</span>
+   <span className="stop-time">{!s.at?'—':(()=>{const d=new Date(s.at);return d.getHours()===0&&d.getMinutes()===0?'Any time':d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})})()}</span>
    <div className="stop-body"><strong>{s.title}</strong>{s.detail&&<small>{s.detail}</small>}{s.url&&<a href={s.url} target="_blank" rel="noopener noreferrer">{new URL(s.url).hostname.replace(/^www\./,'')}<ExternalLink size={12}/></a>}</div>
    {detail.host&&<button className="icon-button" aria-label={'Remove '+s.title} disabled={busy} onClick={()=>act('stops/'+s.id,'DELETE',null,d=>{d.stops=d.stops.filter(x=>x.id!==s.id)})}><Trash2 size={15}/></button>}
   </div>)}</div>)}
   {detail.host&&(open?<form className="stop-form" onSubmit={add}>
-   <div className="form-row"><label>What<input required maxLength={120} value={f.title} onChange={e=>setF({...f,title:e.target.value})} placeholder="Dinner, check-in, the show…"/></label><label>When <small>(optional)</small><input type="datetime-local" value={f.at} onChange={e=>setF({...f,at:e.target.value})}/></label></div>
+   <label>What<input required maxLength={120} value={f.title} onChange={e=>setF({...f,title:e.target.value})} placeholder="Dinner, check-in, the show…"/></label>
+   <div className="form-row">
+    {planDays.length>1?<label>Day<select value={f.day} onChange={e=>setF({...f,day:e.target.value})}>{planDays.map(k=><option key={k} value={k}>{dayName(k)}</option>)}</select></label>
+     :planDays.length===1?<label>Day<input readOnly value={dayName(planDays[0])} aria-readonly="true"/></label>
+     :<label>Day <small>(optional)</small><input type="date" value={f.day} onChange={e=>setF({...f,day:e.target.value})}/></label>}
+    <label>Time <small>(optional)</small><input type="time" value={f.time} disabled={!f.day} onChange={e=>setF({...f,time:e.target.value})}/></label></div>
    <label>Details <small>(optional)</small><input maxLength={300} value={f.detail} onChange={e=>setF({...f,detail:e.target.value})} placeholder="Address, door code, reservation name"/></label>
    <label>Link <small>(optional)</small><input type="url" maxLength={1000} value={f.url} onChange={e=>setF({...f,url:e.target.value})} placeholder="https://maps…, tickets, the Airbnb"/></label>
    <div className="form-bottom"><button type="button" className="text-button" onClick={()=>setOpen(false)}>Cancel</button><button className="primary" disabled={busy}>Add to the plan</button></div>
-  </form>:<button className="outline-button" onClick={()=>setOpen(true)}><Plus size={16}/>Add to the schedule</button>)}
+  </form>:<button className="outline-button" onClick={()=>{setF(x=>({...x,day:x.day||planDays[0]||''}));setOpen(true)}}><Plus size={16}/>Add to the schedule</button>)}
  </section>
 }
 
