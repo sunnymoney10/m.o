@@ -35,3 +35,17 @@ export function stayLinks(where:string,start?:string,end?:string){
  const hotel=new URL('https://www.booking.com/searchresults.html');hotel.searchParams.set('ss',q);if(a){hotel.searchParams.set('checkin',a);hotel.searchParams.set('checkout',b)}
  return {airbnb:air.href,hotels:hotel.href};
 }
+
+// House numbers: free map data often knows a street but not every house on it. When someone types
+// "4202 Main Street…" and a result is just "Main Street", offer it with their number added.
+export function withHouseNumber(text:string,rows:{name:string;address:string}[]){
+ const n=text.trim().match(/^(\d+[a-z]?)\s+\S/i)?.[1];if(!n)return rows;
+ const fixed=rows.map(r=>/^\d/.test(r.name)||!/\b(st|street|dr|drive|rd|road|ave|avenue|ln|lane|ct|court|blvd|boulevard|way|pl|place|cir|circle|ter|terrace|pkwy|parkway|hwy|highway|trl|trail|loop|run|pike)\b/i.test(r.name)?r:{name:`${n} ${r.name}`,address:r.address});
+ return [...fixed.filter((r,i)=>r!==rows[i]),...fixed.filter((r,i)=>r===rows[i])];
+}
+// US Census address finder (free, no key): exact house addresses. "4202 NANTUCKET DR, WILSON, NC, 27896" → readable.
+const title=(s:string)=>s.toLowerCase().replace(/\b[a-z]/g,c=>c.toUpperCase());
+export function censusResults(d:any){const out:{name:string;address:string}[]=[];
+ for(const m of Array.isArray(d?.result?.addressMatches)?d.result.addressMatches.slice(0,3):[]){const a=typeof m?.matchedAddress==='string'?m.matchedAddress:'';const parts=a.split(',').map((x:string)=>x.trim()).filter(Boolean);if(parts.length<2)continue;
+  const [street,...rest]=parts;const area=rest.map((p:string,i:number)=>i===rest.length-2&&/^[A-Z]{2}$/.test(p)?p:title(p)).join(', ');out.push({name:title(street),address:area})}
+ return out}

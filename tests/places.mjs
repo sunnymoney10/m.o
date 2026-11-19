@@ -1,6 +1,6 @@
 // Address search and booking links.
 import assert from 'node:assert/strict';
-import {placeResults,isBookingLink,readQuery,eventTries,eventResults,stayLinks} from '../lib/places.ts';
+import {placeResults,isBookingLink,readQuery,eventTries,eventResults,stayLinks,withHouseNumber,censusResults} from '../lib/places.ts';
 const origin=process.env.SITE_TEST_URL||'http://127.0.0.1:4173';
 const host=crypto.randomUUID(),friend=crypto.randomUUID(),stranger=crypto.randomUUID();
 async function request(actor,path,method='GET',body){const r=await fetch(origin+'/api/'+path,{method,headers:{Origin:origin,Cookie:'mo_session='+actor,'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});return {status:r.status,body:await r.json()}}
@@ -26,6 +26,12 @@ assert.equal(stayLinks('  '),null);
 {const l=stayLinks('Raleigh, NC','2026-12-04T18:00','2026-12-06T12:00');assert.equal(l.airbnb,'https://www.airbnb.com/s/Raleigh%2C%20NC/homes?checkin=2026-12-04&checkout=2026-12-06');assert.equal(l.hotels,'https://www.booking.com/searchresults.html?ss=Raleigh%2C+NC&checkin=2026-12-04&checkout=2026-12-06');}
 {const l=stayLinks('Atlanta','2026-12-04T18:00','');assert.match(l.airbnb,/checkin=2026-12-04&checkout=2026-12-05$/);}
 {const l=stayLinks('Atlanta');assert.ok(!l.airbnb.includes('checkin')&&!l.hotels.includes('checkin'));}
+// Home addresses: a typed house number is added to a street-only result and listed first; Census matches read naturally.
+assert.deepEqual(withHouseNumber('120 Maple Drive, Springfield',[{name:'120 Elm Drive',address:'Springfield'},{name:'Maple Drive',address:'Springfield, Ohio'},{name:'Maple Park',address:'Springfield'}]),
+ [{name:'120 Maple Drive',address:'Springfield, Ohio'},{name:'120 Elm Drive',address:'Springfield'},{name:'Maple Park',address:'Springfield'}]);
+assert.deepEqual(withHouseNumber('Maple Drive',[{name:'Maple Drive',address:'x'}]),[{name:'Maple Drive',address:'x'}]);
+assert.deepEqual(censusResults({result:{addressMatches:[{matchedAddress:'120 MAPLE DR, SPRINGFIELD, OH, 45501'}]}}),[{name:'120 Maple Dr',address:'Springfield, OH, 45501'}]);
+assert.deepEqual(censusResults({}),[]);
 // Short searches return nothing without calling out; searches are capped per person.
 let r=await request(host,'places?q=ab');assert.deepEqual(r.body,{results:[],events:[]});
 r=await request(host,'places?q=near%20me');assert.deepEqual(r.body,{results:[],events:[]},'near me alone is not a search');
