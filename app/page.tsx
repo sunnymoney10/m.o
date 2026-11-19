@@ -172,7 +172,7 @@ export default function Home(){
      <h1>{p!.title}</h1>
      <p className="host-line"><Face className="mini-avatar" seed={hostName||'?'} avatar={hostGuest?.avatar} photo={hostGuest?.photo}/>Hosted by {hostIsMe?'you':hostName||'the organizer'}</p>
      <p className="meta-line"><CalendarDays size={20} strokeWidth={1.7}/>{when(p!.date,p!.end_date)}</p>
-     <p className="meta-line"><MapPin size={20} strokeWidth={1.7}/>{p!.place||(detail!.hidden?<span className="locked"><Lock size={14}/>Address shared after you RSVP</span>:'Place to decide')}</p>
+     <p className="meta-line"><MapPin size={20} strokeWidth={1.7}/>{p!.place||(detail!.hidden?<span className="locked-note"><Lock size={14}/>Address shared after you RSVP</span>:'Place to decide')}</p>
      {(detail!.host||demo)&&<div className="plan-actions"><button className="outline-button brick" onClick={demo?()=>create(p!.kind):share}>{demo?<Plus size={16}/>:<LinkIcon size={16}/>}{demo?'Make a real plan':'Copy invite link'}</button><button className="outline-button" onClick={calendar}><CalendarDays size={16}/>Add to calendar</button></div>}
     </section>
     {/* A guest arriving from an invite link: the invite is the first thing, with their name one tap away. */}

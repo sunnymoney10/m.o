@@ -50,6 +50,8 @@ Fixed 2026-11-19 (found by the owner on a real iPhone): the schedule only made t
 
 From the same real use (2026-11-19): fast taps between Home, Plans and You got stuck (31 Back steps from 30 taps, and double-tap zoom). Fixed and tested (level 3). Owner asked for a thank-you screen after "Can't make it" and a check-back day for "Still checking": built (level 3).
 
+Found on a real iPhone (2026-11-19): a vote made Final ran off the screen. Cause: the vote card and the "Address shared after you RSVP" line shared the class name `locked`, so the vote took the line's side-by-side layout. Renamed to `locked-note`; `journeys:guest` now makes a vote final and checks it fits for host and guest (level 3).
+
 Lesson: tests on short test phones hid the plan picture, so they never saw it widen the page. `journeys:guest` now uses a tall iPhone too, and forces the picture to its drawn width like Safari does.
 
 Not this release: trip sections, event search (waiting on Ticketmaster key approval), reminder texts.

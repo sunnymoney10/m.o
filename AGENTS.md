@@ -57,6 +57,7 @@ Every text colour pair above passes WCAG AA (4.5:1). Check new pairs before usin
 ## Before you finish
 
 - `npm run check`, `npm test`, `npm run build` pass.
+- Give CSS classes specific names (`locked-note`, not `locked`): a shared generic name once broke the final vote card.
 - Test on a tall phone too (e.g. iPhone 14 Pro Max): short test phones hide the plan picture, which hid a real Safari zoom bug.
 - Test both sides of every change: the host's interaction and the guest's (a separate browser, as a stranger first, then after they answer). A feature isn't done until both pass.
 - For UI changes, with `npm run dev` running: `npm run journeys`, `npm run journeys:quiet`, `npm run journeys:invites`, `npm run journeys:places`, `npm run journeys:dates`, `npm run journeys:host`, `npm run journeys:guest`, `npm run journeys:answers`, `npm run journeys:tabs`, `npm run journeys:profile -- <photo.jpg>`, `npm run a11y`, `npm run ux:metrics` and `npm run ux:taps` (compare with the last run in `docs/release-readiness.md`).
