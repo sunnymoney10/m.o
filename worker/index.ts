@@ -1,5 +1,6 @@
 import handler from "vinext/server/fetch-handler";
 import { runWithConnectorBinding } from "../lib/connector-context";
+import { longId } from "../lib/short-link";
 import type { ConnectorBinding } from "../lib/connector-contract.mjs";
 
 const PLAN_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
@@ -29,8 +30,25 @@ async function withInvitePreview(request: Request, env: Cloudflare.Env, pending:
   }
 }
 
+// Short links: /p/<code> opens a plan, /i/<code> opens one guest's personal invite.
+// They redirect to the full address, which also carries the group-chat preview.
+async function shortLink(request: Request, env: Cloudflare.Env): Promise<Response | null> {
+  const url = new URL(request.url);
+  const m = url.pathname.match(/^\/([pi])\/([A-Za-z0-9_-]{22})\/?$/);
+  if (!m || (request.method !== "GET" && request.method !== "HEAD")) return null;
+  const id = longId(m[2]);
+  const home = (q: string) => Response.redirect(`${url.origin}/${q}`, 302);
+  if (!id) return home("");
+  if (m[1] === "p") return home(`?plan=${id}`);
+  const db = (env as unknown as { DB?: D1Database }).DB;
+  const row = db && (await db.prepare("SELECT plan_id FROM guests WHERE id = ?").bind(id).first<{ plan_id: string }>().catch(() => null));
+  return row ? home(`?plan=${row.plan_id}&g=${id}`) : home("");
+}
+
 const worker = {
-  fetch(request: Request, env: Cloudflare.Env, ctx: ExecutionContext<{ CONNECTORS?: ConnectorBinding }>) {
+  async fetch(request: Request, env: Cloudflare.Env, ctx: ExecutionContext<{ CONNECTORS?: ConnectorBinding }>) {
+    const short = await shortLink(request, env);
+    if (short) return short;
     let binding = ctx.props?.CONNECTORS;
     // Local preview emulates the same request-scoped capability. This branch and
     // the auxiliary service binding are absent from production builds.

@@ -1,4 +1,5 @@
 'use client';
+import {planLink} from '@/lib/short-link';
 // The People tab: a guest finds their name, RSVPs (with extra guests, dietary needs and a sleepover request),
 // and the organizer manages the guest list. Dietary needs, sleepovers and pending extra guests are shown
 // only to the organizer and the guest themselves; the server enforces the same rule.
@@ -23,7 +24,7 @@ const answerLine=(g:{status:string;extra_count?:number;extra_names?:string})=>AN
 function whenText(date:string){if(!date)return '';const d=new Date(date);return Number.isNaN(+d)?'':d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})+' at '+d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}
 // A personal message the host sends themselves (text, DM). m.o never sends it.
 export function checkInMessage(d:Detail,g:Guest){
- const link=(typeof location!=='undefined'?location.origin:'')+'/?plan='+d.plan.id,when=whenText(d.plan.date),items=d.tasks.filter(t=>t.claimed_name===g.name&&!t.done).map(t=>t.title);
+ const link=planLink(typeof location!=='undefined'?location.origin:'',d.plan.id),when=whenText(d.plan.date),items=d.tasks.filter(t=>t.claimed_name===g.name&&!t.done).map(t=>t.title);
  const what=`${d.plan.title}${when?` on ${when}`:''}`,first=g.name.split(' ')[0];
  if(g.status==='invited')return `Hi ${first}! Are you coming to ${what}? Just reply here, or answer at ${link}`;
  const parts=[`as ${answerLine(g)}`];if(items.length)parts.push(`bringing ${items.join(', ')}`);if(g.dietary)parts.push(`dietary: ${g.dietary}`);if(g.staying)parts.push('staying over');
