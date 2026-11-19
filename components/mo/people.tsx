@@ -130,6 +130,7 @@ export function PeopleTab({detail,act,busy,notify,startAdding=false,startMode=nu
     {g.extra_status==='approved'&&!!g.extra_count&&<small>{plusLine(g)}</small>}
     {host&&g.extra_status==='requested'&&<span className="request">Asks to bring {plusLine(g)}<span><button className="text-button small" disabled={busy} onClick={()=>decide(g,'approved')}>Approve</button><button className="text-button small quiet" disabled={busy} onClick={()=>decide(g,'declined')}>Decline</button></span></span>}
     {host&&g.extra_status==='declined'&&<small>Extra guest declined</small>}
+    {host&&g.status==='maybe'&&g.check_back&&(()=>{const due=g.check_back<=new Date().toISOString().slice(0,10);return <small className={due?'check-due':'private'}><Clock size={12}/>{due?'Said to check back by now':'Will decide by '+new Date(g.check_back+'T12:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})}</small>})()}
     {host&&g.dietary&&<small className="private"><Utensils size={12}/>{g.dietary}</small>}
     {host&&g.staying&&<small className="private"><Moon size={12}/>Wants to stay over</small>}
     {g.note&&<small>{g.note}</small>}

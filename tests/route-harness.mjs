@@ -17,6 +17,7 @@ await import('./profile-photo.mjs');
 await import('./places.mjs');
 await import('./end-date.mjs');
 await import('./host-link.mjs');
+await import('./answers.mjs');
 console.log('Actual route handlers verified against SQLite with separate guest sessions.');
 
 const assert=(await import('node:assert/strict')).default;

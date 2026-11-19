@@ -129,7 +129,7 @@ async function handler(req:Request){
    const answer=(status:string,count:number,names:string)=>(status==='in'?'going':status==='maybe'?'still checking':status==='out'?'can’t make it':'no reply yet')+(count?` (+${count}${names?' '+names:''})`:'');
 
    if(seg.length===2 && req.method==='GET'){
-    const gs=await db.prepare('SELECT g.id,g.name,g.status,g.note,g.actor,g.extra_count,g.extra_names,g.extra_status,g.dietary,g.staying,g.source,g.updated,pr.handle,pr.mo,pr.interests,pr.avatar,pr.photo_updated FROM guests g LEFT JOIN profiles pr ON pr.actor=g.actor WHERE g.plan_id=? ORDER BY g.rowid').bind(id).all<any>();
+    const gs=await db.prepare('SELECT g.id,g.name,g.status,g.note,g.actor,g.extra_count,g.extra_names,g.extra_status,g.dietary,g.staying,g.source,g.updated,g.check_back,pr.handle,pr.mo,pr.interests,pr.avatar,pr.photo_updated FROM guests g LEFT JOIN profiles pr ON pr.actor=g.actor WHERE g.plan_id=? ORDER BY g.rowid').bind(id).all<any>();
     const ts=await db.prepare('SELECT * FROM tasks WHERE plan_id=? ORDER BY rowid').bind(id).all<any>();
     const ps=await db.prepare('SELECT * FROM polls WHERE plan_id=? ORDER BY created').bind(id).all<any>();
     const os=await db.prepare('SELECT o.id,o.poll_id,o.label FROM poll_options o JOIN polls p ON p.id=o.poll_id WHERE p.plan_id=? ORDER BY o.rowid').bind(id).all<any>();
@@ -145,7 +145,7 @@ async function handler(req:Request){
     return json({plan:safe,host,hasHostKey:host&&!!host_key_hash,activity:acts,organizer:gs.results.find((g:any)=>g.actor===owner)?.name||null,
      details:insider?details:'',hidden,
      // Dietary needs, sleepover requests and pending plus-ones are visible only to the organizer and the guest.
-     guests:gs.results.map(({actor:a,interests,dietary,staying,extra_count,extra_names,extra_status,avatar,photo_updated,...g}:any)=>{const own=a===actor,see=host||own,extra=see||extra_status==='approved';return {...g,avatar:parseAvatar(avatar),photo:photo_updated?`/api/plan/${id}/guests/${g.id}/photo?v=${encodeURIComponent(photo_updated)}`:null,isHost:a===owner,interests:interests?parseInterests(interests):[],isMe:own,extra_count:extra?extra_count:0,extra_names:extra?extra_names:'',extra_status:extra?extra_status:'',...(see?{dietary,staying:!!staying}:{})}}),
+     guests:gs.results.map(({actor:a,interests,dietary,staying,check_back,extra_count,extra_names,extra_status,avatar,photo_updated,...g}:any)=>{const own=a===actor,see=host||own,extra=see||extra_status==='approved';return {...g,avatar:parseAvatar(avatar),photo:photo_updated?`/api/plan/${id}/guests/${g.id}/photo?v=${encodeURIComponent(photo_updated)}`:null,isHost:a===owner,interests:interests?parseInterests(interests):[],isMe:own,extra_count:extra?extra_count:0,extra_names:extra?extra_names:'',extra_status:extra?extra_status:'',...(see?{dietary,staying:!!staying,check_back:check_back||''}:{})}}),
      tasks:ts.results.map(({claimed_by,...t}:any)=>({...t,isMine:claimed_by===actor})),
      polls,stops:insider?ss.results:[],
      memories:ms.results.map(({actor:a,...m}:any)=>({...m,isMine:a===actor}))});
@@ -181,6 +181,16 @@ async function handler(req:Request){
     await db.batch([db.prepare('UPDATE plans SET end_date=?,booking_url=?,title=?,date=?,place=?,budget=?,note=?,invite_url=?,made_it=?,details=? WHERE id=?').bind(next.end_date,next.booking_url||null,title,next.date,next.place,next.budget,next.note,invitation(m.inviteUrl),m.madeIt===true?1:0,next.details,id),
      ...(changed.length?log('You changed the '+changed.join(', ')):[]),...(m.madeIt===true&&!plan.made_it?log('You marked the plan as made it out'):[])]);return json({ok:true});
    }
+   // "Still checking": the guest says when to check back. Saved on their answer; the host sees it. m.o never messages anyone.
+   if(seg[2]==='check-back'&&seg.length===3&&req.method==='POST'){
+    const me=await db.prepare('SELECT name,status FROM guests WHERE plan_id=? AND actor=?').bind(id,actor).first<any>();
+    if(!me||me.status!=='maybe')return json({error:'Choose “Still checking” first.'},400);
+    const day=typeof b.date==='string'?b.date:'';
+    if(day){if(!/^\d{4}-\d{2}-\d{2}$/.test(day)||Number.isNaN(Date.parse(day+'T12:00:00Z')))return json({error:'Choose a valid day.'},400);
+     const t=Date.parse(day+'T12:00:00Z');if(t<Date.now()-86400000||t>Date.now()+90*86400000)return json({error:'Choose a day in the next 3 months.'},400)}
+    await db.batch([db.prepare('UPDATE guests SET check_back=? WHERE plan_id=? AND actor=?').bind(day,id,actor),...(day?log(`${me.name} will decide by ${new Date(day+'T12:00:00Z').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',timeZone:'UTC'})}`,false):[])]);
+    return json({ok:true});
+   }
    if(seg[2]==='rsvp'&&req.method==='POST'){
     const name=str(b.name,60);if(!name||!['in','maybe','out'].includes(b.status))return json({error:'Add your name and choose a response.'},400);
     const prev=await db.prepare('SELECT extra_count,extra_names,extra_status FROM guests WHERE plan_id=? AND actor=?').bind(id,actor).first<any>();
@@ -194,6 +204,7 @@ async function handler(req:Request){
      db.prepare('INSERT INTO guests (plan_id,actor,name,status,note,id,extra_count,extra_names,extra_status,dietary,staying,source,updated) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(plan_id,actor) DO UPDATE SET name=excluded.name,status=excluded.status,note=excluded.note,extra_count=excluded.extra_count,extra_names=excluded.extra_names,extra_status=excluded.extra_status,dietary=excluded.dietary,staying=excluded.staying,source=excluded.source,updated=excluded.updated')
       .bind(id,actor,name,b.status,str(b.note,300),crypto.randomUUID(),count,names,extraStatus,str(b.dietary,200),!out&&b.staying===true?1:0,'guest',now),
      db.prepare('UPDATE tasks SET claimed_name=? WHERE plan_id=? AND claimed_by=?').bind(name,id,actor),
+     db.prepare("UPDATE guests SET check_back='' WHERE plan_id=? AND actor=? AND status<>'maybe'").bind(id,actor),
      ...(host?[]:log(`${name} confirmed: ${answer(b.status,count,names)}${freed.length?` · ${freed.join(', ')} open again`:''}`,false))]);
     return json({ok:true,freed});
    }
