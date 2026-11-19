@@ -39,7 +39,7 @@ function sortOut(p:Plan):[string,string]|null{const n=p.open_items||0;if(n&&p.op
 function itemIcon(title:string,category:string){const t=title.toLowerCase(),has=(re:string)=>new RegExp('\\b(?:'+re+')\\b').test(t);const I=has('ice|ice bags?')?Snowflake:has('drinks?|sodas?|juice|water|coffee|tea|lemonade|seltzer')?CupSoda:has('wine|beers?|champagne|cocktails?|prosecco')?Wine:has('sweets?|something sweet|desserts?|cakes?|pies?|cookies?|brownies?|cupcakes?')?CakeSlice:has('salads?|veggies|vegetables|greens')?Salad:has('main|main dish|mac|mac and cheese|sides?|dish|turkey|ham|soup|stew|rice|bread|rolls?|stuffing|casserole|chicken')?Soup:has('music|playlist|speakers?|dj')?Music:has('rides?|cars?|drive|driving|carpool|pick ?up')?Car:has('stay|accommodation|airbnb|hotel|rooms?|beds?|lodging')?BedDouble:has('budget|money|pay|split|split the check|venmo')?Wallet:has('tickets?|reservations?|reserve|book|booking')?Ticket:has('plates?|cups?|napkins?|forks?|utensils?|chairs?|folding chairs|tables?|cutlery')?Utensils:category==='bring'?Box:ClipboardCheck;return <I size={22} strokeWidth={1.7}/>}
 
 export default function Home(){
- const [plans,setPlans]=useState<Plan[]>([]),[detail,setDetail]=useState<Detail|null>(null),[view,setView]=useState<'home'|'plans'|'me'>('home'),[me,setMe]=useState<Me|null>(null),[meLoading,setMeLoading]=useState(false),[loading,setLoading]=useState(true),[busy,setBusy]=useState(false),[toast,setToast]=useState(''),[error,setError]=useState(''),[modal,setModal]=useState<'create'|'edit'|'help'|null>(null),[form,setForm]=useState(initial),[tab,setTab]=useState('all'),[addType,setAddType]=useState('bring'),[newItem,setNewItem]=useState(''),[name,setName]=useState(''),[ptab,setPtab]=useState<'overview'|'people'|'list'>('overview'),[hello,setHello]=useState('Hey'),[askName,setAskName]=useState(true),[openAdd,setOpenAdd]=useState(false),[sharedTick,setSharedTick]=useState(0);
+ const [plans,setPlans]=useState<Plan[]>([]),[detail,setDetail]=useState<Detail|null>(null),[view,setView]=useState<'home'|'plans'|'me'>('home'),[me,setMe]=useState<Me|null>(null),[meLoading,setMeLoading]=useState(false),[loading,setLoading]=useState(true),[busy,setBusy]=useState(false),[toast,setToast]=useState(''),[error,setError]=useState(''),[modal,setModal]=useState<'create'|'edit'|'help'|null>(null),[form,setForm]=useState(initial),[tab,setTab]=useState('all'),[addType,setAddType]=useState('bring'),[newItem,setNewItem]=useState(''),[name,setName]=useState(''),[ptab,setPtab]=useState<'overview'|'people'|'list'>('overview'),[hello,setHello]=useState('Hey'),[askName,setAskName]=useState(true),[openAdd,setOpenAdd]=useState(false),[replyMode,setReplyMode]=useState<'new'|'other'|null>(null),[sharedTick,setSharedTick]=useState(0);
  const demo=!!detail?.plan.id.startsWith('demo-');
  async function api(path:string,method='GET',data?:unknown){const r=await fetch('/api/'+path,{method,headers:{'Content-Type':'application/json'},...(data!=null?{body:JSON.stringify(data)}:{})});let j:any;try{j=await r.json()}catch{throw Error('Couldn’t reach m.o. Check your connection and try again.')}if(!r.ok)throw Error(j.error||'Something went wrong.');return j}
  function notify(t:string){setToast(t);setTimeout(()=>setToast(''),4000)}
@@ -60,6 +60,9 @@ export default function Home(){
   setBusy(true);try{await api('plan/'+detail.plan.id,'DELETE');try{localStorage.removeItem('mo-shared-'+detail.plan.id)}catch{}setModal(null);home();notify('Plan deleted.')}catch(e:any){notify(e.message)}finally{setBusy(false)}}
  function home(){setDetail(null);setView('home');setError('');window.history.pushState({},'','/');list();window.scrollTo(0,0)}
  function openEdit(){const p=detail!.plan;setForm({...initial,title:p.title,kind:p.kind,place:p.place,budget:p.budget,note:p.note,details:detail!.details||'',date:p.date?new Date(new Date(p.date).getTime()-new Date(p.date).getTimezoneOffset()*60000).toISOString().slice(0,16):'',name,inviteUrl:p.invite_url||''});setModal('edit')}
+ // Opens the reply form for a guest and brings it into view (the tabs stay above it).
+ function startReply(mode:'new'|'other'|null){setReplyMode(mode);setPtab('people');setTimeout(()=>document.querySelector('.rsvp-form,.pick-card,.other-phone')?.scrollIntoView({behavior:'smooth',block:'start'}),120)}
+ async function pickName(g:Guest){const ok=await act(`guests/${g.id}/pick`,'POST',{},d=>{for(const x of d.guests)x.isMe=x.id===g.id},`Hi ${g.name}.`);if(ok)startReply(null)}
  function goTab(tab:'people'|'list',opts:{add?:boolean}={}){setOpenAdd(!!opts.add);setPtab(tab);window.scrollTo(0,0)}
  function plansView(){setDetail(null);setView('plans');setError('');window.history.pushState({},'','/?view=plans');list();window.scrollTo(0,0)}
  function profile(){setDetail(null);setView('me');setError('');window.history.pushState({},'','/?view=me');loadMe();window.scrollTo(0,0)}
@@ -137,15 +140,25 @@ export default function Home(){
    </>
 
    :<>
-    <div className="plan-photo"><Scene kind={sceneFor(p!.kind,p!.made_it)} seed={p!.id}/>{demo?<span className="demo-badge">Demo · changes aren’t saved</span>:p!.made_it?<span className="demo-badge made">Made it out</span>:null}</div>
+    <div className={'plan-photo'+(!answered&&!detail!.host&&!demo?' compact':'')}><Scene kind={sceneFor(p!.kind,p!.made_it)} seed={p!.id}/>{demo?<span className="demo-badge">Demo · changes aren’t saved</span>:p!.made_it?<span className="demo-badge made">Made it out</span>:null}</div>
     <section className="plan-head">
      <h1>{p!.title}</h1>
      <p className="host-line"><Face className="mini-avatar" seed={hostName||'?'} avatar={hostGuest?.avatar} photo={hostGuest?.photo}/>Hosted by {hostIsMe?'you':hostName||'the organizer'}</p>
      <p className="meta-line"><CalendarDays size={20} strokeWidth={1.7}/>{when(p!.date)}</p>
      <p className="meta-line"><MapPin size={20} strokeWidth={1.7}/>{p!.place||(detail!.hidden?<span className="locked"><Lock size={14}/>Address shared after you RSVP</span>:'Place to decide')}</p>
-     <div className="plan-actions"><button className="outline-button brick" onClick={demo?()=>create(p!.kind):share}>{demo?<Plus size={16}/>:<LinkIcon size={16}/>}{demo?'Make a real plan':'Copy invite link'}</button><button className="outline-button" onClick={calendar}><CalendarDays size={16}/>Add to calendar</button></div>
+     {(answered||detail!.host||demo)&&<div className="plan-actions"><button className="outline-button brick" onClick={demo?()=>create(p!.kind):share}>{demo?<Plus size={16}/>:<LinkIcon size={16}/>}{demo?'Make a real plan':'Copy invite link'}</button><button className="outline-button" onClick={calendar}><CalendarDays size={16}/>Add to calendar</button></div>}
     </section>
-    {ptab!=='people'&&!answered&&!detail!.host&&<section className="rsvp-prompt"><div><strong>{mine_?`Hi ${mine_.name}. Can you make it?`:'You’re invited.'}</strong><span>{detail!.hidden?'RSVP to get the address and arrival details.':'Say if you’re in, then pick something to bring.'}</span></div><button className="primary" onClick={()=>{setPtab('people');window.scrollTo(0,0)}}>RSVP</button></section>}
+    {/* A guest arriving from an invite link: the invite is the first thing, with their name one tap away. */}
+    {!answered&&!detail!.host&&!demo&&(()=>{const names=guests.filter(g=>!g.isMe&&!g.isHost&&(g.status==='invited'||g.source==='host')),others=guests.filter(g=>!g.isMe&&!g.isHost&&g.status!=='invited'&&g.source!=='host');
+     return <section className="invite-card" aria-labelledby="invite-title">
+      <h2 id="invite-title">{mine_?`Hi ${mine_.name}. Can you make it?`:`${hostName||'Your friend'} invited you`}</h2>
+      <p>{detail!.hidden?'Reply to see the address and arrival details, then pick something to bring.':'Say if you’re coming, then pick something to bring.'}</p>
+      {!mine_&&names.length>0?<>
+       <span className="eyebrow">TAP YOUR NAME</span>
+       <div className="name-chips">{names.map(g=><button key={g.id} className="name-chip" disabled={busy} onClick={()=>pickName(g)}><Face className="mini-avatar" seed={g.name} avatar={g.avatar} photo={g.photo}/>{g.name}</button>)}</div>
+       <div className="invite-more"><button className="text-button" onClick={()=>startReply('new')}>I’m not on the list</button>{others.length>0&&<button className="text-button quiet" onClick={()=>startReply('other')}>Answered on another phone?</button>}</div>
+      </>:<button className="primary" onClick={()=>startReply(mine_?null:'new')}>Reply</button>}
+     </section>})()}
     <NotedBanner detail={detail!} act={act} busy={busy} onChange={()=>{setPtab('people');window.scrollTo(0,0)}}/>
     <div className="seg plan-tabs" role="tablist" aria-label="Plan sections">{([['overview','Overview'],['people','People'],['list',listLabel]] as const).map(([k,label])=><button key={k} role="tab" aria-selected={ptab===k} className={ptab===k?'on':''} onClick={()=>setPtab(k)}>{label}{k==='list'&&unclaimed.length>0?<span className="tab-count">{unclaimed.length}</span>:null}</button>)}</div>
 
@@ -188,7 +201,7 @@ export default function Home(){
      <p className="access-note"><Lock size={12}/>Anyone with the link can see this plan and RSVP. Only people who RSVP see the address. Don’t post the link publicly.</p>
     </div>}
 
-    {ptab==='people'&&<PeopleTab key={detail!.plan.id+(mine_?.id||'')+(openAdd?':add':'')} detail={detail!} act={act} busy={busy} notify={notify} startAdding={openAdd} onRsvp={status=>{if(status!=='out'&&!mine.length&&unclaimed.length){setPtab('list');window.scrollTo(0,0)}}}/>}
+    {ptab==='people'&&<PeopleTab key={detail!.plan.id+(mine_?.id||'')+(openAdd?':add':'')+(replyMode||'')} detail={detail!} act={act} busy={busy} notify={notify} startAdding={openAdd} startMode={replyMode} onRsvp={status=>{if(status!=='out'&&!mine.length&&unclaimed.length){setPtab('list');window.scrollTo(0,0)}}}/>}
 
     {ptab==='list'&&<section className="stack">
      <p className="list-lead">{bringItems.length?'Pick something you can bring.':'Give each task a person.'}</p>
