@@ -17,6 +17,12 @@ const dailyNewPlans=()=>Number((env as {DAILY_NEW_PLANS?:string})?.DAILY_NEW_PLA
 function interestsOf(v:unknown){return Array.isArray(v)?[...new Set(v.map(x=>str(x,24)).filter(Boolean))].slice(0,8):[]}
 function parseInterests(s:string){try{const v=JSON.parse(s);return Array.isArray(v)?v:[]}catch{return []}}
 const placeHits=new Map<string,number[]>(),hostTries=new Map<string,number[]>();
+// Writes down that a request failed, and where (method and route shape only, never IDs or what was sent).
+async function recordError(req:Request){try{const db=env.DB;if(!db)return;const seg=new URL(req.url).pathname.split('/').filter(Boolean).slice(1);
+ const shape=seg[0]==='plan'?['plan',...seg.slice(2).filter((_,i)=>i%2===0)]:seg.slice(0,2);
+ const area=(req.method+' '+shape.map(x=>/^[a-z-]{1,20}$/.test(x)?x:'?').join('/')).slice(0,60);
+ await db.batch([db.prepare('INSERT INTO errors (id,at,area) VALUES (?,?,?)').bind(crypto.randomUUID(),new Date().toISOString(),area),db.prepare('DELETE FROM errors WHERE id NOT IN (SELECT id FROM errors ORDER BY at DESC LIMIT 500)')]);
+}catch{}}
 async function handler(req:Request){
  const cookies=req.headers.get('cookie')||''; let session=cookies.match(/(?:^|; )mo_session=([a-f0-9-]{36})(?:;|$)/)?.[1]; const fresh=!session;session ||=crypto.randomUUID();
  const visitor=req.headers.get('oai-authenticated-user-id')||session;let actor=visitor;
@@ -31,6 +37,13 @@ async function handler(req:Request){
   if(req.headers.get('content-length') && Number(req.headers.get('content-length'))>maxBody)return json({error:'That request is too large.'},413);
   const body=async()=>{if(req.method==='GET'||req.method==='DELETE')return {} as any;try{return await req.json() as any}catch{return {} as any}};
 
+  // ---- Health check for the owner's alert (GitHub checks it every 30 minutes). Counts only; nothing private. ----
+  if(seg[0]==='health'&&seg.length===1&&req.method==='GET'){
+   const since=new Date(Date.now()-Math.min(1440,Math.max(5,Math.floor(Number(url.searchParams.get('minutes'))||35)))*60000).toISOString();
+   const r=await db.prepare('SELECT count(*) AS n FROM errors WHERE at>?').bind(since).first<any>();
+   const {results:areas}=await db.prepare('SELECT area,count(*) AS n FROM errors WHERE at>? GROUP BY area ORDER BY n DESC LIMIT 5').bind(since).all<any>();
+   return json({ok:true,database:true,recentErrors:r?.n||0,areas:areas.map((a:any)=>`${a.area} (${a.n})`)});
+  }
   // ---- Address search: free OpenStreetMap results (Photon). No key, no cost. Search text only; never who is searching. ----
   // ---- Host link: open a plan as its host on this device. The key is checked against a stored hash. ----
   if(seg[0]==='host-link'&&seg.length===1&&req.method==='POST'){
@@ -408,6 +421,6 @@ async function handler(req:Request){
    }
   }
   return json({error:'Not found'},404);
- }catch(e){console.error('mo API request failed',e);return json({error:'We could not save that. Please try again.'},500)}
+ }catch(e){console.error('mo API request failed',e);await recordError(req);return json({error:'We could not save that. Please try again.'},500)}
 }
 export const GET=handler;export const POST=handler;export const PATCH=handler;export const PUT=handler;export const DELETE=handler;
