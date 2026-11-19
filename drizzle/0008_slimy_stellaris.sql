@@ -1,0 +1,1 @@
+ALTER TABLE `plans` ADD `booking_url` text;

@@ -1,4 +1,4 @@
-export type Plan={id:string;title:string;kind:string;date:string;place:string;budget:string;note:string;going?:number;maybe?:number;open_items?:number;open_item?:string|null;open_votes?:number;invited?:number;invite_url?:string|null;made_it?:number};
+export type Plan={id:string;title:string;kind:string;date:string;place:string;budget:string;note:string;going?:number;maybe?:number;open_items?:number;open_item?:string|null;open_votes?:number;invited?:number;invite_url?:string|null;booking_url?:string|null;made_it?:number};
 export type Task={id:string;title:string;category:string;claimed_name:string|null;done:number;isMine:boolean;claim_source?:string};
 import type {Avatar} from './avatar';
 export type Guest={avatar?:Avatar|null;photo?:string|null;id?:string;name:string;status:string;note:string;isMe:boolean;isHost?:boolean;extra_count?:number;extra_names?:string;extra_status?:string;dietary?:string;staying?:boolean;source?:string;updated?:string;handle?:string|null;mo?:string|null;interests?:string[]};
