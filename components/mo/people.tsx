@@ -3,15 +3,17 @@
 // and the organizer manages the guest list. Dietary needs, sleepovers and pending extra guests are shown
 // only to the organizer and the guest themselves; the server enforces the same rule.
 import {useEffect,useState} from 'react';
-import {Check,Clock,X,Plus,Minus,Trash2,Moon,Utensils,UserPlus,LoaderCircle,Contact,Pencil,Copy,CircleHelp} from 'lucide-react';
+import {Check,Clock,X,Plus,Minus,Trash2,Moon,Utensils,UserPlus,LoaderCircle,Contact,Send,Pencil,Copy,CircleHelp} from 'lucide-react';
 import type {Act,Detail,Guest} from '@/lib/types';
 import {ago} from '@/lib/types';
 import {Face} from './art';
-import {splitNames} from '@/lib/names';
+import {splitNames,cleanName} from '@/lib/names';
+import {loadInvites,saveInvites,phonesFromText} from '@/lib/invite';
+import {SendInvites} from './send-invites';
 
 // The browser contact picker (Chrome on Android). Not available in Safari on iPhone by default, so the button only
-// appears where it works. We ask for names only; numbers and emails are never requested or stored.
-type ContactsManager={select:(props:string[],opts:{multiple:boolean})=>Promise<{name?:string[]}[]>};
+// appears where it works. Names go to m.o; phone numbers stay on this phone (see lib/invite.ts). Emails are never asked for.
+type ContactsManager={select:(props:string[],opts:{multiple:boolean})=>Promise<{name?:string[];tel?:string[]}[]>;getProperties?:()=>Promise<string[]>};
 const contactsApi=()=>typeof navigator!=='undefined'&&'contacts' in navigator&&typeof window!=='undefined'&&'ContactsManager' in window?(navigator as unknown as {contacts:ContactsManager}).contacts:null;
 
 const ORDER:Record<string,number>={in:1,maybe:2,invited:3,out:4};
@@ -39,15 +41,15 @@ const plusLine=(g:Guest)=>g.extra_count?`+${g.extra_count}${g.extra_names?' · '
 function storedName(){try{return localStorage.getItem('mo-name')||''}catch{return ''}}
 function remember(n:string){try{localStorage.setItem('mo-name',n)}catch{}}
 
-export function PeopleTab({detail,act,busy,notify,startAdding=false,startMode=null,onRsvp}:{detail:Detail;act:Act;busy:boolean;notify:(t:string)=>void;startAdding?:boolean;startMode?:'new'|'other'|null;onRsvp?:(status:string)=>void}){
+export function PeopleTab({detail,act,busy,notify,startAdding=false,startMode=null,startSending=false,onRsvp,onInviteSent}:{detail:Detail;act:Act;busy:boolean;notify:(t:string)=>void;startAdding?:boolean;startMode?:'new'|'other'|null;startSending?:boolean;onRsvp?:(status:string)=>void;onInviteSent?:()=>void}){
  const host=detail.host,guests=detail.guests,me=guests.find(g=>g.isMe),answered=!!me&&me.status!=='invited';
  const [editing,setEditing]=useState(false),[notListed,setNotListed]=useState(startMode==='new'),[otherPhone,setOtherPhone]=useState(startMode==='other');
  const [f,setF]=useState(()=>({name:me?.name||storedName(),status:me&&me.status!=='invited'?me.status:'',extra:me?.extra_count||0,extraNames:me?.extra_names||'',dietary:me?.dietary||'',staying:!!me?.staying,note:me?.note||''}));
- const [noting,setNoting]=useState<string|null>(null),[nf,setNf]=useState({status:'',extra:0,extraNames:'',dietary:'',staying:false,note:''});
+ const [sending,setSending]=useState(startSending),[noting,setNoting]=useState<string|null>(null),[nf,setNf]=useState({status:'',extra:0,extraNames:'',dietary:'',staying:false,note:''});
  const [adding,setAdding]=useState(''),[addOpen,setAddOpen]=useState(startAdding),[canPick,setCanPick]=useState(false);
  useEffect(()=>{setCanPick(!!contactsApi())},[]);
  const listed=new Set(guests.map(g=>g.name.toLowerCase())),toAdd=splitNames(adding),newNames=toAdd.filter(n=>!listed.has(n.toLowerCase()));
- async function fromContacts(){const api=contactsApi();if(!api)return;try{const picked=await api.select(['name'],{multiple:true});const names=picked.map(c=>c.name?.[0]||'').filter(Boolean);if(names.length)setAdding(a=>[a.trim(),...names].filter(Boolean).join('\n'))}catch{notify('Couldn’t open your contacts. Type or paste names instead.')}}
+ async function fromContacts(){const api=contactsApi();if(!api)return;try{const props=await api.getProperties?.().catch(()=>['name'])||['name'];const picked=await api.select(props.includes('tel')?['name','tel']:['name'],{multiple:true});const lines=picked.map(c=>[c.name?.[0]||'',c.tel?.[0]||''].join(' ').trim()).filter(l=>/\p{L}/u.test(l));if(lines.length)setAdding(a=>[a.trim(),...lines].filter(Boolean).join('\n'))}catch{notify('Couldn’t open your contacts. Type or paste names instead.')}}
  const sorted=[...guests].sort((a,b)=>(a.isHost?0:ORDER[a.status]||5)-(b.isHost?0:ORDER[b.status]||5));
  // People the host listed or noted (but who haven't answered themselves) find their name in the main list.
  const unanswered=guests.filter(g=>!g.isMe&&!g.isHost&&(g.status==='invited'||g.source==='host')),others=guests.filter(g=>!g.isHost&&!g.isMe&&g.status!=='invited'&&g.source!=='host');
@@ -78,7 +80,7 @@ export function PeopleTab({detail,act,busy,notify,startAdding=false,startMode=nu
  async function copyCheckIn(g:Guest){const text=checkInMessage(detail,g);try{await navigator.clipboard.writeText(text);notify(`Check-in for ${g.name} copied. Send it however you usually reach them.`)}catch{notify(text)}}
  async function addNames(e:React.FormEvent){e.preventDefault();const names=newNames;if(!names.length){notify(toAdd.length?'They’re already on the list.':'Add at least one name.');return}
   const ok=await act('guests','POST',{names},d=>{const have=new Set(d.guests.map(g=>g.name.toLowerCase()));for(const n of names)if(!have.has(n.toLowerCase())){have.add(n.toLowerCase());d.guests.push({id:crypto.randomUUID(),name:n,status:'invited',note:'',isMe:false})}},'Added to the guest list.');
-  if(ok){setAdding('');setAddOpen(false)}}
+  if(ok){const found=phonesFromText(adding,cleanName);if(Object.keys(found).length){const st=loadInvites(detail.plan.id);saveInvites(detail.plan.id,{...st,phones:{...st.phones,...found}})}setAdding('');setAddOpen(false)}}
  const decide=(g:Guest,decision:'approved'|'declined')=>act(`guests/${g.id}/extra`,'POST',{decision},d=>{const x=d.guests.find(y=>y.id===g.id);if(x)x.extra_status=decision},decision==='approved'?`${g.name}’s extra guest is approved.`:'Request declined.');
  function remove(g:Guest){if(!confirm(`Remove ${g.name} from this plan? Anything they claimed opens up again.`))return;
   act(`guests/${g.id}`,'DELETE',null,d=>{d.guests=d.guests.filter(x=>x.id!==g.id);d.tasks=d.tasks.map(t=>t.claimed_name===g.name?{...t,claimed_name:null,isMine:false,done:0}:t)},`${g.name} was removed.`)}
@@ -102,6 +104,7 @@ export function PeopleTab({detail,act,busy,notify,startAdding=false,startMode=nu
     {me!.source==='host'&&<span className="noted-tag">Noted by {detail.organizer||'the host'} · not confirmed by you yet</span>}{me!.dietary&&<span>Dietary: {me!.dietary}</span>}{me!.staying&&<span>Asked to stay over</span>}</div>
    <button className="outline-button" onClick={()=>{setF({name:me!.name,status:me!.status,extra:me!.extra_count||0,extraNames:me!.extra_names||'',dietary:me!.dietary||'',staying:!!me!.staying,note:me!.note||''});setEditing(true)}}>Change</button>
   </div>}
+  {host&&(sending?<SendInvites detail={detail} notify={notify} onClose={()=>setSending(false)} onSent={()=>onInviteSent?.()}/>:guests.some(g=>!g.isHost)&&<button className="primary block" onClick={()=>setSending(true)}><Send size={17}/>Send invites</button>)}
   {host&&!editing&&<button className="text-button" onClick={()=>{setF(x=>({...x,name:me?.name||x.name,status:me?.status||'in',extra:me?.extra_count||0,extraNames:me?.extra_names||''}));setEditing(true)}}>Update my own RSVP</button>}
 
   {showForm&&<form className="rsvp-form" onSubmit={send}>
@@ -150,7 +153,7 @@ export function PeopleTab({detail,act,busy,notify,startAdding=false,startMode=nu
    {canPick&&<button type="button" className="outline-button" onClick={fromContacts}><Contact size={16}/>Choose from contacts</button>}
    <label>Who did you invite? <small>{canPick?'Or type and paste names. ':''}One per line, or separated by commas. You can paste from your group chat; phone numbers and emails are removed. Guests tap their name when they open the link, so you can see who hasn’t replied.</small><textarea rows={4} maxLength={3000} value={adding} onChange={e=>setAdding(e.target.value)} placeholder={'Tess\nJordan\nSam'}/></label>
    {toAdd.length>0&&<p className="name-preview" aria-live="polite">{newNames.length?<>Will add {newNames.length}: <strong>{newNames.join(', ')}</strong></>:'Everyone here is already on the list.'}{toAdd.length>newNames.length&&newNames.length>0?` (${toAdd.length-newNames.length} already listed)`:''}</p>}
-   <p className="fine">Only names are saved. m.o doesn’t store numbers or message anyone.</p>
+   <p className="fine">Names are saved to the plan. Phone numbers stay on this phone, for sending invites. m.o never texts anyone for you.</p>
    <div className="form-bottom"><button type="button" className="text-button" onClick={()=>{setAddOpen(false);setAdding('')}}>Cancel</button><button className="primary" disabled={busy||!newNames.length}>{newNames.length>1?`Add ${newNames.length} people`:'Add to guest list'}</button></div>
   </form>:<button className="outline-button" onClick={()=>setAddOpen(true)}><UserPlus size={16}/>Add names to the guest list</button>)}
  </section>

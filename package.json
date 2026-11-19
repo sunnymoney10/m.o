@@ -19,7 +19,8 @@
     "ux:metrics": "node tests/e2e/ux-metrics.cjs",
     "journeys:profile": "node tests/e2e/profile-picture.cjs",
     "a11y": "node tests/e2e/a11y.cjs",
-    "deploy": "node scripts/deploy-cloudflare.mjs"
+    "deploy": "node scripts/deploy-cloudflare.mjs",
+    "journeys:invites": "node tests/e2e/personal-invites.cjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

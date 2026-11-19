@@ -533,7 +533,7 @@ legend{font-weight:600;font-size:14px;margin-bottom:8px;color:var(--ink)}
 
 /* ---------- shared press effect: every tap is answered ---------- */
 .primary,.outline-button,.text-button,.claim-button,.chip,.name-chip,.swatch,.rsvp-choice,.seg button,.tab,.plan-card,.demo-card,.row-link,.status-grid>button,.status-items,.icon-button,.host-line-item,.style-option,.type-selector button,.feature-open,.me-dot{transition:transform .2s ease-out,background-color .15s,box-shadow .15s}
-:is(.primary,.outline-button,.text-button,.claim-button,.chip,.name-chip,.swatch,.rsvp-choice,.seg button,.tab,.plan-card,.demo-card,.row-link,.status-grid>button,.status-items,.icon-button,.host-line-item,.style-option,.type-selector button,.feature-open,.me-dot):active:not(:disabled){transform:scale(.97);transition-duration:.12s}
+:is(.primary,.outline-button,a.outline-button,.text-button,.claim-button,.chip,.name-chip,.swatch,.rsvp-choice,.seg button,.tab,.plan-card,.demo-card,.row-link,.status-grid>button,.status-items,.icon-button,.host-line-item,.style-option,.type-selector button,.feature-open,.me-dot):active:not(:disabled){transform:scale(.97);transition-duration:.12s}
 @media(prefers-reduced-motion:reduce){:is(.primary,.outline-button,.text-button,.claim-button,.chip,.name-chip,.swatch,.rsvp-choice,.seg button,.tab,.plan-card,.demo-card,.row-link,.status-grid>button,.status-items,.icon-button,.host-line-item,.style-option,.type-selector button,.feature-open,.me-dot):active:not(:disabled){transform:none;opacity:.8}}
 
 /* delete plan */
@@ -549,3 +549,22 @@ legend{font-weight:600;font-size:14px;margin-bottom:8px;color:var(--ink)}
 .rsvp-form,.pick-card,.other-phone{scroll-margin-top:150px}
 .plan-photo.compact .scene{aspect-ratio:3/1}
 @media (max-height:700px){.plan-photo.compact{display:none}}
+
+/* personal invites */
+.quick-answers{display:flex;flex-wrap:wrap;gap:8px}
+.quick-answers>*{flex:1 1 auto}
+.send-invites{display:grid;gap:14px;padding:18px;border-radius:var(--radius);background:var(--paper);box-shadow:0 1px 0 var(--line)}
+.send-invites .primary.block{text-decoration:none}
+.all-sent{display:flex;align-items:center;gap:8px;color:#2f6b3a;font-weight:600}
+.invite-rows{list-style:none;margin:0;padding:0;display:grid}
+.invite-rows li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:12px 0;border-top:1.5px solid var(--line)}
+.invite-rows li:first-child{border-top:0}
+.invite-who{display:grid;gap:4px;min-width:0}
+.invite-who strong{color:var(--ink)}
+.invite-who input{padding:8px 12px;font-size:15px;min-height:44px}
+.invite-who small{color:var(--muted)}
+.invite-rows .outline-button{text-decoration:none;padding-inline:14px}
+.preview{display:grid;gap:6px;padding:14px;border-radius:14px;background:var(--cream)}
+.preview p{white-space:pre-wrap;font-size:15px}
+.preview .text-button{justify-self:start}
+.template{display:grid;gap:6px}

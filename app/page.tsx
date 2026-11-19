@@ -1,6 +1,6 @@
 'use client';
 import {useEffect,useState} from 'react';
-import {Trash2,ArrowUpRight,ArrowLeft,Plus,CalendarDays,MapPin,Check,Link as LinkIcon,CheckCircle2,X,ChevronRight,LoaderCircle,HelpCircle,Pencil,House,UsersRound,Box,Soup,CakeSlice,CupSoda,Snowflake,Music,Car,BedDouble,Wallet,Utensils,ClipboardCheck,Salad,Wine,Ticket,Copy,Lock} from 'lucide-react';
+import {Trash2,Clock,Send,ArrowUpRight,ArrowLeft,Plus,CalendarDays,MapPin,Check,Link as LinkIcon,CheckCircle2,X,ChevronRight,LoaderCircle,HelpCircle,Pencil,House,UsersRound,Box,Soup,CakeSlice,CupSoda,Snowflake,Music,Car,BedDouble,Wallet,Utensils,ClipboardCheck,Salad,Wine,Ticket,Copy,Lock} from 'lucide-react';
 import type {Plan,Task,Guest,Detail,Me,Profile} from '@/lib/types';
 import {ago} from '@/lib/types';
 import {Scene,Face,sceneFor} from '@/components/mo/art';
@@ -39,14 +39,14 @@ function sortOut(p:Plan):[string,string]|null{const n=p.open_items||0;if(n&&p.op
 function itemIcon(title:string,category:string){const t=title.toLowerCase(),has=(re:string)=>new RegExp('\\b(?:'+re+')\\b').test(t);const I=has('ice|ice bags?')?Snowflake:has('drinks?|sodas?|juice|water|coffee|tea|lemonade|seltzer')?CupSoda:has('wine|beers?|champagne|cocktails?|prosecco')?Wine:has('sweets?|something sweet|desserts?|cakes?|pies?|cookies?|brownies?|cupcakes?')?CakeSlice:has('salads?|veggies|vegetables|greens')?Salad:has('main|main dish|mac|mac and cheese|sides?|dish|turkey|ham|soup|stew|rice|bread|rolls?|stuffing|casserole|chicken')?Soup:has('music|playlist|speakers?|dj')?Music:has('rides?|cars?|drive|driving|carpool|pick ?up')?Car:has('stay|accommodation|airbnb|hotel|rooms?|beds?|lodging')?BedDouble:has('budget|money|pay|split|split the check|venmo')?Wallet:has('tickets?|reservations?|reserve|book|booking')?Ticket:has('plates?|cups?|napkins?|forks?|utensils?|chairs?|folding chairs|tables?|cutlery')?Utensils:category==='bring'?Box:ClipboardCheck;return <I size={22} strokeWidth={1.7}/>}
 
 export default function Home(){
- const [plans,setPlans]=useState<Plan[]>([]),[detail,setDetail]=useState<Detail|null>(null),[view,setView]=useState<'home'|'plans'|'me'>('home'),[me,setMe]=useState<Me|null>(null),[meLoading,setMeLoading]=useState(false),[loading,setLoading]=useState(true),[busy,setBusy]=useState(false),[toast,setToast]=useState(''),[error,setError]=useState(''),[modal,setModal]=useState<'create'|'edit'|'help'|null>(null),[form,setForm]=useState(initial),[tab,setTab]=useState('all'),[addType,setAddType]=useState('bring'),[newItem,setNewItem]=useState(''),[name,setName]=useState(''),[ptab,setPtab]=useState<'overview'|'people'|'list'>('overview'),[hello,setHello]=useState('Hey'),[askName,setAskName]=useState(true),[openAdd,setOpenAdd]=useState(false),[replyMode,setReplyMode]=useState<'new'|'other'|null>(null),[sharedTick,setSharedTick]=useState(0);
+ const [plans,setPlans]=useState<Plan[]>([]),[detail,setDetail]=useState<Detail|null>(null),[view,setView]=useState<'home'|'plans'|'me'>('home'),[me,setMe]=useState<Me|null>(null),[meLoading,setMeLoading]=useState(false),[loading,setLoading]=useState(true),[busy,setBusy]=useState(false),[toast,setToast]=useState(''),[error,setError]=useState(''),[modal,setModal]=useState<'create'|'edit'|'help'|null>(null),[form,setForm]=useState(initial),[tab,setTab]=useState('all'),[addType,setAddType]=useState('bring'),[newItem,setNewItem]=useState(''),[name,setName]=useState(''),[ptab,setPtab]=useState<'overview'|'people'|'list'>('overview'),[hello,setHello]=useState('Hey'),[askName,setAskName]=useState(true),[openAdd,setOpenAdd]=useState(false),[replyMode,setReplyMode]=useState<'new'|'other'|null>(null),[personalG,setPersonalG]=useState<string|null>(null),[sendOpen,setSendOpen]=useState(false),[sharedTick,setSharedTick]=useState(0);
  const demo=!!detail?.plan.id.startsWith('demo-');
  async function api(path:string,method='GET',data?:unknown){const r=await fetch('/api/'+path,{method,headers:{'Content-Type':'application/json'},...(data!=null?{body:JSON.stringify(data)}:{})});let j:any;try{j=await r.json()}catch{throw Error('Couldn’t reach m.o. Check your connection and try again.')}if(!r.ok)throw Error(j.error||'Something went wrong.');return j}
  function notify(t:string){setToast(t);setTimeout(()=>setToast(''),4000)}
  async function list(){try{const d=await api('plans');setPlans(d.plans)}catch(e:any){setError(e.message)}finally{setLoading(false)}}
  async function loadMe(){setMeLoading(true);try{setMe(await api('me'))}catch(e:any){setError(e.message)}finally{setMeLoading(false)}}
  async function open(id:string,history=true){setError('');setView('home');if(history||id!==detail?.plan.id)setPtab('overview');if(id.startsWith('demo-')){setDetail(structuredClone(DEMOS.find(d=>d.plan.id===id)!));setName('You')}else{setBusy(true);try{const d=await api('plan/'+id);setDetail(d);const mine=d.guests.find((g:Guest)=>g.isMe);setName(mine?.name||localStorage.getItem('mo-name')||'')}catch(e:any){setError(e.message)}finally{setBusy(false)}}if(history)window.history.pushState({},'','/?plan='+id);window.scrollTo(0,0)}
- useEffect(()=>{list();if(new URLSearchParams(location.search).get('view')!=='me')api('me').then(setMe).catch(()=>{});const h=new Date().getHours();setHello(h<12?'Good morning':h<17?'Good afternoon':'Good evening');const read=()=>{const q=new URLSearchParams(location.search),id=q.get('plan');if(id)open(id,false);else if(q.get('view')==='me'){setDetail(null);setView('me');loadMe()}else if(q.get('view')==='plans'){setDetail(null);setView('plans')}else{setDetail(null);setView('home')}};read();window.addEventListener('popstate',read);return()=>window.removeEventListener('popstate',read)},[]);
+ useEffect(()=>{list();if(new URLSearchParams(location.search).get('view')!=='me')api('me').then(setMe).catch(()=>{});const h=new Date().getHours();setHello(h<12?'Good morning':h<17?'Good afternoon':'Good evening');const read=()=>{const q=new URLSearchParams(location.search),id=q.get('plan');setPersonalG(q.get('g'));if(id)open(id,false);else if(q.get('view')==='me'){setDetail(null);setView('me');loadMe()}else if(q.get('view')==='plans'){setDetail(null);setView('plans')}else{setDetail(null);setView('home')}};read();window.addEventListener('popstate',read);return()=>window.removeEventListener('popstate',read)},[]);
  // Keeps an open plan current without running up requests: every 30s while visible, pausing after 10 minutes
  // without interaction, and refreshing once when the person comes back.
  useEffect(()=>{if(!detail||demo)return;const id=detail.plan.id;let last=Date.now(),idle=false;const refresh=()=>api('plan/'+id).then(setDetail).catch(()=>{});
@@ -63,7 +63,14 @@ export default function Home(){
  // Opens the reply form for a guest and brings it into view (the tabs stay above it).
  function startReply(mode:'new'|'other'|null){setReplyMode(mode);setPtab('people');setTimeout(()=>document.querySelector('.rsvp-form,.pick-card,.other-phone')?.scrollIntoView({behavior:'smooth',block:'start'}),120)}
  async function pickName(g:Guest){const ok=await act(`guests/${g.id}/pick`,'POST',{},d=>{for(const x of d.guests)x.isMe=x.id===g.id},`Hi ${g.name}.`);if(ok)startReply(null)}
- function goTab(tab:'people'|'list',opts:{add?:boolean}={}){setOpenAdd(!!opts.add);setPtab(tab);window.scrollTo(0,0)}
+ // One tap from a personal invite: claim that name on this phone, then save the answer.
+ async function quickAnswer(g:Guest,status:'in'|'maybe'|'out'){
+  if(!g.isMe&&!(await act(`guests/${g.id}/pick`,'POST',{},d=>{for(const x of d.guests)x.isMe=x.id===g.id})))return;
+  const body={name:g.name,status,note:g.note||'',extraCount:g.extra_count||0,extraNames:g.extra_names||'',dietary:g.dietary||'',staying:!!g.staying};
+  const ok=await act('rsvp','POST',body,d=>{const x=d.guests.find(y=>y.id===g.id);if(x)Object.assign(x,{status,source:'guest',isMe:true})},status==='in'?'You’re in. Now pick something to bring.':status==='maybe'?'Saved. Change it when you know.':`Got it. Thanks for letting ${hostName||'the host'} know.`);
+  if(ok){setPersonalG(null);try{const u=new URL(location.href);u.searchParams.delete('g');history.replaceState({},'',u)}catch{}if(status!=='out'&&unclaimed.length){setPtab('list');window.scrollTo(0,0)}}
+ }
+ function goTab(tab:'people'|'list',opts:{add?:boolean;send?:boolean}={}){setOpenAdd(!!opts.add);setSendOpen(!!opts.send);setPtab(tab);window.scrollTo(0,0)}
  function plansView(){setDetail(null);setView('plans');setError('');window.history.pushState({},'','/?view=plans');list();window.scrollTo(0,0)}
  function profile(){setDetail(null);setView('me');setError('');window.history.pushState({},'','/?view=me');loadMe();window.scrollTo(0,0)}
  function create(kind='gathering'){setForm({...initial,kind,name:me?.profile?.name||localStorage.getItem('mo-name')||'',items:kind==='trip'?'Agree the accommodation budget\nChoose the accommodation\nOrganize the ride':'The main dish\nSomething sweet\nDrinks & ice'});setAskName(!(me?.profile?.name||localStorage.getItem('mo-name')));setModal('create')}
@@ -149,11 +156,16 @@ export default function Home(){
      {(answered||detail!.host||demo)&&<div className="plan-actions"><button className="outline-button brick" onClick={demo?()=>create(p!.kind):share}>{demo?<Plus size={16}/>:<LinkIcon size={16}/>}{demo?'Make a real plan':'Copy invite link'}</button><button className="outline-button" onClick={calendar}><CalendarDays size={16}/>Add to calendar</button></div>}
     </section>
     {/* A guest arriving from an invite link: the invite is the first thing, with their name one tap away. */}
-    {!answered&&!detail!.host&&!demo&&(()=>{const names=guests.filter(g=>!g.isMe&&!g.isHost&&(g.status==='invited'||g.source==='host')),others=guests.filter(g=>!g.isMe&&!g.isHost&&g.status!=='invited'&&g.source!=='host');
+    {!answered&&!detail!.host&&!demo&&!(mine_&&ptab==='people')&&(()=>{const names=guests.filter(g=>!g.isMe&&!g.isHost&&(g.status==='invited'||g.source==='host')),others=guests.filter(g=>!g.isMe&&!g.isHost&&g.status!=='invited'&&g.source!=='host');
+     // A personal invite link (?g=) names the guest, so they can answer in one tap.
+     const target=mine_||(personalG?guests.find(g=>g.id===personalG&&!g.isHost&&(g.status==='invited'||g.source==='host')):undefined),first=target?.name.split(' ')[0];
      return <section className="invite-card" aria-labelledby="invite-title">
-      <h2 id="invite-title">{mine_?`Hi ${mine_.name}. Can you make it?`:`${hostName||'Your friend'} invited you`}</h2>
+      <h2 id="invite-title">{target?`Hi ${first}! ${mine_?'Can you make it?':`${hostName||'Your friend'} invited you`}`:`${hostName||'Your friend'} invited you`}</h2>
       <p>{detail!.hidden?'Reply to see the address and arrival details, then pick something to bring.':'Say if you’re coming, then pick something to bring.'}</p>
-      {!mine_&&names.length>0?<>
+      {target?<>
+       <div className="quick-answers">{([['in','I’m in',Check],['maybe','Still checking',Clock],['out','Can’t make it',X]] as const).map(([k,label,Icon])=><button key={k} className={k==='in'?'primary':'outline-button'} disabled={busy} onClick={()=>quickAnswer(target,k)}><Icon size={17}/>{label}</button>)}</div>
+       <div className="invite-more"><button className="text-button quiet" onClick={()=>mine_?startReply(null):pickName(target)}>Add details: extra guests, dietary needs</button>{!mine_&&<button className="text-button quiet" onClick={()=>setPersonalG(null)}>Not {first}?</button>}</div>
+      </>:!mine_&&names.length>0?<>
        <span className="eyebrow">TAP YOUR NAME</span>
        <div className="name-chips">{names.map(g=><button key={g.id} className="name-chip" disabled={busy} onClick={()=>pickName(g)}><Face className="mini-avatar" seed={g.name} avatar={g.avatar} photo={g.photo}/>{g.name}</button>)}</div>
        <div className="invite-more"><button className="text-button" onClick={()=>startReply('new')}>I’m not on the list</button>{others.length>0&&<button className="text-button quiet" onClick={()=>startReply('other')}>Answered on another phone?</button>}</div>
@@ -201,7 +213,7 @@ export default function Home(){
      <p className="access-note"><Lock size={12}/>Anyone with the link can see this plan and RSVP. Only people who RSVP see the address. Don’t post the link publicly.</p>
     </div>}
 
-    {ptab==='people'&&<PeopleTab key={detail!.plan.id+(mine_?.id||'')+(openAdd?':add':'')+(replyMode||'')} detail={detail!} act={act} busy={busy} notify={notify} startAdding={openAdd} startMode={replyMode} onRsvp={status=>{if(status!=='out'&&!mine.length&&unclaimed.length){setPtab('list');window.scrollTo(0,0)}}}/>}
+    {ptab==='people'&&<PeopleTab key={detail!.plan.id+(mine_?.id||'')+(openAdd?':add':'')+(sendOpen?':send':'')+(replyMode||'')} detail={detail!} act={act} busy={busy} notify={notify} startAdding={openAdd} startMode={replyMode} startSending={sendOpen} onInviteSent={()=>{try{localStorage.setItem('mo-shared-'+detail!.plan.id,'1')}catch{}setSharedTick(x=>x+1)}} onRsvp={status=>{if(status!=='out'&&!mine.length&&unclaimed.length){setPtab('list');window.scrollTo(0,0)}}}/>}
 
     {ptab==='list'&&<section className="stack">
      <p className="list-lead">{bringItems.length?'Pick something you can bring.':'Give each task a person.'}</p>
