@@ -29,14 +29,16 @@ const log=(...a)=>console.log(...a);
  await h.locator('.send-invites').screenshot({path:O+'/pi1-send.png'});
  const tessNum=await h.locator('.invite-rows li',{hasText:'Tess Morgan'}).locator('input').inputValue();
  check(tessNum.includes('215-555-0134'),'Tess’s number kept on this phone from the paste ('+tessNum+')');
+ await h.getByRole('button',{name:/^Prepare invite for/}).click();await h.locator('.send-invites a.primary').waitFor();
  const next=h.locator('.send-invites a.primary');const href=await next.getAttribute('href');const label=await next.innerText();
  log('next button:',label);log('sms link:',decodeURIComponent(href).slice(0,240));
  check(/^sms:2155550134[&?]body=/.test(href),'Send opens Messages to Tess’s number');
- const body=decodeURIComponent(href.split('body=')[1]);check(body.startsWith('Hi Tess!')&&body.includes('Friendsgiving')&&/\/i\/[A-Za-z0-9_-]{22}/.test(body),'message is personal with her own link');
+ const body=decodeURIComponent(href.split('body=')[1]);check(body.startsWith('Hi Tess!')&&body.includes('Friendsgiving')&&/\/i\/[A-Za-z0-9_-]{43}/.test(body),'message is personal with her own link');
  await h.evaluate(()=>document.querySelectorAll('.send-invites a').forEach(a=>a.addEventListener('click',e=>e.preventDefault())));
  await next.click();await h.waitForTimeout(500);
- check((await h.locator('.send-invites a.primary').innerText()).includes('Jordan'),'Send to everyone moves on to Jordan');
+ check((await h.locator('.send-invites .primary').innerText()).includes('Jordan'),'Send to everyone moves on to Jordan');
  check((await h.locator('.invite-rows li',{hasText:'Tess Morgan'}).innerText()).includes('Invite sent'),'Tess marked as sent');
+ await h.locator('.invite-rows li',{hasText:'Sam'}).getByRole('button',{name:'Prepare personal link'}).click();
  const samHref=await h.locator('.invite-rows li',{hasText:'Sam'}).locator('a').getAttribute('href');check(/^sms:[&?]body=Hi%20Sam!/.test(samHref),'no number: Messages opens with the message, you pick the contact');
  // Tess opens her personal link
  const link=body.match(/https?:\/\/\S+/)[0];const t=await phone();await t.goto(link);await t.waitForTimeout(2500);

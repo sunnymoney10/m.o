@@ -32,7 +32,9 @@ r=await request(host,'plans');assert.equal(r.body.plans.find(p=>p.id===id).going
 r=await request(stranger,'plan/'+id);t=r.body.guests.find(g=>g.name==='Tess');assert.equal(t.source,'host');assert.equal(t.dietary,undefined);assert.deepEqual(r.body.activity,[]);
 
 // Tess opens the link later, picks her name, sees what was noted and confirms in one tap.
-r=await request(tess,`plan/${id}/guests/${tessId}/pick`,'POST');assert.equal(r.status,200);
+const token=(await request(host,`plan/${id}/guests/${tessId}/invite`,'POST',{})).body.link.split('/').at(-1);
+await request(host,`plan/${id}/guests/${tessId}/access`,'POST',{approved:true});
+r=await request(tess,`plan/${id}/guests/${tessId}/pick`,'POST',{token});assert.equal(r.status,200);
 r=await request(tess,'plan/'+id);t=r.body.guests.find(g=>g.isMe);assert.equal(t.source,'host');assert.ok(r.body.tasks.find(x=>x.title==='Pie').isMine);assert.equal(r.body.plan.place,'12 Oak Ave','host-noted going counts as in for the address');
 r=await request(tess,`plan/${id}/confirm`,'POST');assert.equal(r.status,200);
 r=await request(tess,'plan/'+id);assert.equal(r.body.guests.find(g=>g.isMe).source,'guest');assert.equal(r.body.tasks.find(x=>x.title==='Pie').claim_source,'');

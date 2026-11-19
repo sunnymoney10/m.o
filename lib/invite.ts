@@ -3,8 +3,7 @@
 // personal message filled in, and the host taps Send.
 const PHONE=/\+?\d[\d\s().-]{5,}\d/;
 
-import {guestLink} from './short-link';
-export function personalLink(origin:string,_planId:string,guestId:string){return guestLink(origin,guestId)}
+// Personal links are issued by the authenticated host endpoint, never derived from public IDs.
 
 export const TRIP_MESSAGE="Hi {first}! I'm planning {plan}{when} and I'd love for you to come. Tap to say if you're in and see what still needs doing: {link}";
 export const DEFAULT_MESSAGE="Hi {first}! I'm hosting {plan}{when} and I'd love for you to come. Tap to say if you can make it and pick something to bring: {link}";
@@ -19,10 +18,10 @@ export function smsHref(phone:string,body:string){
 }
 
 // Per-plan device storage. Every access is guarded: private mode or blocked storage must not break the page.
-type Store={phones:Record<string,string>;sent:Record<string,string>;template?:string};
+export type InviteStore={links?:Record<string,{url:string;expires:string}>;phones:Record<string,string>;sent:Record<string,string>;template?:string};
 const key=(planId:string)=>'mo-invites-'+planId;
-export function loadInvites(planId:string):Store{try{const v=JSON.parse(localStorage.getItem(key(planId))||'{}');return {phones:v.phones||{},sent:v.sent||{},template:v.template}}catch{return {phones:{},sent:{}}}}
-export function saveInvites(planId:string,s:Store){try{localStorage.setItem(key(planId),JSON.stringify(s))}catch{}}
+export function loadInvites(planId:string):InviteStore{try{const v=JSON.parse(localStorage.getItem(key(planId))||'{}');return {phones:v.phones||{},sent:v.sent||{},template:v.template,links:v.links||{}}}catch{return {phones:{},sent:{}}}}
+export function saveInvites(planId:string,s:InviteStore){try{localStorage.setItem(key(planId),JSON.stringify(s))}catch{}}
 export const nameKey=(n:string)=>n.trim().toLowerCase();
 
 // "Tess 215-555-0134" or "Sam Lee, +1 (215) 555 0199" on one line → {name → number}. Only lines with exactly one name count.

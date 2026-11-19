@@ -54,7 +54,7 @@ export function PeopleTab({detail,act,busy,notify,startAdding=false,startMode=nu
  async function fromContacts(){const api=contactsApi();if(!api)return;try{const props=await api.getProperties?.().catch(()=>['name'])||['name'];const picked=await api.select(props.includes('tel')?['name','tel']:['name'],{multiple:true});const lines=picked.map(c=>[c.name?.[0]||'',c.tel?.[0]||''].join(' ').trim()).filter(l=>/\p{L}/u.test(l));if(lines.length)setAdding(a=>[a.trim(),...lines].filter(Boolean).join('\n'))}catch{notify('Couldn’t open your contacts. Type or paste names instead.')}}
  const sorted=[...guests].sort((a,b)=>(a.isHost?0:ORDER[a.status]||5)-(b.isHost?0:ORDER[b.status]||5));
  // People the host listed or noted (but who haven't answered themselves) find their name in the main list.
- const unanswered=guests.filter(g=>!g.isMe&&!g.isHost&&(g.status==='invited'||g.source==='host')),others=guests.filter(g=>!g.isHost&&!g.isMe&&g.status!=='invited'&&g.source!=='host');
+ const unanswered=guests.filter(g=>!g.isMe&&!g.isHost&&!g.needsPersonalLink&&(g.status==='invited'||g.source==='host')),others=guests.filter(g=>!g.isHost&&!g.isMe&&g.status!=='invited'&&g.source!=='host');
  const going=guests.filter(g=>g.status==='in').reduce((n,g)=>n+1+(g.extra_status==='approved'?g.extra_count||0:0),0);
  const showForm=host?editing:(!answered&&(!!me||notListed||unanswered.length===0))||editing;
 
@@ -98,7 +98,7 @@ export function PeopleTab({detail,act,busy,notify,startAdding=false,startMode=nu
    <div className="name-chips">{unanswered.map(g=><button key={g.id} className="name-chip" disabled={busy} onClick={()=>pick(g)}><Face className="mini-avatar" seed={g.name} avatar={g.avatar} photo={g.photo}/>{g.name}</button>)}</div>
    <button className="text-button" onClick={()=>setNotListed(true)}>I’m not on the list</button>
   </div>}
-  {!host&&!me&&others.length>0&&<div className="other-phone">{otherPhone?<><span className="fine">Answered on another phone? Tap your name to continue here.</span><div className="name-chips">{others.map(g=><button key={g.id} className="name-chip" disabled={busy} onClick={()=>pick(g)}><Face className="mini-avatar" seed={g.name} avatar={g.avatar} photo={g.photo}/>{g.name}</button>)}</div></>
+  {!host&&!me&&others.length>0&&<div className="other-phone">{otherPhone?<><span className="fine">Answered on another phone? Open your personal link on this phone, or ask your host for a replacement.</span></>
    :<button className="text-button quiet" onClick={()=>setOtherPhone(true)}>Answered on another phone?</button>}</div>}
 
   {/* Your RSVP, summarized once you've answered. */}
@@ -131,6 +131,7 @@ export function PeopleTab({detail,act,busy,notify,startAdding=false,startMode=nu
     {host&&g.extra_status==='requested'&&<span className="request">Asks to bring {plusLine(g)}<span><button className="text-button small" disabled={busy} onClick={()=>decide(g,'approved')}>Approve</button><button className="text-button small quiet" disabled={busy} onClick={()=>decide(g,'declined')}>Decline</button></span></span>}
     {host&&g.extra_status==='declined'&&<small>Extra guest declined</small>}
     {host&&g.status==='maybe'&&g.check_back&&(()=>{const due=g.check_back<=new Date().toISOString().slice(0,10);return <small className={due?'check-due':'private'}><Clock size={12}/>{due?'Said to check back by now':'Will decide by '+new Date(g.check_back+'T12:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})}</small>})()}
+    {host&&!g.isHost&&<button className="text-button small" disabled={busy} onClick={()=>act(`guests/${g.id}/access`,'POST',{approved:!g.detailsApproved},d=>{const x=d.guests.find(y=>y.id===g.id);if(x)x.detailsApproved=!g.detailsApproved},g.detailsApproved?'Arrival details hidden.':'Arrival details shared with this guest after they RSVP.')}>{g.detailsApproved?'Hide arrival details':'Approve arrival access'}</button>}
     {host&&g.dietary&&<small className="private"><Utensils size={12}/>{g.dietary}</small>}
     {host&&g.staying&&<small className="private"><Moon size={12}/>Wants to stay over</small>}
     {g.note&&<small>{g.note}</small>}

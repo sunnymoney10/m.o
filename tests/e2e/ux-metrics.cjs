@@ -1,3 +1,4 @@
+const {personalLink,approve}=require('./access.cjs');
 // Measures how much work the core outcomes take on a phone, so UX changes can be compared before and after.
 // Needs `npm run dev` running. Usage: npm run ux:metrics
 const {chromium,devices}=require('playwright');
@@ -21,8 +22,8 @@ const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173';
  m.hostOverviewSections=ov.sections;m.hostOverviewHeightPx=ov.height;
  m.hostNextStepVisibleAboveFold=await h.evaluate(()=>{const el=document.querySelector('.next-steps,.host-notes');return !!el&&el.getBoundingClientRect().top<window.innerHeight});
  // Guest: open link, RSVP, claim one item
- const g=await phone();await g.goto(B+'/?plan='+id);await g.waitForTimeout(1500);taps=0;
- await tap(g.getByRole('button',{name:'Tess',exact:true}));await g.waitForTimeout(1200);
+ const g=await phone();await g.goto(await personalLink(h,id,'Tess'));await g.waitForTimeout(1500);taps=0;
+ await tap(g.getByRole('button',{name:/Add details:/}));await g.waitForTimeout(1200);
  await tap(g.getByRole('button',{name:'I’m in'}));await tap(g.getByRole('button',{name:'Send RSVP'}));await g.waitForTimeout(1500);
  const before=taps;
  m.guestLandsOnBringListAfterRsvp=await g.getByRole('tab',{name:/Bring list/}).getAttribute('aria-selected')==='true';

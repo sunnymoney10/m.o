@@ -1,3 +1,4 @@
+const {personalLink,approve}=require('./access.cjs');
 // Phone journey: friends who answer by text and never open the link. The host records, tracks and confirms.
 // Needs `npm run dev` running. Usage: npm run journeys:quiet [-- <screenshot dir>]
 const {chromium,devices}=require('playwright');
@@ -31,8 +32,8 @@ const log=(...a)=>console.log(...a);
  // Overview: headcount, unconfirmed, recent updates
  await tab(h,'Overview');await h.waitForTimeout(300);log('headcount:',await text(h,'.status-number'));log('host notes:',await text(h,'.host-notes'));log('updates:',await text(h,'.activity ul'));await shot(h,'q4-overview');
  // Days later, Tess opens the link and confirms in one tap
- const t=await phone();await t.goto(B+'/?plan='+id);await t.waitForTimeout(1200);
- await t.getByRole('button',{name:'Tess',exact:true}).first().click();await t.waitForTimeout(1500);
+ const t=await phone();await t.goto(await personalLink(h,id,'Tess'));await t.waitForTimeout(1200);
+ await t.getByRole('button',{name:/Add details:/}).click();await t.waitForTimeout(1500);
  await tab(t,'Overview');await t.waitForTimeout(300);log('Tess banner:',await text(t,'.noted-banner'));await shot(t,'q5-tess-banner',false);
  await t.getByRole('button',{name:'Yes, that’s right'}).click();await t.waitForTimeout(1500);log('Tess confirm:',await toast(t),'| banner gone:',await t.locator('.noted-banner').count()===0);
  await h.reload();await h.waitForTimeout(1500);log('updates after:',await text(h,'.activity ul'));

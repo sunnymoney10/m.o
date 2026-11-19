@@ -42,7 +42,7 @@ r=await request(host,'plans','POST',{title:'Atlanta weekend',name:'Ari',kind:'tr
 r=await request(host,'plans','POST',{title:'Atlanta weekend',name:'Ari',kind:'trip',bookingUrl:'https://www.airbnb.com/trips/v1/abc'});assert.equal(r.status,201);const id=r.body.id;
 r=await request(host,'plan/'+id);assert.equal(r.body.plan.booking_url,'https://www.airbnb.com/trips/v1/abc');
 r=await request(stranger,'plan/'+id);assert.equal(r.body.plan.booking_url,null);assert.equal(r.body.hidden,true);
-r=await request(friend,`plan/${id}/rsvp`,'POST',{name:'Tess',status:'in'});r=await request(friend,'plan/'+id);assert.equal(r.body.plan.booking_url,'https://www.airbnb.com/trips/v1/abc');
+r=await request(friend,`plan/${id}/rsvp`,'POST',{name:'Tess',status:'in'});r=await request(host,'plan/'+id);await request(host,`plan/${id}/guests/${r.body.guests.find(g=>g.name==='Tess').id}/access`,'POST',{approved:true});r=await request(friend,'plan/'+id);assert.equal(r.body.plan.booking_url,'https://www.airbnb.com/trips/v1/abc');
 r=await request(friend,'plan/'+id,'PATCH',{bookingUrl:'https://evil.example'});assert.equal(r.status,403);
 r=await request(host,'plan/'+id,'PATCH',{bookingUrl:''});assert.equal(r.status,200);r=await request(host,'plan/'+id);assert.equal(r.body.plan.booking_url,null);
 console.log('PASS: address search results, booking links kept private until someone RSVPs, and host-only changes.');

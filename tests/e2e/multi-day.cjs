@@ -1,3 +1,4 @@
+const {approve}=require('./access.cjs');
 // Phone journey, both sides: a host makes a weekend trip with a start and end date; a guest sees the
 // date range, answers, and adds it to their calendar; then the host makes it one day again.
 // Needs `npm run dev` running. Usage: npm run journeys:dates [-- <screenshot dir>]
@@ -20,7 +21,7 @@ const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173',O=process.argv[2]||requ
  const air=await h.getByRole('link',{name:/Search Airbnb/}).getAttribute('href'),hot=await h.getByRole('link',{name:/Search hotels/}).getAttribute('href');
  check(air.includes('airbnb.com/s/Raleigh')&&air.includes('checkin=2026-12-04&checkout=2026-12-06')&&hot.includes('booking.com')&&hot.includes('checkout=2026-12-06'),'trip form offers Airbnb and hotel searches for the area and dates');
  await h.screenshot({path:O+'/md1-form.png'});
- await h.getByRole('button',{name:/Create plan/}).click();await h.waitForTimeout(1800);const url=h.url();
+ await h.getByRole('button',{name:/Create plan/}).click();await h.waitForURL(/plan=/);const url=h.url();
  const hostWhen=await meta(h);check(/Fri, Dec 4.*6:00 PM – Sun, Dec 6/.test(hostWhen),'host sees the range: '+hostWhen);
  await h.screenshot({path:O+'/md2-host.png'});
  // Host schedule: pick any day of the trip
@@ -39,7 +40,7 @@ const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173',O=process.argv[2]||requ
  await g.getByRole('button',{name:'Reply',exact:true}).first().click();await g.waitForTimeout(800);
  const nm=g.getByLabel(/Your name/).first();if(await nm.count())await nm.fill('Tess');
  await g.getByRole('button',{name:'I’m in'}).first().click();const send=g.getByRole('button',{name:'Send RSVP'});if(await send.count())await send.click();await g.waitForTimeout(1500);
- await g.getByRole('tab',{name:'Overview'}).click();await g.waitForTimeout(500);const gs=await g.locator('.live-panel').innerText().catch(()=>'');check(/Sunday, Dec 6[\s\S]*Brunch/i.test(gs),'after answering, the guest sees brunch on Sunday');
+ await approve(h,new URL(url).searchParams.get('plan'),'Tess');await g.reload();await g.waitForTimeout(800);await g.getByRole('tab',{name:'Overview'}).click();await g.waitForTimeout(500);const gs=await g.locator('.live-panel').innerText().catch(()=>'');check(/Sunday, Dec 6[\s\S]*Brunch/i.test(gs),'after answering, the guest sees brunch on Sunday');
  const [dl]=await Promise.all([g.waitForEvent('download'),g.getByRole('button',{name:'Add to calendar'}).first().click()]);
  const ics=require('node:fs').readFileSync(await dl.path(),'utf8');
  check(/DTSTART:20261204T230000Z/.test(ics)&&/DTEND:20261206T170000Z/.test(ics),'guest calendar event spans Fri evening to Sun noon');

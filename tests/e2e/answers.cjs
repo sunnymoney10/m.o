@@ -1,3 +1,4 @@
+const {personalLink,approve}=require('./access.cjs');
 // Phone journey, guest and host: "Can't make it" shows a thank-you and hides the plan's tasks;
 // "Still checking" asks when to check back, offers a phone reminder, and the host sees the day.
 // Needs `npm run dev` running. Usage: npm run journeys:answers [-- <screenshot dir>]
@@ -10,7 +11,7 @@ const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173',O=process.argv[2]||requ
  const id=await h.evaluate(async()=>{const c=(u,m,bd)=>fetch('/api/'+u,{method:m,headers:{'Content-Type':'application/json'},body:bd?JSON.stringify(bd):undefined}).then(r=>r.json());const r=await c('plans','POST',{title:'Friendsgiving',name:'Kaela',date:new Date(Date.now()+20*86400000).toISOString(),place:'12 Oak Ave',tasks:[{title:'Pie',category:'bring'}]});await c('plan/'+r.id+'/guests','POST',{names:['Tess','Sam']});return r.id});
  const ids=await h.evaluate(async id=>Object.fromEntries((await (await fetch('/api/plan/'+id)).json()).guests.map(g=>[g.name,g.id])),id);
  // Tess can't make it
- const t=await phone();await t.goto(`${B}/?plan=${id}&g=${ids.Tess}`);await t.waitForTimeout(2000);
+ const t=await phone();await t.goto(await personalLink(h,id,'Tess'));await t.waitForTimeout(2000);
  await t.getByRole('button',{name:'Can’t make it'}).first().click();await t.waitForTimeout(2000);
  const tt=await t.locator('main').innerText();
  check(/Thanks for letting Kaela know/.test(tt)&&/Make it out next time!/.test(tt),'can’t make it: thank-you and “Make it out next time!”');
@@ -28,7 +29,7 @@ const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173',O=process.argv[2]||requ
  await t.getByRole('button',{name:'Not now'}).click();await t.waitForTimeout(300);
  check(await t.getByRole('heading',{name:'Planning something yourself?'}).count()===0,'Not now hides it');
  // Sam is still checking
- const s=await phone();await s.goto(`${B}/?plan=${id}&g=${ids.Sam}`);await s.waitForTimeout(2000);
+ const s=await phone();await s.goto(await personalLink(h,id,'Sam'));await s.waitForTimeout(2000);
  await s.getByRole('button',{name:'Still checking'}).first().click();await s.waitForTimeout(2000);
  check(await s.getByRole('heading',{name:/When should Kaela check back with you/}).count()===1,'still checking: asks when to check back');
  await s.screenshot({path:O+'/ans-checking.png'});

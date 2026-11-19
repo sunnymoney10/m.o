@@ -1,0 +1,1 @@
+CREATE INDEX `guests_invite_hash_idx` ON `guests` (`invite_hash`);
