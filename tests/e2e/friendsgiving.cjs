@@ -56,7 +56,11 @@ await tab(j,'People');
  // Tess on a second browser
  const t2=await phone();await t2.goto(url);await t2.waitForTimeout(1500);await t2.waitForTimeout(300);
  await shot(t2,'t7-second-browser');
- await t2.getByRole('button',{name:'Answered on another phone?'}).click();await t2.locator('.other-phone').getByRole('button',{name:'Tess',exact:true}).click();await t2.waitForTimeout(1500);
+ // Tapping her name alone doesn't move an answered spot; her personal link (from Ari) does.
+ await tab(t2,'People');await t2.locator('.other-phone').getByRole('button',{name:'Answered on another phone?'}).click();await t2.locator('.other-phone').getByRole('button',{name:'Tess',exact:true}).click();await t2.waitForTimeout(800);log('T2 name tap without link:',await toast(t2));
+ const personal=await k.evaluate(async()=>{const id=new URLSearchParams(location.search).get('plan');const d=await (await fetch('/api/plan/'+id)).json();const g=d.guests.find(x=>x.name==='Tess');return `/?plan=${id}&g=${g.id}&k=${g.key}`});
+ await t2.goto(B+personal);await t2.waitForTimeout(1500);
+ await tab(t2,'People');await t2.locator('.other-phone').getByRole('button',{name:'Answered on another phone?'}).click();await t2.locator('.other-phone').getByRole('button',{name:'Tess',exact:true}).click();await t2.waitForTimeout(1500);
  log('T2 my rsvp:',await text(t2,'.my-rsvp'));
  await tab(t2,/Bring list/);log('T2 still has claim:',(await t2.locator('.item-list').first().innerText()).includes('You’re bringing'));
  await tab(t2,'People');await t2.getByRole('button',{name:'Change'}).click();await t2.getByRole('button',{name:'Can’t make it'}).click();await t2.getByRole('button',{name:'Send RSVP'}).click();await t2.waitForTimeout(1500);log('T2 cancel toast:',await toast(t2));
