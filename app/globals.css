@@ -494,7 +494,7 @@ legend{font-weight:600;font-size:14px;margin-bottom:8px;color:var(--ink)}
 
 /* ---------- larger screens ---------- */
 @media(min-width:640px){
- .form-row{grid-template-columns:1fr 1fr}
+ .form-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
  .memory-grid{grid-template-columns:repeat(2,1fr)}
  .modal-backdrop{align-items:center}
  .modal{border-radius:28px;padding:34px}
@@ -605,3 +605,15 @@ legend{font-weight:600;font-size:14px;margin-bottom:8px;color:var(--ink)}
 .host-link small{color:var(--muted);font-size:13px}
 /* host link on another device */
 .host-claim{display:grid;gap:12px;padding:24px;border-radius:var(--radius);background:var(--butter-soft);border:1.5px solid #e9cf7a}
+
+/* iPhone date and time boxes: keep them inside the screen and the same height as other boxes, even when empty */
+input[type=date],input[type=time],input[type=datetime-local]{min-width:0;max-width:100%;box-sizing:border-box;-webkit-appearance:none;appearance:none;min-height:50px;text-align:left}
+input::-webkit-date-and-time-value{text-align:left}
+.form-row>label{min-width:0}
+
+/* Nothing may make the page wider than the phone. Safari can size a column to a picture's drawn width (the plan
+   artwork is drawn 400 wide), which made guests zoom out. Single-column grids get a column that can shrink. */
+.screen,.stack,.plan-head,.invite-card,.host-claim,.host-link,.setter-panel,.send-invites,.plan-form,.more-body{grid-template-columns:minmax(0,1fr)}
+.screen>*,.stack>*{min-width:0}
+svg.scene{min-width:0;max-width:100%}
+html,body{overflow-x:clip}

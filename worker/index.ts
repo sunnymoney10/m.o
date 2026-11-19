@@ -15,10 +15,10 @@ async function withInvitePreview(request: Request, env: Cloudflare.Env, pending:
   if (request.method !== "GET" || url.pathname !== "/" || !PLAN_ID.test(id) || !(response.headers.get("content-type") || "").includes("text/html")) return response;
   try {
     const db = (env as unknown as { DB?: D1Database }).DB;
-    const row = db && (await db.prepare("SELECT p.title, g.name AS host FROM plans p LEFT JOIN guests g ON g.plan_id = p.id AND g.actor = p.owner WHERE p.id = ?").bind(id).first<{ title: string; host: string | null }>());
+    const row = db && (await db.prepare("SELECT p.title, p.kind, g.name AS host FROM plans p LEFT JOIN guests g ON g.plan_id = p.id AND g.actor = p.owner WHERE p.id = ?").bind(id).first<{ title: string; kind: string; host: string | null }>());
     if (!row) return response;
     const title = esc(row.host ? `${row.host} invited you: ${row.title}` : `You're invited: ${row.title}`);
-    const description = esc("Tap to see the plan, say if you're coming, and pick something to bring.");
+    const description = esc(row.kind === "trip" ? "Tap to see the plan, say if you're in, and see what still needs doing." : "Tap to see the plan, say if you're coming, and pick something to bring.");
     const tags = `<meta property="og:title" content="${title}"><meta property="og:description" content="${description}"><meta property="og:type" content="website"><meta property="og:site_name" content="m.o"><meta name="twitter:card" content="summary"><meta name="twitter:title" content="${title}"><meta name="description" content="${description}">`;
     return new HTMLRewriter()
       .on("title", { element(el) { el.setInnerContent(title, { html: true }); } })

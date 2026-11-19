@@ -69,7 +69,7 @@ export function PeopleTab({detail,act,busy,notify,startAdding=false,startMode=nu
   const out=f.status==='out',extra=out?0:f.extra,mineItems=detail.tasks.filter(t=>t.isMine).map(t=>t.title);
   const body={name:f.name.trim(),status:f.status,note:f.note,extraCount:extra,extraNames:extra?f.extraNames:'',dietary:f.dietary,staying:!out&&f.staying};
   const msg=out?(mineItems.length?`Got it. ${mineItems.join(', ')} ${mineItems.length===1?'is':'are'} open again for someone else.`:`Got it. Thanks for letting ${detail.organizer||'the host'} know.`)
-   :(()=>{const next=!mineItems.length&&detail.tasks.some(t=>!t.claimed_name)?' Now pick something to bring.':'';
+   :(()=>{const next=!mineItems.length&&detail.tasks.some(t=>!t.claimed_name)?(detail.plan.kind==='trip'?' Now pick something to handle.':' Now pick something to bring.'):'';
     return f.status==='in'?(extra&&!host?'You’re in. Your extra guest request went to '+(detail.organizer||'the host')+'.':'You’re in.')+(next||' See you there.'):'Saved. Change it when you know.'+next})();
   const ok=await act('rsvp','POST',body,d=>{const row:Guest={...(d.guests.find(g=>g.isMe)||{id:crypto.randomUUID(),isMe:true}),name:body.name,status:body.status,note:body.note,isMe:true,extra_count:extra,extra_names:body.extraNames,extra_status:extra?(host?'approved':'requested'):'',dietary:body.dietary,staying:body.staying};d.guests=[...d.guests.filter(g=>!g.isMe),row];if(out)d.tasks=d.tasks.map(t=>t.isMine?{...t,claimed_name:null,isMine:false,done:0}:t)},msg);
   if(ok){remember(body.name);setEditing(false);setNotListed(false);onRsvp?.(body.status)}

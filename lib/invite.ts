@@ -6,6 +6,7 @@ const PHONE=/\+?\d[\d\s().-]{5,}\d/;
 import {guestLink} from './short-link';
 export function personalLink(origin:string,_planId:string,guestId:string){return guestLink(origin,guestId)}
 
+export const TRIP_MESSAGE="Hi {first}! I'm planning {plan}{when} and I'd love for you to come. Tap to say if you're in and see what still needs doing: {link}";
 export const DEFAULT_MESSAGE="Hi {first}! I'm hosting {plan}{when} and I'd love for you to come. Tap to say if you can make it and pick something to bring: {link}";
 export function fillMessage(template:string,v:{first:string;plan:string;when:string;link:string}){
  return template.replace(/\{first\}/g,v.first).replace(/\{plan\}/g,v.plan).replace(/\{when\}/g,v.when?` on ${v.when}`:'').replace(/\{link\}/g,v.link);

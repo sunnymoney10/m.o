@@ -24,7 +24,8 @@
     "journeys:invites": "node tests/e2e/personal-invites.cjs",
     "journeys:places": "node tests/e2e/places.cjs",
     "journeys:dates": "node tests/e2e/multi-day.cjs",
-    "journeys:host": "node tests/e2e/host-link.cjs"
+    "journeys:host": "node tests/e2e/host-link.cjs",
+    "journeys:guest": "node tests/e2e/guest-view.cjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
