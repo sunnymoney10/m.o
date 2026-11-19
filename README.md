@@ -52,6 +52,8 @@ m.o is built to need nothing paid:
 
 - **Error alert.** `.github/workflows/monitor.yml` checks the live site every 30 minutes (free: the repository is public). It fails, and GitHub emails the owner, when the home page doesn't load, the database doesn't answer, or `/api/health` counts errors in the last 35 minutes. When an API request fails, m.o writes down only the time and the route shape, like `POST plan/rsvp` (`errors` table, migration 0014, newest 500 kept). It stores no IDs, names or error text. `/api/health` is public and returns counts and route shapes only. The email comes from GitHub's own Actions notifications (Settings → Notifications → Actions → email for failed workflows); details are in Cloudflare (Workers & Pages → mo → Logs). Run it by hand from the Actions tab ("Check the live site" → Run workflow).
 
+- **Restore.** `docs/restore.md` has the steps for a real restore (Cloudflare Time Travel first, then a backup file). The **Restore drill** workflow (Actions → Restore drill → Run workflow) practises it: it backs up the live database (read only), loads the backup into a new practice database, compares row counts table by table and deletes the practice database. Its report shows counts only. `node scripts/restore-drill.mjs --local` rehearses it on the local dev database. D1 backups list tables alphabetically and fail to load as-is; `scripts/restore-order.mjs` puts plans before their guests and items.
+
 What this repo can’t control: the hosting platform’s own plan and usage limits. Check the Site’s hosting account for its free allowance and set any spending limit there.
 
 ## Reuse
