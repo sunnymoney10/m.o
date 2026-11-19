@@ -12,6 +12,8 @@ const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173',O=process.argv[2]||requ
  for(const dev of ['iPhone SE','iPhone 14','iPhone 14 Pro Max']){
   const hc=await b.newContext({...devices[dev]});const h=await hc.newPage();await h.goto(B);await h.waitForTimeout(1500);
   const id=await h.evaluate(async()=>{const c=(u,m,bd)=>fetch('/api/'+u,{method:m,headers:{'Content-Type':'application/json'},body:bd?JSON.stringify(bd):undefined}).then(r=>r.json());const r=await c('plans','POST',{title:'UniverSoul Circus',name:'Queen Valesha',kind:'trip',date:'2026-11-26T00:00:00Z',place:'Dorton Arena, Raleigh',tasks:[{title:'Buy the tickets by Nov 20',category:'todo'}]});await c('plan/'+r.id+'/guests','POST',{names:['Kofi','Ama']});return r.id});
+  // A vote the host has made final (this once picked up the address line's side-by-side style and ran off screen).
+  await h.evaluate(async id=>{const c=(u,m,bd)=>fetch('/api/'+u,{method:m,headers:{'Content-Type':'application/json'},body:bd?JSON.stringify(bd):undefined}).then(r=>r.json());await c('plan/'+id+'/polls','POST',{question:'Concessions',kind:'general',options:['Popcorn','Cotton candy']});const d=await c('plan/'+id);const poll=d.polls[0];await c('plan/'+id+'/polls/'+poll.id+'/decide','POST',{optionId:poll.options[0].id})},id);
   const gid=await h.evaluate(async id=>(await (await fetch('/api/plan/'+id)).json()).guests.find(g=>g.name==='Kofi').id,id);
   const g=await (await b.newContext({...devices[dev]})).newPage();g.on('pageerror',e=>{fails++;console.log('PAGEERROR',e.message)});
   await g.goto(`${B}/?plan=${id}&g=${gid}`);await g.waitForTimeout(2500);
@@ -22,12 +24,13 @@ const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173',O=process.argv[2]||requ
   await g.getByRole('button',{name:'I’m in'}).first().click();await g.waitForTimeout(2000);
   for(const t of ['Overview','People','To-do list']){try{await g.getByRole('tab',{name:new RegExp(t)}).click({timeout:5000});await g.waitForTimeout(500);await fits(g,`${dev} after answering, ${t}`)}catch{check(false,`${dev}: the ${t} tab can't be tapped (pushed off the screen)`)}}
   await g.getByRole('tab',{name:'Overview'}).click();await g.waitForTimeout(300);
+  {const r=await g.evaluate(()=>{const e=document.querySelector('.poll');if(!e)return null;const b=e.getBoundingClientRect();return {right:b.right,w:window.innerWidth,display:getComputedStyle(e).display}});check(!!r&&r.right<=r.w+1&&r.display==='block',dev+' final vote card fits and stacks ('+JSON.stringify(r)+')')}
   check(await g.getByRole('button',{name:'Copy invite link'}).count()===0,dev+' guest has no Copy invite link after answering');
   check(await g.getByRole('button',{name:'Add to calendar'}).count()===1,dev+' Add to calendar shows once');
   check(!(await g.locator('body').innerText()).includes('something to bring'),dev+' no "bring" wording on a trip');
   await g.screenshot({path:`${O}/gv-${dev}-2.png`,fullPage:true});
   // Host still has the link to share
-  await h.goto(`${B}/?plan=${id}`);await h.waitForTimeout(1500);check(await h.getByRole('button',{name:'Copy invite link'}).count()===1,dev+' host still has Copy invite link');await fits(h,dev+' host overview');
+  await h.goto(`${B}/?plan=${id}`);await h.waitForTimeout(1500);check(await h.getByRole('button',{name:'Copy invite link'}).count()===1,dev+' host still has Copy invite link');await h.getByText('More tools').click();await h.waitForTimeout(300);{const r=await h.evaluate(()=>{const e=document.querySelector('.poll');const b=e.getBoundingClientRect();return b.right<=window.innerWidth+1});check(r,dev+' host final vote card fits')}await fits(h,dev+' host overview');
  }
  // A new trip starts with no placeholder jobs, and its list talks about jobs, not bringing.
  {const hc=await b.newContext({...devices['iPhone 14']});const h=await hc.newPage();await h.goto(B);await h.waitForTimeout(1500);

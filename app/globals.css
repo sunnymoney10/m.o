@@ -295,7 +295,7 @@ legend{font-weight:600;font-size:14px;margin-bottom:8px;color:var(--ink)}
 .more-body{display:grid;gap:14px;padding:0 16px 16px}
 
 /* rsvp & guest list */
-.locked{display:inline-flex;align-items:center;gap:6px;color:var(--muted)}
+.locked-note{display:inline-flex;align-items:center;gap:6px;color:var(--muted)}
 .pick-card{display:grid;gap:8px;background:var(--paper);border-radius:var(--radius);padding:18px;box-shadow:0 1px 0 var(--line)}
 .pick-card>strong{font-size:20px;color:var(--ink)}
 .pick-card>.text-button{justify-self:start}
@@ -627,3 +627,6 @@ html,body{overflow-x:clip}
 .answer-card .check-day{font-size:15px}
 .check-due{display:inline-flex!important;align-items:center;gap:5px;font-size:13px!important;font-weight:700;color:var(--brick)!important}
 .answer-card .next-time{font-size:22px;font-weight:800;color:var(--ink)}
+.try-mo{display:grid;gap:8px;grid-template-columns:minmax(0,1fr);padding:20px;border-radius:var(--radius);background:var(--sky-soft);color:var(--ink)}
+.try-mo .eyebrow{color:var(--sky-ink)}
+.try-mo .text-button{justify-self:start}
