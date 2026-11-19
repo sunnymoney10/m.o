@@ -1,4 +1,5 @@
 'use client';
+import {whenRange} from '@/lib/when';
 import {planLink} from '@/lib/short-link';
 // The People tab: a guest finds their name, RSVPs (with extra guests, dietary needs and a sleepover request),
 // and the organizer manages the guest list. Dietary needs, sleepovers and pending extra guests are shown
@@ -21,10 +22,10 @@ const ORDER:Record<string,number>={in:1,maybe:2,invited:3,out:4};
 const STATUS:Record<string,string>={in:'Going',maybe:'Checking',invited:'No reply yet',out:'Can’t go'};
 const ANSWER:Record<string,string>={in:'going',maybe:'still checking',out:'can’t make it',invited:'no reply yet'};
 const answerLine=(g:{status:string;extra_count?:number;extra_names?:string})=>ANSWER[g.status]+(g.extra_count?` (+${g.extra_count}${g.extra_names?' '+g.extra_names:''})`:'');
-function whenText(date:string){if(!date)return '';const d=new Date(date);return Number.isNaN(+d)?'':d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})+' at '+d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}
+function whenText(date:string,end?:string){return whenRange(date,end,' at ')}
 // A personal message the host sends themselves (text, DM). m.o never sends it.
 export function checkInMessage(d:Detail,g:Guest){
- const link=planLink(typeof location!=='undefined'?location.origin:'',d.plan.id),when=whenText(d.plan.date),items=d.tasks.filter(t=>t.claimed_name===g.name&&!t.done).map(t=>t.title);
+ const link=planLink(typeof location!=='undefined'?location.origin:'',d.plan.id),when=whenText(d.plan.date,d.plan.end_date),items=d.tasks.filter(t=>t.claimed_name===g.name&&!t.done).map(t=>t.title);
  const what=`${d.plan.title}${when?` on ${when}`:''}`,first=g.name.split(' ')[0];
  if(g.status==='invited')return `Hi ${first}! Are you coming to ${what}? Just reply here, or answer at ${link}`;
  const parts=[`as ${answerLine(g)}`];if(items.length)parts.push(`bringing ${items.join(', ')}`);if(g.dietary)parts.push(`dietary: ${g.dietary}`);if(g.staying)parts.push('staying over');

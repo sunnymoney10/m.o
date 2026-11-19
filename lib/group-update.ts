@@ -1,7 +1,8 @@
+import {whenRange} from './when';
 // Deterministic group-chat drafts built only from what is saved in the plan.
 // Nothing here guesses commitments or sends anything; the organizer copies and edits the text.
 export type UpdateInput={
- plan:{title:string;date:string;place:string;budget?:string;kind?:string};
+ plan:{title:string;date:string;end_date?:string;place:string;budget?:string;kind?:string};
  guests:{name:string;status:string}[];
  tasks:{title:string;claimed_name:string|null;done:number}[];
  polls?:{question:string;decided_option:string|null;kind?:string;options:{id:string;label:string;votes:number}[]}[];
@@ -16,7 +17,7 @@ export function groupUpdate(d:UpdateInput,link:string){
  const open=d.tasks.filter(t=>!t.claimed_name).map(t=>t.title);
  const polls=(d.polls||[]).filter(x=>!x.decided_option);
  lines.push(`📍 ${p.title}`);
- const facts=[when(p.date)||'Date still to decide',p.place||'Place still to decide'];
+ const facts=[whenRange(p.date,p.end_date)||'Date still to decide',p.place||'Place still to decide'];
  lines.push(facts.join(' — '));
  lines.push('');
  lines.push(going.length?`✅ In (${going.length}): ${names(going)}`:'✅ Nobody has said they’re in yet.');
@@ -32,7 +33,7 @@ export function nudgeMaybes(d:UpdateInput,link:string){
  // People still checking and people on the host's list who haven't answered yet.
  const maybe=d.guests.filter(g=>g.status==='maybe'||g.status==='invited').map(g=>g.name);
  if(!maybe.length)return '';
- return `Hey ${names(maybe)} — no pressure, just locking in numbers for ${d.plan.title}${when(d.plan.date)?` (${when(d.plan.date)})`:''}. Can you let us know if you’re in? 👉 ${link}`;
+ return `Hey ${names(maybe)} — no pressure, just locking in numbers for ${d.plan.title}${when(d.plan.date)?` (${whenRange(d.plan.date,d.plan.end_date)})`:''}. Can you let us know if you’re in? 👉 ${link}`;
 }
 
 export function nextStep(d:UpdateInput){

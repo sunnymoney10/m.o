@@ -1,4 +1,5 @@
 'use client';
+import {whenRange} from '@/lib/when';
 // Send invites: a personal text for each guest, opened in the phone's Messages app (the host taps Send).
 // "Send to everyone" walks the list one person at a time. Numbers stay on this phone only.
 import {useEffect,useState} from 'react';
@@ -8,7 +9,7 @@ import {ago} from '@/lib/types';
 import {DEFAULT_MESSAGE,fillMessage,loadInvites,nameKey,personalLink,saveInvites,smsHref} from '@/lib/invite';
 import {Face} from './art';
 
-function whenText(date:string){if(!date)return '';const d=new Date(date);return Number.isNaN(+d)?'':d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})+' at '+d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}
+function whenText(date:string,end?:string){return whenRange(date,end,' at ')}
 
 export function SendInvites({detail,notify,onClose,onSent}:{detail:Detail;notify:(t:string)=>void;onClose:()=>void;onSent:()=>void}){
  const id=detail.plan.id,[store,setStore]=useState<{phones:Record<string,string>;sent:Record<string,string>;template?:string}>({phones:{},sent:{}}),[editing,setEditing]=useState(false);
@@ -17,7 +18,7 @@ export function SendInvites({detail,notify,onClose,onSent}:{detail:Detail;notify
  const template=store.template||DEFAULT_MESSAGE;
  const guests=detail.guests.filter(g=>!g.isHost&&g.id);
  const origin=typeof location!=='undefined'?location.origin:'';
- const message=(g:Guest)=>fillMessage(template,{first:g.name.split(' ')[0],plan:detail.plan.title,when:whenText(detail.plan.date),link:personalLink(origin,id,g.id!)});
+ const message=(g:Guest)=>fillMessage(template,{first:g.name.split(' ')[0],plan:detail.plan.title,when:whenText(detail.plan.date,detail.plan.end_date),link:personalLink(origin,id,g.id!)});
  const queue=guests.filter(g=>!store.sent[nameKey(g.name)]&&g.status==='invited');
  const next=queue[0];
  function markSent(g:Guest){update({...store,sent:{...store.sent,[nameKey(g.name)]:new Date().toISOString()}});onSent();notify(`Opening Messages for ${g.name}. Tap Send there, then come back.`)}

@@ -27,5 +27,15 @@ const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173',O=process.argv[2]||requ
  check(await h.getByRole('link',{name:/Open the Airbnb booking/}).count()>0,'plan shows Open the Airbnb booking');
  check(await h.getByRole('link',{name:/Open in Maps/}).count()>0,'plan shows Open in Maps');
  await h.screenshot({path:O+'/pl2-plan.png',fullPage:true});
+ // Guest side: the address and booking stay hidden until they answer, then both buttons appear.
+ const gc=await b.newContext({...devices['iPhone 14']});const g=await gc.newPage();g.on('pageerror',e=>{fails++;console.log('PAGEERROR',e.message)});
+ await g.goto(h.url());await g.waitForTimeout(2000);
+ check(await g.getByRole('link',{name:/Open the Airbnb booking/}).count()===0&&!(await g.locator('body').innerText()).includes('airbnb.com'),'guest who hasn’t answered sees no booking link');
+ await g.getByRole('button',{name:'Reply',exact:true}).first().click();await g.waitForTimeout(800);
+ const nm=g.getByLabel(/Your name/).first();if(await nm.count())await nm.fill('Tess');
+ await g.getByRole('button',{name:'I’m in'}).first().click();const send=g.getByRole('button',{name:'Send RSVP'});if(await send.count())await send.click();await g.waitForTimeout(1500);
+ await g.getByRole('tab',{name:'Overview'}).click().catch(()=>{});await g.waitForTimeout(500);
+ check(await g.getByRole('link',{name:/Open the Airbnb booking/}).count()>0&&await g.getByRole('link',{name:/Open in Maps/}).count()>0,'after saying they’re in, the guest gets Open in Maps and Open the Airbnb booking');
+ await g.screenshot({path:O+'/pl3-guest.png',fullPage:true});
  await b.close();console.log(fails?`${fails} problem(s)`:'All place checks passed');process.exit(fails?1:0);
 })();
