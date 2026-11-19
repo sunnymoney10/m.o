@@ -11,6 +11,10 @@ const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173',O=process.argv[2]||requ
  await h.evaluate(()=>fetch('/api/plans',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:'Warm-up',name:'Ari'})}));
  await h.goto(B);await h.waitForTimeout(1500);
  await h.getByRole('button',{name:/new plan|start a plan|plan something/i}).first().click();await h.waitForTimeout(500);
+ // Get-together: Airbnb and hotel buttons sit under the booking link box (in Add more details), even before Where is filled.
+ await h.getByText('Add more details').click();
+ check(await h.getByRole('link',{name:/Search Airbnb/}).first().getAttribute('href')==='https://www.airbnb.com/','get-together, no Where yet: Search Airbnb opens Airbnb');
+ check(await h.getByRole('link',{name:/Search hotels/}).first().getAttribute('href')==='https://www.booking.com/','and Search hotels opens Booking.com');
  const trip=h.getByRole('button',{name:'Trip'});if(await trip.count())await trip.click();
  await h.getByLabel('Give it a name').fill('UniverSoul Circus');const yn=h.getByLabel('Your name');if(await yn.count())await yn.fill('Ari');
  const where=h.getByRole('combobox');await where.fill('civic center atlanta');await h.waitForTimeout(900);

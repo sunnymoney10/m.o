@@ -28,7 +28,7 @@ export function eventResults(d:any):EventHit[]{const out:EventHit[]=[];
 
 // "Find a place" links: open Airbnb or a hotel search for the plan's area and dates. m.o doesn't book or read anything there.
 export function stayLinks(where:string,start?:string,end?:string){
- const q=where.trim();if(!q)return null;
+ const q=where.trim();if(!q)return {airbnb:'https://www.airbnb.com/',hotels:'https://www.booking.com/'};
  const day=(s?:string)=>{if(!s)return '';const d=new Date(s);return Number.isNaN(+d)?'':`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
  const a=day(start),b0=day(end),b=b0&&b0>a?b0:a?day(new Date(new Date(start!).getTime()+86400000).toISOString()):'';
  const air=new URL('https://www.airbnb.com/s/'+encodeURIComponent(q)+'/homes');if(a){air.searchParams.set('checkin',a);air.searchParams.set('checkout',b)}
