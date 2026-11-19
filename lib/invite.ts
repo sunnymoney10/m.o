@@ -3,7 +3,8 @@
 // personal message filled in, and the host taps Send.
 const PHONE=/\+?\d[\d\s().-]{5,}\d/;
 
-export function personalLink(origin:string,planId:string,guestId:string){return `${origin}/?plan=${planId}&g=${guestId}`}
+import {guestLink} from './short-link';
+export function personalLink(origin:string,_planId:string,guestId:string){return guestLink(origin,guestId)}
 
 export const DEFAULT_MESSAGE="Hi {first}! I'm hosting {plan}{when} and I'd love for you to come. Tap to say if you can make it and pick something to bring: {link}";
 export function fillMessage(template:string,v:{first:string;plan:string;when:string;link:string}){

@@ -27,7 +27,7 @@ const log=(...a)=>console.log(...a);
  const next=h.locator('.send-invites a.primary');const href=await next.getAttribute('href');const label=await next.innerText();
  log('next button:',label);log('sms link:',decodeURIComponent(href).slice(0,240));
  check(/^sms:2155550134[&?]body=/.test(href),'Send opens Messages to Tess’s number');
- const body=decodeURIComponent(href.split('body=')[1]);check(body.startsWith('Hi Tess!')&&body.includes('Friendsgiving')&&/plan=[0-9a-f-]+&g=[0-9a-f-]+/.test(body),'message is personal with her own link');
+ const body=decodeURIComponent(href.split('body=')[1]);check(body.startsWith('Hi Tess!')&&body.includes('Friendsgiving')&&/\/i\/[A-Za-z0-9_-]{22}/.test(body),'message is personal with her own link');
  await h.evaluate(()=>document.querySelectorAll('.send-invites a').forEach(a=>a.addEventListener('click',e=>e.preventDefault())));
  await next.click();await h.waitForTimeout(500);
  check((await h.locator('.send-invites a.primary').innerText()).includes('Jordan'),'Send to everyone moves on to Jordan');
