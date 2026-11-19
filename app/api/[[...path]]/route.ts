@@ -34,9 +34,10 @@ async function handler(req:Request){
    const q=str(url.searchParams.get('q'),100);if(q.length<3)return json({results:[]});
    const t=Date.now(),hits=(placeHits.get(actor)||[]).filter(x=>x>t-60000);if(hits.length>=30)return json({error:'Too many searches. Wait a minute and try again.'},429);
    hits.push(t);placeHits.set(actor,hits);if(placeHits.size>5000)placeHits.clear();
-   try{const r=await fetch('https://photon.komoot.io/api/?limit=6&lang=en&q='+encodeURIComponent(q),{headers:{'User-Agent':'m.o planning app'},signal:AbortSignal.timeout(4000),cf:{cacheTtl:86400,cacheEverything:true}} as RequestInit);
-    if(!r.ok)throw new Error();const d:any=await r.json();return json({results:placeResults(d)});
-   }catch{return json({error:'Address search isn’t working right now. Type the address instead.'},502)}
+   let why='network';
+   try{const r=await fetch('https://photon.komoot.io/api/?limit=6&lang=en&q='+encodeURIComponent(q),{headers:{'User-Agent':'m.o-planner/1.0 (+https://mo.mymoapp.workers.dev)',Accept:'application/json'},signal:AbortSignal.timeout(5000)});
+    why='http '+r.status;if(!r.ok)throw new Error();why='format';const d:any=await r.json();return json({results:placeResults(d)});
+   }catch{return json({error:'Address search isn’t working right now. Type the address instead.',why},502)}
   }
   // ---- Your m.o profile ----
   // ---- Profile photo: a small image resized on the phone, stored in the database (no file storage service) ----
