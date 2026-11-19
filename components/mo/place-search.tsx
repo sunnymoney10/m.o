@@ -31,7 +31,7 @@ export function PlaceSearch({value,onChange,onBookingLink,onEvent}:{value:string
  useEffect(()=>{if(open)box.current?.scrollIntoView({block:'start',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})},[open]);
  return <div className="place-search" ref={box}>
   <label>Where<span className="place-input"><Search size={17} aria-hidden="true"/><input role="combobox" aria-expanded={open} aria-controls={list} aria-autocomplete="list" autoComplete="off" maxLength={160} value={value}
-   onChange={e=>type(e.target.value)} onKeyDown={e=>{if(e.key==='Escape')setOpen(false)}} placeholder="Search an event, venue or address"/></span></label>
+   onChange={e=>type(e.target.value)} onKeyDown={e=>{if(e.key==='Escape'&&open){e.preventDefault();e.stopPropagation();e.nativeEvent.stopImmediatePropagation();setOpen(false)}}} placeholder="Search an event, venue or address"/></span></label>
   {open&&<div className="place-results" id={list} role="listbox" aria-label="Address suggestions">
    {state==='loading'&&!hits.length?<p className="fine" role="status">Searching…</p>
     :state==='error'?<p className="fine" role="status">Search isn’t working right now. Type the full address instead.</p>

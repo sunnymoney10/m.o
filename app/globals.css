@@ -587,3 +587,8 @@ legend{font-weight:600;font-size:14px;margin-bottom:8px;color:var(--ink)}
 .one-guest{display:grid;gap:8px;border:1.5px dashed #e3d6c8;border-radius:14px;padding:16px;margin:0}
 .one-guest legend{font-weight:800;padding:0 8px}
 .one-guest>small{color:#6f6066;font-size:13px}
+
+/* trips: search Airbnb or hotels */
+.find-stay{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.find-stay>span{font-weight:700;width:100%}
+.find-stay>small{width:100%;color:#6f6066;font-size:13px}

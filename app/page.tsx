@@ -1,6 +1,7 @@
 'use client';
 import {whenRange,endFor} from '@/lib/when';
 import {PlaceSearch} from '@/components/mo/place-search';
+import {stayLinks} from '@/lib/places';
 import {planLink} from '@/lib/short-link';
 import {useEffect,useState} from 'react';
 import {Trash2,Clock,Send,ArrowUpRight,ArrowLeft,Plus,CalendarDays,MapPin,Check,Link as LinkIcon,CheckCircle2,X,ChevronRight,LoaderCircle,HelpCircle,Pencil,House,UsersRound,Box,Soup,CakeSlice,CupSoda,Snowflake,Music,Car,BedDouble,Wallet,Utensils,ClipboardCheck,Salad,Wine,Ticket,Copy,Lock} from 'lucide-react';
@@ -252,6 +253,7 @@ export default function Home(){
      {form.endDate||showEnd?<button type="button" className="text-button small" onClick={()=>{setShowEnd(false);setForm({...form,endDate:''})}}>It’s just one day</button>
       :<button type="button" className="text-button small" onClick={()=>{setShowEnd(true);if(form.date&&!form.endDate){const d=new Date(form.date);d.setDate(d.getDate()+2);setForm({...form,endDate:local(d.toISOString())})}}}>More than one day? Add an end date</button>}
      {(form.kind==='trip'||form.bookingUrl)&&<label>Booking link <small>(Airbnb, hotel… shared once someone RSVPs)</small><input type="url" maxLength={1000} value={form.bookingUrl} onChange={e=>setForm({...form,bookingUrl:e.target.value})} placeholder="https://www.airbnb.com/trips/…"/></label>}
+     {form.kind==='trip'&&!form.bookingUrl&&(()=>{const l=stayLinks(form.place,form.date,form.endDate);return <div className="find-stay"><span>Need a place to stay?</span>{l?<><a className="outline-button" href={l.airbnb} target="_blank" rel="noopener noreferrer">Search Airbnb <ArrowUpRight size={14}/></a><a className="outline-button" href={l.hotels} target="_blank" rel="noopener noreferrer">Search hotels <ArrowUpRight size={14}/></a><small>Opens in a new tab{form.date?' with your dates':''}. When you book, copy the booking link and paste it above.</small></>:<small>Fill in Where (a city is enough) to search Airbnb and hotels.</small>}</div>})()}
      <details className="more-details" open={modal==='edit'}><summary>Add more details <small>arrival notes, description, {form.kind==='trip'?'things to sort':'bring list'}, budget</small></summary><div className="more-body">
      <label>Arrival and house notes <small>(parking, buzzer, shoes off… shared once someone RSVPs)</small><textarea rows={3} maxLength={1000} value={form.details} onChange={e=>setForm({...form,details:e.target.value})} placeholder="Park on Elm, not in the lot. Buzz 3B. Shoes off inside."/></label>
      <label>Cost per person<input maxLength={60} value={form.budget} onChange={e=>setForm({...form,budget:e.target.value})} placeholder="e.g. $40 each"/></label>

@@ -16,6 +16,9 @@ const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173',O=process.argv[2]||requ
  await h.getByRole('button',{name:/More than one day/}).click();
  check(await h.getByLabel(/^Starts/).count()===1&&await h.getByLabel(/^Ends/).inputValue()==='2026-12-06T18:00','end date appears, filled two days later');
  await h.getByLabel(/^Ends/).fill('2026-12-06T12:00');
+ await h.getByRole('combobox').fill('Raleigh, NC');await h.waitForTimeout(900);await h.getByRole('button',{name:'Use what I typed'}).click().catch(()=>{});
+ const air=await h.getByRole('link',{name:/Search Airbnb/}).getAttribute('href'),hot=await h.getByRole('link',{name:/Search hotels/}).getAttribute('href');
+ check(air.includes('airbnb.com/s/Raleigh')&&air.includes('checkin=2026-12-04&checkout=2026-12-06')&&hot.includes('booking.com')&&hot.includes('checkout=2026-12-06'),'trip form offers Airbnb and hotel searches for the area and dates');
  await h.screenshot({path:O+'/md1-form.png'});
  await h.getByRole('button',{name:/Create plan/}).click();await h.waitForTimeout(1800);const url=h.url();
  const hostWhen=await meta(h);check(/Fri, Dec 4.*6:00 PM – Sun, Dec 6/.test(hostWhen),'host sees the range: '+hostWhen);
@@ -24,6 +27,7 @@ const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173',O=process.argv[2]||requ
  const g=await phone();await g.goto(url);await g.waitForTimeout(2000);
  const guestWhen=await meta(g);check(/Fri, Dec 4.*– Sun, Dec 6/.test(guestWhen),'guest sees the range before answering: '+guestWhen);
  await g.screenshot({path:O+'/md3-guest.png'});
+ check(await g.getByRole('link',{name:/Search Airbnb|Search hotels/}).count()===0,'guests don’t see the host’s stay search');
  await g.getByRole('button',{name:'Reply',exact:true}).first().click();await g.waitForTimeout(800);
  const nm=g.getByLabel(/Your name/).first();if(await nm.count())await nm.fill('Tess');
  await g.getByRole('button',{name:'I’m in'}).first().click();const send=g.getByRole('button',{name:'Send RSVP'});if(await send.count())await send.click();await g.waitForTimeout(1500);
