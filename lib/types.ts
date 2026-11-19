@@ -1,7 +1,7 @@
 export type Plan={id:string;title:string;kind:string;date:string;place:string;budget:string;note:string;going?:number;maybe?:number;open_items?:number;open_item?:string|null;open_votes?:number;invited?:number;invite_url?:string|null;booking_url?:string|null;end_date?:string;made_it?:number};
 export type Task={id:string;title:string;category:string;claimed_name:string|null;done:number;isMine:boolean;claim_source?:string};
 import type {Avatar} from './avatar';
-export type Guest={avatar?:Avatar|null;photo?:string|null;id?:string;name:string;status:string;note:string;isMe:boolean;isHost?:boolean;extra_count?:number;extra_names?:string;extra_status?:string;dietary?:string;staying?:boolean;source?:string;updated?:string;handle?:string|null;mo?:string|null;interests?:string[]};
+export type Guest={avatar?:Avatar|null;photo?:string|null;id?:string;name:string;status:string;note:string;isMe:boolean;isHost?:boolean;extra_count?:number;extra_names?:string;extra_status?:string;dietary?:string;staying?:boolean;check_back?:string;source?:string;updated?:string;handle?:string|null;mo?:string|null;interests?:string[]};
 export type PollOption={id:string;label:string;votes:number;voters:string[];mine:boolean};
 export type Poll={id:string;question:string;kind:'date'|'place'|'choice';decided_option:string|null;options:PollOption[]};
 export type Stop={id:string;at:string;title:string;detail:string;url:string|null};

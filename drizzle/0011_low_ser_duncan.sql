@@ -1,0 +1,1 @@
+ALTER TABLE `guests` ADD `check_back` text DEFAULT '' NOT NULL;

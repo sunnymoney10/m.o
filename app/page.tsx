@@ -2,9 +2,10 @@
 import {whenRange,endFor} from '@/lib/when';
 import {PlaceSearch} from '@/components/mo/place-search';
 import {HostLink} from '@/components/mo/host-link';
+import {DeclinedCard,CheckBackCard} from '@/components/mo/answer-cards';
 import {stayLinks} from '@/lib/places';
 import {planLink} from '@/lib/short-link';
-import {useEffect,useState} from 'react';
+import {useEffect,useRef,useState} from 'react';
 import {Trash2,Clock,Send,ArrowUpRight,ArrowLeft,Plus,CalendarDays,MapPin,Check,Link as LinkIcon,CheckCircle2,X,ChevronRight,LoaderCircle,HelpCircle,Pencil,House,UsersRound,Box,Soup,CakeSlice,CupSoda,Snowflake,Music,Car,BedDouble,Wallet,Utensils,ClipboardCheck,Salad,Wine,Ticket,Copy,Lock} from 'lucide-react';
 import type {Plan,Task,Guest,Detail,Me,Profile} from '@/lib/types';
 import {ago} from '@/lib/types';
@@ -51,8 +52,10 @@ export default function Home(){
  const demo=!!detail?.plan.id.startsWith('demo-');
  async function api(path:string,method='GET',data?:unknown){const r=await fetch('/api/'+path,{method,headers:{'Content-Type':'application/json'},...(data!=null?{body:JSON.stringify(data)}:{})});let j:any;try{j=await r.json()}catch{throw Error('Couldn’t reach m.o. Check your connection and try again.')}if(!r.ok)throw Error(j.error||'Something went wrong.');return j}
  function notify(t:string){setToast(t);setTimeout(()=>setToast(''),4000)}
- async function list(){try{const d=await api('plans');setPlans(d.plans)}catch(e:any){setError(e.message)}finally{setLoading(false)}}
- async function loadMe(){setMeLoading(true);try{setMe(await api('me'))}catch(e:any){setError(e.message)}finally{setMeLoading(false)}}
+ // Fast taps can start several loads; only the newest one may update the screen.
+ const listSeq=useRef(0),meSeq=useRef(0);
+ async function list(){const n=++listSeq.current;try{const d=await api('plans');if(n===listSeq.current)setPlans(d.plans)}catch(e:any){if(n===listSeq.current)setError(e.message)}finally{if(n===listSeq.current)setLoading(false)}}
+ async function loadMe(){const n=++meSeq.current;setMeLoading(true);try{const m=await api('me');if(n===meSeq.current)setMe(m)}catch(e:any){if(n===meSeq.current)setError(e.message)}finally{if(n===meSeq.current)setMeLoading(false)}}
  async function open(id:string,history=true){setError('');setView('home');if(history||id!==detail?.plan.id)setPtab('overview');if(id.startsWith('demo-')){setDetail(structuredClone(DEMOS.find(d=>d.plan.id===id)!));setName('You')}else{setBusy(true);try{const d=await api('plan/'+id);setDetail(d);const mine=d.guests.find((g:Guest)=>g.isMe);setName(mine?.name||localStorage.getItem('mo-name')||'')}catch(e:any){setError(e.message)}finally{setBusy(false)}}if(history)window.history.pushState({},'','/?plan='+id);window.scrollTo(0,0)}
  useEffect(()=>{list();if(new URLSearchParams(location.search).get('view')!=='me')api('me').then(setMe).catch(()=>{});const h=new Date().getHours();setHello(h<12?'Good morning':h<17?'Good afternoon':'Good evening');const read=()=>{const q=new URLSearchParams(location.search),id=q.get('plan');setPersonalG(q.get('g'));setHostKey(q.get('hostkey'));if(id)open(id,false);else if(q.get('view')==='me'){setDetail(null);setView('me');loadMe()}else if(q.get('view')==='plans'){setDetail(null);setView('plans')}else{setDetail(null);setView('home')}};read();window.addEventListener('popstate',read);return()=>window.removeEventListener('popstate',read)},[]);
  // Keeps an open plan current without running up requests: every 30s while visible, pausing after 10 minutes
@@ -68,7 +71,9 @@ export default function Home(){
  async function deletePlan(){if(!detail)return;if(!confirm(`Delete “${detail.plan.title}”? Everyone’s answers and the bring list will be removed. This can’t be undone.`))return;
   if(demo){setModal(null);home();notify('Demo closed. Demos aren’t saved.');return}
   setBusy(true);try{await api('plan/'+detail.plan.id,'DELETE');try{localStorage.removeItem('mo-shared-'+detail.plan.id)}catch{}setModal(null);home();notify('Plan deleted.')}catch(e:any){notify(e.message)}finally{setBusy(false)}}
- function home(){setDetail(null);setView('home');setError('');window.history.pushState({},'','/');list();window.scrollTo(0,0)}
+ // Switching between Home, Plans and You replaces the address instead of piling up history, and does nothing if you're already there.
+ const go=(path:string)=>{const here=location.pathname+location.search;if(here===path)return;const top=!detail&&['/','/?view=plans','/?view=me'].includes(here);top?window.history.replaceState({},'',path):window.history.pushState({},'',path)};
+ function home(){if(!detail&&view==='home'){window.scrollTo(0,0);return}setDetail(null);setView('home');setError('');go('/');list();window.scrollTo(0,0)}
  function openEdit(){const p=detail!.plan;setShowEnd(false);setForm({...initial,title:p.title,kind:p.kind,place:p.place,budget:p.budget,note:p.note,details:detail!.details||'',date:local(p.date),name,inviteUrl:p.invite_url||'',bookingUrl:p.booking_url||'',endDate:local(p.end_date)});setModal('edit')}
  // Opens the reply form for a guest and brings it into view (the tabs stay above it).
  function startReply(mode:'new'|'other'|null){setReplyMode(mode);setPtab('people');setTimeout(()=>document.querySelector('.rsvp-form,.pick-card,.other-phone')?.scrollIntoView({behavior:'smooth',block:'start'}),120)}
@@ -81,8 +86,8 @@ export default function Home(){
   if(ok){setPersonalG(null);try{const u=new URL(location.href);u.searchParams.delete('g');history.replaceState({},'',u)}catch{}if(status!=='out'&&unclaimed.length){setPtab('list');window.scrollTo(0,0)}}
  }
  function goTab(tab:'people'|'list',opts:{add?:boolean;send?:boolean}={}){setOpenAdd(!!opts.add);setSendOpen(!!opts.send);setPtab(tab);window.scrollTo(0,0)}
- function plansView(){setDetail(null);setView('plans');setError('');window.history.pushState({},'','/?view=plans');list();window.scrollTo(0,0)}
- function profile(){setDetail(null);setView('me');setError('');window.history.pushState({},'','/?view=me');loadMe();window.scrollTo(0,0)}
+ function plansView(){if(!detail&&view==='plans'){window.scrollTo(0,0);return}setDetail(null);setView('plans');setError('');go('/?view=plans');list();window.scrollTo(0,0)}
+ function profile(){if(!detail&&view==='me'){window.scrollTo(0,0);return}setDetail(null);setView('me');setError('');go('/?view=me');loadMe();window.scrollTo(0,0)}
  function create(kind='gathering'){setShowEnd(false);setForm({...initial,kind,name:me?.profile?.name||localStorage.getItem('mo-name')||'',items:kind==='trip'?'':'The main dish\nSomething sweet\nDrinks & ice'});setAskName(!(me?.profile?.name||localStorage.getItem('mo-name')));setModal('create')}
  async function submit(e:React.FormEvent){e.preventDefault();setBusy(true);setError('');try{if(modal==='edit'&&detail){if(demo)setDetail({...detail,details:form.details,plan:{...detail.plan,title:form.title,place:form.place,booking_url:form.bookingUrl||null,end_date:form.date&&form.endDate?new Date(form.endDate).toISOString():'',budget:form.budget,note:form.note,date:form.date?new Date(form.date).toISOString():''}});else{await api('plan/'+detail.plan.id,'PATCH',{title:form.title,place:form.place,budget:form.budget,note:form.note,details:form.details,inviteUrl:form.inviteUrl,bookingUrl:form.bookingUrl,endDate:form.date&&form.endDate?new Date(form.endDate).toISOString():'',date:form.date?new Date(form.date).toISOString():''});await open(detail.plan.id,false)}}else{const d=await api('plans','POST',{...form,date:form.date?new Date(form.date).toISOString():'',endDate:form.date&&form.endDate?new Date(form.endDate).toISOString():'',tasks:form.items.split('\n').filter(t=>t.trim()).map(title=>({title,category:form.kind==='trip'?'todo':'bring'}))});localStorage.setItem('mo-name',form.name);await open(d.id);list()}setModal(null);notify(modal==='edit'?'Saved. Everyone with the link sees the change.':'Plan created. Now invite people.')}catch(e:any){setError(e.message)}finally{setBusy(false)}}
  async function taskAction(t:Task,action:string,extra:Record<string,string>={}){if(busy)return;setBusy(true);const person=detail!.guests.find(g=>g.id===extra.guestId);
@@ -94,7 +99,7 @@ export default function Home(){
  async function saveProfile(p:Profile){try{await api('me','PUT',p);localStorage.setItem('mo-name',p.name);await loadMe();notify('That’s your m.o.');return true}catch(e:any){notify(e.message);return false}}
  async function share(){if(demo){notify('This is a demo. Start a real plan to invite friends.');return}try{await navigator.clipboard.writeText(planLink(location.origin,detail!.plan.id));try{localStorage.setItem('mo-shared-'+detail!.plan.id,'1')}catch{}setSharedTick(x=>x+1);notify('Link copied. Paste it in your group chat.')}catch{notify('Couldn’t copy. Copy the address from your browser instead.')}}
  function calendar(){const p=detail!.plan;if(!p.date){notify('Add a date first.');return}const d=new Date(p.date);const fmt=(d:Date)=>d.toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,'');const esc=(s:string)=>s.replace(/\\/g,'\\\\').replace(/\n/g,'\\n').replace(/,/g,'\\,').replace(/;/g,'\\;');const txt=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//mo//Make it out//EN','BEGIN:VEVENT','UID:'+p.id+'@mo','DTSTAMP:'+fmt(new Date()),'DTSTART:'+fmt(d),'DTEND:'+fmt(endFor(p.date,p.end_date)),'SUMMARY:'+esc(p.title),'LOCATION:'+esc(p.place),'DESCRIPTION:'+esc([p.note,detail!.details,location.href].filter(Boolean).join('\n\n')),'END:VEVENT','END:VCALENDAR'].join('\r\n');const u=URL.createObjectURL(new Blob([txt],{type:'text/calendar;charset=utf-8'}));const a=document.createElement('a');a.href=u;a.download='mo-plan.ics';a.click();URL.revokeObjectURL(u)}
- const p=detail?.plan,guests=detail?.guests||[],tasks=detail?.tasks||[],mine_=guests.find(g=>g.isMe),answered=!!mine_&&mine_.status!=='invited',going=guests.filter(g=>g.status==='in').reduce((n,g)=>n+1+(g.extra_status==='approved'?g.extra_count||0:0),0),covered=tasks.filter(t=>t.claimed_name).length,noReply=guests.filter(g=>g.status==='invited').length,checking=guests.filter(g=>g.status==='maybe').length,unclaimed=tasks.filter(t=>!t.claimed_name),mine=tasks.filter(t=>t.isMine);
+ const p=detail?.plan,guests=detail?.guests||[],tasks=detail?.tasks||[],mine_=guests.find(g=>g.isMe),answered=!!mine_&&mine_.status!=='invited',declined=!!detail&&!detail.host&&!detail.plan.id.startsWith('demo-')&&mine_?.status==='out',stillChecking=!!detail&&!detail.host&&!detail.plan.id.startsWith('demo-')&&mine_?.status==='maybe',going=guests.filter(g=>g.status==='in').reduce((n,g)=>n+1+(g.extra_status==='approved'?g.extra_count||0:0),0),covered=tasks.filter(t=>t.claimed_name).length,noReply=guests.filter(g=>g.status==='invited').length,checking=guests.filter(g=>g.status==='maybe').length,unclaimed=tasks.filter(t=>!t.claimed_name),mine=tasks.filter(t=>t.isMine);
  const member=!!detail&&(detail.host||answered);
  const link=typeof location!=='undefined'&&p?planLink(location.origin,p.id):'';
  const filtered=plans.filter(x=>tab==='all'||x.kind===tab);
@@ -187,9 +192,11 @@ export default function Home(){
       </>:<button className="primary" onClick={()=>startReply(mine_?null:'new')}>Reply</button>}
      </section>})()}
     <NotedBanner detail={detail!} act={act} busy={busy} onChange={()=>{setPtab('people');window.scrollTo(0,0)}}/>
-    <div className="seg plan-tabs" role="tablist" aria-label="Plan sections">{([['overview','Overview'],['people','People'],['list',listLabel]] as const).map(([k,label])=><button key={k} role="tab" aria-selected={ptab===k} className={ptab===k?'on':''} onClick={()=>setPtab(k)}>{label}{k==='list'&&unclaimed.length>0?<span className="tab-count">{unclaimed.length}</span>:null}</button>)}</div>
+    {declined&&<DeclinedCard detail={detail!} host={hostName} onChange={st=>quickAnswer(mine_!,st)}/>}
+    {stillChecking&&<CheckBackCard detail={detail!} me={mine_!} host={hostName} busy={busy} link={link} save={day=>act('check-back','POST',{date:day},d=>{const x=d.guests.find(g=>g.isMe);if(x)x.check_back=day},day?'Saved. '+(hostName||'The host')+' can see it.':undefined)} onChange={st=>quickAnswer(mine_!,st)}/>}
+    {!declined&&<div className="seg plan-tabs" role="tablist" aria-label="Plan sections">{([['overview','Overview'],['people','People'],['list',listLabel]] as const).map(([k,label])=><button key={k} role="tab" aria-selected={ptab===k} className={ptab===k?'on':''} onClick={()=>setPtab(k)}>{label}{k==='list'&&unclaimed.length>0?<span className="tab-count">{unclaimed.length}</span>:null}</button>)}</div>}
 
-    {ptab==='overview'&&<div className="stack">
+    {!declined&&ptab==='overview'&&<div className="stack">
      {detail!.host&&<GetItReady detail={detail!} link={link} shared={sharedTick>=0&&(()=>{try{return !!localStorage.getItem('mo-shared-'+p!.id)}catch{return false}})()} go={goTab} edit={openEdit} share={share} notify={notify}/>}
      {!detail!.host&&answered&&<section className="you-set"><span className="eyebrow">{mine_!.status==='out'?'YOUR ANSWER':'YOU’RE SET'}</span>
       <strong>{mine_!.status==='in'?'You’re going':mine_!.status==='maybe'?'You’re still checking':'You can’t make it'}{mine_!.extra_status==='approved'&&mine_!.extra_count?` with +${mine_!.extra_count}`:''}</strong>
@@ -229,9 +236,9 @@ export default function Home(){
      <p className="access-note"><Lock size={12}/>Anyone with the link can see this plan and RSVP. Only people who RSVP see the address. Don’t post the link publicly.</p>
     </div>}
 
-    {ptab==='people'&&<PeopleTab key={detail!.plan.id+(mine_?.id||'')+(openAdd?':add':'')+(sendOpen?':send':'')+(replyMode||'')} detail={detail!} act={act} busy={busy} notify={notify} startAdding={openAdd} startMode={replyMode} startSending={sendOpen} onInviteSent={()=>{try{localStorage.setItem('mo-shared-'+detail!.plan.id,'1')}catch{}setSharedTick(x=>x+1)}} onRsvp={status=>{if(status!=='out'&&!mine.length&&unclaimed.length){setPtab('list');window.scrollTo(0,0)}}}/>}
+    {!declined&&ptab==='people'&&<PeopleTab key={detail!.plan.id+(mine_?.id||'')+(openAdd?':add':'')+(sendOpen?':send':'')+(replyMode||'')} detail={detail!} act={act} busy={busy} notify={notify} startAdding={openAdd} startMode={replyMode} startSending={sendOpen} onInviteSent={()=>{try{localStorage.setItem('mo-shared-'+detail!.plan.id,'1')}catch{}setSharedTick(x=>x+1)}} onRsvp={status=>{if(status!=='out'&&!mine.length&&unclaimed.length){setPtab('list');window.scrollTo(0,0)}}}/>}
 
-    {ptab==='list'&&<section className="stack">
+    {!declined&&ptab==='list'&&<section className="stack">
      <p className="list-lead">{bringItems.length?'Pick something you can bring.':p!.kind==='trip'?'Jobs that need one person. Tap one you’ll take care of.':'Give each task a person.'}</p>
      {tasks.length===0&&<p className="inline-empty">{p!.kind==='trip'?'No jobs yet. Add specific ones, like “Drive from Wilson, Fri 5 PM”. Deciding something, like the budget or where to stay? Start a vote under More tools.':'Nothing on the list yet. Add what the group needs below.'}</p>}
      {bringItems.length>0&&<div className="item-list">{bringItems.map(t=><TaskRow key={t.id} task={t} host={detail!.host} busy={busy} act={taskAction} guests={guests} organizer={hostName||'The host'}/>)}</div>}

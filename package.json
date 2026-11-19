@@ -25,7 +25,9 @@
     "journeys:places": "node tests/e2e/places.cjs",
     "journeys:dates": "node tests/e2e/multi-day.cjs",
     "journeys:host": "node tests/e2e/host-link.cjs",
-    "journeys:guest": "node tests/e2e/guest-view.cjs"
+    "journeys:guest": "node tests/e2e/guest-view.cjs",
+    "journeys:tabs": "node tests/e2e/fast-tabs.cjs",
+    "journeys:answers": "node tests/e2e/answers.cjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
