@@ -582,3 +582,8 @@ legend{font-weight:600;font-size:14px;margin-bottom:8px;color:var(--ink)}
 .place-hit strong{display:block;font-size:15px}
 .place-hit small{display:block;font-size:13px;color:#6f6066}
 .place-hit:hover small,.place-hit:focus-visible small{color:#2c1b24}
+
+/* add one guest (iPhone AutoFill Contact) */
+.one-guest{display:grid;gap:8px;border:1.5px dashed #e3d6c8;border-radius:14px;padding:16px;margin:0}
+.one-guest legend{font-weight:800;padding:0 8px}
+.one-guest>small{color:#6f6066;font-size:13px}

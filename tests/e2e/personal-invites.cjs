@@ -12,7 +12,12 @@ const log=(...a)=>console.log(...a);
  await h.goto(B+'/?plan='+id);await h.waitForTimeout(2500);
  // Paste a list with numbers
  await h.getByRole('tab',{name:'People'}).click();await h.getByRole('button',{name:/Add names to the guest list/}).click();
- await h.getByLabel(/Who did you invite/).fill('Tess Morgan 215-555-0134\nJordan, +1 (267) 555 0199\nSam');
+ // iPhone: AutoFill Contact fills the name and phone boxes (simulated here: Safari fills by these autocomplete hints).
+ const one=h.locator('.one-guest');check(await one.locator('input[autocomplete="name"]').count()===1&&await one.locator('input[autocomplete="tel"]').count()===1,'one-person form uses the name and phone AutoFill hints');
+ await one.getByLabel('Name').fill('Tess Morgan');await one.getByLabel(/^Phone/).fill('215-555-0134');await one.getByRole('button',{name:'Add to the list below'}).click();
+ check(await one.getByLabel('Name').inputValue()===''&&(await h.getByLabel(/Your list/).inputValue())==='Tess Morgan 215-555-0134','added person moves to the list; boxes clear for the next one');
+ await one.getByLabel('Name').fill('Jordan');await one.getByLabel(/^Phone/).fill('+1 (267) 555 0199');await one.getByLabel(/^Phone/).press('Enter');
+ await h.getByLabel(/Your list/).fill((await h.getByLabel(/Your list/).inputValue())+'\nSam');
  check((await h.locator('.name-preview').innerText()).includes('Tess Morgan, Jordan, Sam'),'preview shows names only');
  await h.getByRole('button',{name:/^Add \d+ people$/}).click();await h.waitForTimeout(1500);
  const server=await h.evaluate(async id=>JSON.stringify(await (await fetch('/api/plan/'+id)).json()),id);

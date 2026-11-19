@@ -28,3 +28,4 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           WORKERS_SUBDOMAIN: mymoapp
+          TICKETMASTER_KEY: ${{ secrets.TICKETMASTER_KEY }}

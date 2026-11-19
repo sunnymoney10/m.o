@@ -21,7 +21,7 @@ const log=(...a)=>console.log(...a);
  await k.getByRole('button',{name:/Create plan/}).click();await k.waitForTimeout(1800);const url=k.url();
  // Ari adds the guest list
  await tab(k,'People');await k.getByRole('button',{name:/Add names to the guest list/}).click();
- await k.getByLabel(/Who did you invite/).fill('Tess\nJordan\nSam');await k.getByRole('button',{name:/^Add (\d+ people|to guest list)$/}).click();await k.waitForTimeout(1500);
+ await k.getByLabel(/Who did you invite|Your list/).fill('Tess\nJordan\nSam');await k.getByRole('button',{name:/^Add (\d+ people|to guest list)$/}).click();await k.waitForTimeout(1500);
  log('K guest list toast:',await toast(k));log('K people:',await text(k,'.guest-list'));await shot(k,'k2-guestlist');
  // Tess, first time, on her phone
  const t=await phone();await t.goto(url);await t.waitForTimeout(1500);await shot(t,'t1-open',false);
