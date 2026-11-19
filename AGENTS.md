@@ -39,6 +39,11 @@ Run `npm run check`, `npm test`, and `npm run build` for relevant code changes. 
 
 Every text colour pair above passes WCAG AA (4.5:1). Check new pairs before using them.
 
+## Privacy rules
+
+- Guests' phone numbers never go to the server: they stay in the host's browser (`lib/invite.ts`). The server strips numbers and emails from names.
+- m.o never sends messages. It opens the phone's Messages app with a message filled in; the person taps Send.
+
 ## Design and copy rules
 
 - Plain words. Short sentences. Buttons say exactly what happens ("Create plan", not "Let's go"). No slang or jargon.
@@ -52,5 +57,5 @@ Every text colour pair above passes WCAG AA (4.5:1). Check new pairs before usin
 ## Before you finish
 
 - `npm run check`, `npm test`, `npm run build` pass.
-- For UI changes, with `npm run dev` running: `npm run journeys`, `npm run journeys:quiet`, `npm run journeys:profile -- <photo.jpg>`, `npm run a11y`, and `npm run ux:metrics` (compare with the last run).
+- For UI changes, with `npm run dev` running: `npm run journeys`, `npm run journeys:quiet`, `npm run journeys:invites`, `npm run journeys:profile -- <photo.jpg>`, `npm run a11y`, and `npm run ux:metrics` (compare with the last run).
 - Update the README when behaviour, migrations or scripts change.
