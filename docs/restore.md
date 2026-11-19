@@ -44,4 +44,5 @@ GitHub → Actions → **Restore drill** → Run workflow. It does Way 2 with a 
 
 | Date | Result | Notes |
 | --- | --- | --- |
+| 2026-11-19 | **Live drill passed** (GitHub run 44548738432, 12 seconds) | Backed up the live database (17 KB) and loaded it into `mo-db-restore-drill-44548738432`. All 12 tables and 15 database updates matched. Practice database and backup deleted. Time Travel is on. Way 1 (rewind) not practised: it changes the live database. |
 | 2026-11-19 | Local rehearsal passed (12 tables) | Found that D1's backup file can't be loaded as-is (guests before plans). Fixed with `scripts/restore-order.mjs`. Not yet run against the live database. |
