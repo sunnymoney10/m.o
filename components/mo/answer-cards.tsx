@@ -63,7 +63,7 @@ export function TryMo({host,start,profile}:{host:string;start:()=>void;profile:(
  return <section className="try-mo" aria-labelledby="try-title">
   <span className="eyebrow">FREE FOR EVERYONE</span>
   <h3 id="try-title">Planning something yourself?</h3>
-  <p>m.o is how {host||'your host'} keeps this plan out of the group chat. Use it for your own: one link, everyone answers, nobody asks twice.</p>
+  <p>This is how {host?host+'’s':'your host’s'} plans actually make it out the group chat. Yours can too: one link, everyone answers, nobody asks twice.</p>
   <div className="draft-actions"><button className="primary" onClick={start}><Plus size={16}/>Start a plan</button><button className="outline-button" onClick={profile}><UserRound size={16}/>Set up my profile</button></div>
   <button className="text-button quiet" onClick={()=>{setHidden(true);try{localStorage.setItem('mo-try-hidden','1')}catch{}}}>Not now</button>
  </section>
