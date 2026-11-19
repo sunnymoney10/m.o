@@ -532,9 +532,9 @@ legend{font-weight:600;font-size:14px;margin-bottom:8px;color:var(--ink)}
 .row-tools,.item-tools{gap:0 16px}
 
 /* ---------- shared press effect: every tap is answered ---------- */
-.primary,.outline-button,.text-button,.claim-button,.chip,.name-chip,.swatch,.rsvp-choice,.seg button,.tab,.plan-card,.demo-card,.row-link,.status-grid>button,.status-items,.icon-button,.host-line-item,.style-option,.type-selector button,.feature-open,.me-dot{transition:transform .2s ease-out,background-color .15s,box-shadow .15s}
-:is(.primary,.outline-button,a.outline-button,.text-button,.claim-button,.chip,.name-chip,.swatch,.rsvp-choice,.seg button,.tab,.plan-card,.demo-card,.row-link,.status-grid>button,.status-items,.icon-button,.host-line-item,.style-option,.type-selector button,.feature-open,.me-dot):active:not(:disabled){transform:scale(.97);transition-duration:.12s}
-@media(prefers-reduced-motion:reduce){:is(.primary,.outline-button,.text-button,.claim-button,.chip,.name-chip,.swatch,.rsvp-choice,.seg button,.tab,.plan-card,.demo-card,.row-link,.status-grid>button,.status-items,.icon-button,.host-line-item,.style-option,.type-selector button,.feature-open,.me-dot):active:not(:disabled){transform:none;opacity:.8}}
+.primary,.outline-button,.text-button,.claim-button,.chip,.name-chip,.swatch,.rsvp-choice,.seg button,.tab,.plan-card,.demo-card,.row-link,.status-grid>button,.status-items,.icon-button,.host-line-item,.style-option,.type-selector button,.feature-open,.me-dot,.place-hit{transition:transform .2s ease-out,background-color .15s,box-shadow .15s}
+:is(.primary,.outline-button,a.outline-button,.text-button,.claim-button,.chip,.name-chip,.swatch,.rsvp-choice,.seg button,.tab,.plan-card,.demo-card,.row-link,.status-grid>button,.status-items,.icon-button,.host-line-item,.style-option,.type-selector button,.feature-open,.me-dot,.place-hit):active:not(:disabled){transform:scale(.97);transition-duration:.12s}
+@media(prefers-reduced-motion:reduce){:is(.primary,.outline-button,.text-button,.claim-button,.chip,.name-chip,.swatch,.rsvp-choice,.seg button,.tab,.plan-card,.demo-card,.row-link,.status-grid>button,.status-items,.icon-button,.host-line-item,.style-option,.type-selector button,.feature-open,.me-dot,.place-hit):active:not(:disabled){transform:none;opacity:.8}}
 
 /* delete plan */
 .danger-zone{display:grid;gap:2px;justify-items:start;padding-top:12px;border-top:1.5px solid var(--line)}
@@ -568,3 +568,17 @@ legend{font-weight:600;font-size:14px;margin-bottom:8px;color:var(--ink)}
 .preview p{white-space:pre-wrap;font-size:15px}
 .preview .text-button{justify-self:start}
 .template{display:grid;gap:6px}
+
+/* Where: address search */
+.place-search{position:relative}
+.place-input{position:relative;display:block}
+.place-input svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#6f6066;pointer-events:none}
+.place-input input{padding-left:40px}
+.place-results{margin-top:8px;background:#fffaf3;border:1px solid #e3d6c8;border-radius:14px;padding:8px;display:grid;gap:4px}
+.place-results .fine{margin:8px}
+.place-hit{display:flex;gap:8px;align-items:flex-start;text-align:left;min-height:44px;padding:8px;border:0;border-radius:10px;background:transparent;color:#2c1b24;font:inherit;cursor:pointer}
+.place-hit:hover,.place-hit:focus-visible{background:#f5d36a}
+.place-hit svg{flex:none;margin-top:2px;color:#b23b28}
+.place-hit strong{display:block;font-size:15px}
+.place-hit small{display:block;font-size:13px;color:#6f6066}
+.place-hit:hover small,.place-hit:focus-visible small{color:#2c1b24}
