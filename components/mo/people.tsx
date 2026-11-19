@@ -39,9 +39,9 @@ const plusLine=(g:Guest)=>g.extra_count?`+${g.extra_count}${g.extra_names?' · '
 function storedName(){try{return localStorage.getItem('mo-name')||''}catch{return ''}}
 function remember(n:string){try{localStorage.setItem('mo-name',n)}catch{}}
 
-export function PeopleTab({detail,act,busy,notify,startAdding=false,onRsvp}:{detail:Detail;act:Act;busy:boolean;notify:(t:string)=>void;startAdding?:boolean;onRsvp?:(status:string)=>void}){
+export function PeopleTab({detail,act,busy,notify,startAdding=false,startMode=null,onRsvp}:{detail:Detail;act:Act;busy:boolean;notify:(t:string)=>void;startAdding?:boolean;startMode?:'new'|'other'|null;onRsvp?:(status:string)=>void}){
  const host=detail.host,guests=detail.guests,me=guests.find(g=>g.isMe),answered=!!me&&me.status!=='invited';
- const [editing,setEditing]=useState(false),[notListed,setNotListed]=useState(false),[otherPhone,setOtherPhone]=useState(false);
+ const [editing,setEditing]=useState(false),[notListed,setNotListed]=useState(startMode==='new'),[otherPhone,setOtherPhone]=useState(startMode==='other');
  const [f,setF]=useState(()=>({name:me?.name||storedName(),status:me&&me.status!=='invited'?me.status:'',extra:me?.extra_count||0,extraNames:me?.extra_names||'',dietary:me?.dietary||'',staying:!!me?.staying,note:me?.note||''}));
  const [noting,setNoting]=useState<string|null>(null),[nf,setNf]=useState({status:'',extra:0,extraNames:'',dietary:'',staying:false,note:''});
  const [adding,setAdding]=useState(''),[addOpen,setAddOpen]=useState(startAdding),[canPick,setCanPick]=useState(false);

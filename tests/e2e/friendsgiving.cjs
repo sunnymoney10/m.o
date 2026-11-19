@@ -26,7 +26,7 @@ const log=(...a)=>console.log(...a);
  // Tess, first time, on her phone
  const t=await phone();await t.goto(url);await t.waitForTimeout(1500);await shot(t,'t1-open',false);
  log('T1 address hidden:',!(await t.locator('body').innerText()).includes('1420 Elm'),'| place line:',await t.locator('.meta-line').nth(1).innerText());
- await t.locator('.rsvp-prompt .primary').click();await t.waitForTimeout(400);await shot(t,'t2-pick');
+ await t.waitForTimeout(400);await shot(t,'t2-pick');
  await t.getByRole('button',{name:'Tess',exact:true}).click();await t.waitForTimeout(1500);log('T2 pick toast:',await toast(t));
  await shot(t,'t3-form');
  await t.getByRole('button',{name:'I’m in'}).click();await t.getByRole('button',{name:'One more'}).click();
@@ -37,12 +37,12 @@ const log=(...a)=>console.log(...a);
  await tab(t,'Overview');await t.waitForTimeout(300);log('T5 address visible now:',(await t.locator('body').innerText()).includes('Buzz 3B'));await shot(t,'t6-overview');
  await tab(t,/Bring list/);await t.getByRole('button',{name:'I can bring this'}).first().click();await t.waitForTimeout(1500);log('T6 claim toast:',await toast(t));
  // Jordan picks name, still checking
- const j=await phone();await j.goto(url);await j.waitForTimeout(1200);await j.locator('.rsvp-prompt .primary').click();
+ const j=await phone();await j.goto(url);await j.waitForTimeout(1200);
  await j.getByRole('button',{name:'Jordan',exact:true}).click();await j.waitForTimeout(1200);await j.getByRole('button',{name:'Still checking'}).click();await j.getByRole('button',{name:'Send RSVP'}).click();await j.waitForTimeout(1500);
 await tab(j,'People');
  log('J sees Tess dietary?',(await j.locator('.guest-list').innerText()).includes('Vegetarian'),'| sees Ben pending?',(await j.locator('.guest-list').innerText()).includes('Ben'));
  // Ramon is not on the list
- const r=await phone();await r.goto(url);await r.waitForTimeout(1200);await r.locator('.rsvp-prompt .primary').click();await r.getByRole('button',{name:'I’m not on the list'}).click();
+ const r=await phone();await r.goto(url);await r.waitForTimeout(1200);await r.getByRole('button',{name:'I’m not on the list'}).click();
  await r.getByPlaceholder('What should we call you?').fill('Ramon');await r.getByRole('button',{name:'I’m in'}).click();await r.getByRole('button',{name:'Send RSVP'}).click();await r.waitForTimeout(1500);log('R toast:',await toast(r));
  // Ari's overview
  await k.reload();await k.waitForTimeout(1500);await shot(k,'k3-overview');
@@ -54,7 +54,7 @@ await tab(j,'People');
  await k.getByRole('button',{name:'Edit plan details'}).click();await k.getByLabel(/When/).fill('2026-11-26T18:00');await k.getByRole('button',{name:/Save changes/}).click();await k.waitForTimeout(1500);
  await t.reload();await t.waitForTimeout(1500);log('T sees new time:',await t.locator('.meta-line').first().innerText());
  // Tess on a second browser
- const t2=await phone();await t2.goto(url);await t2.waitForTimeout(1500);await t2.locator('.rsvp-prompt .primary').click();await t2.waitForTimeout(300);
+ const t2=await phone();await t2.goto(url);await t2.waitForTimeout(1500);await t2.waitForTimeout(300);
  await shot(t2,'t7-second-browser');
  await t2.getByRole('button',{name:'Answered on another phone?'}).click();await t2.locator('.other-phone').getByRole('button',{name:'Tess',exact:true}).click();await t2.waitForTimeout(1500);
  log('T2 my rsvp:',await text(t2,'.my-rsvp'));
