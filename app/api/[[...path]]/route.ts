@@ -1,5 +1,6 @@
 import {env} from 'cloudflare:workers';
 import {cleanName} from '../../../lib/names';
+import {newHostKey,hashHostKey,hostLink,HOST_KEY} from '../../../lib/host-key';
 import {placeResults,eventResults,eventTries,readQuery,withHouseNumber,censusResults} from '../../../lib/places';
 import {cleanAvatar,parseAvatar,parsePhoto} from '../../../lib/avatar';
 export const dynamic='force-dynamic';
@@ -14,7 +15,7 @@ const HANDLE=/^[a-z0-9_]{2,24}$/;
 const dailyNewPlans=()=>Number((env as {DAILY_NEW_PLANS?:string})?.DAILY_NEW_PLANS)||500;
 function interestsOf(v:unknown){return Array.isArray(v)?[...new Set(v.map(x=>str(x,24)).filter(Boolean))].slice(0,8):[]}
 function parseInterests(s:string){try{const v=JSON.parse(s);return Array.isArray(v)?v:[]}catch{return []}}
-const placeHits=new Map<string,number[]>();
+const placeHits=new Map<string,number[]>(),hostTries=new Map<string,number[]>();
 async function handler(req:Request){
  const cookies=req.headers.get('cookie')||''; let session=cookies.match(/(?:^|; )mo_session=([a-f0-9-]{36})(?:;|$)/)?.[1]; const fresh=!session;session ||=crypto.randomUUID();
  const actor=req.headers.get('oai-authenticated-user-id')||session;
@@ -30,6 +31,17 @@ async function handler(req:Request){
   const body=async()=>{if(req.method==='GET'||req.method==='DELETE')return {} as any;try{return await req.json() as any}catch{return {} as any}};
 
   // ---- Address search: free OpenStreetMap results (Photon). No key, no cost. Search text only; never who is searching. ----
+  // ---- Host link: open a plan as its host on this device. The key is checked against a stored hash. ----
+  if(seg[0]==='host-link'&&seg.length===1&&req.method==='POST'){
+   const t=Date.now(),tries=(hostTries.get(actor)||[]).filter(x=>x>t-600000);if(tries.length>=10)return json({error:'Too many tries. Wait a few minutes and try again.'},429);
+   tries.push(t);hostTries.set(actor,tries);if(hostTries.size>5000)hostTries.clear();
+   const b=await body();const key=typeof b.key==='string'?b.key:'';if(!HOST_KEY.test(key))return json({error:'That host link isn’t complete. Copy the whole link and try again.'},400);
+   const plan=await db.prepare("SELECT id,owner FROM plans WHERE host_key_hash=? AND host_key_hash<>''").bind(await hashHostKey(key)).first<any>();
+   if(!plan)return json({error:'This host link doesn’t work anymore. A newer one may have been made. Ask the host for the latest link.'},404);
+   if(!/^[a-f0-9-]{36}$/.test(plan.owner))return json({error:'This plan was made in ChatGPT. Open it there to manage it.'},409);
+   // This device becomes the host's session (same as the phone that made the plan). The ID itself is never shown.
+   return new Response(JSON.stringify({ok:true,plan:plan.id}),{headers:{'Content-Type':'application/json','Cache-Control':'no-store','Set-Cookie':`mo_session=${plan.owner}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=31536000`}});
+  }
   if(seg[0]==='places'&&seg.length===1&&req.method==='GET'){
    const {text,near}=readQuery(str(url.searchParams.get('q'),100));if(text.length<3)return json({results:[],events:[]});
    const t=Date.now(),hits=(placeHits.get(actor)||[]).filter(x=>x>t-60000);if(hits.length>=30)return json({error:'Too many searches. Wait a minute and try again.'},429);
@@ -125,12 +137,12 @@ async function handler(req:Request){
     const ss=await db.prepare("SELECT id,at,title,detail,url FROM stops WHERE plan_id=? ORDER BY CASE WHEN at='' THEN 1 ELSE 0 END,at,rowid").bind(id).all<any>();
     const acts=host?(await db.prepare('SELECT at,text,by_host FROM activity WHERE plan_id=? ORDER BY at DESC LIMIT 30').bind(id).all<any>()).results.map((a:any)=>({at:a.at,text:a.text,byHost:!!a.by_host})):[];
     const ms=await db.prepare('SELECT id,actor,name,kind,body,photo_url,created FROM memories WHERE plan_id=? ORDER BY created DESC').bind(id).all<any>();
-    const {owner,details,...safe}=plan;
+    const {owner,details,host_key_hash,...safe}=plan;
     // Private details (address, arrival notes, itinerary) reach the organizer and people who said in or maybe.
     const mine=gs.results.find((g:any)=>g.actor===actor),insider=host||(!!mine&&['in','maybe'].includes(mine.status));
     const hidden=!insider&&!!(safe.place||safe.booking_url||details||ss.results.length);if(!insider){safe.place='';safe.booking_url=null}
     const polls=ps.results.map((p:any)=>({id:p.id,question:p.question,kind:p.kind,decided_option:p.decided_option,options:os.results.filter((o:any)=>o.poll_id===p.id).map((o:any)=>{const votes=vs.results.filter((v:any)=>v.option_id===o.id);return {id:o.id,label:o.label,votes:votes.length,voters:votes.map((v:any)=>v.name||'Someone'),mine:votes.some((v:any)=>v.actor===actor)}})}));
-    return json({plan:safe,host,activity:acts,organizer:gs.results.find((g:any)=>g.actor===owner)?.name||null,
+    return json({plan:safe,host,hasHostKey:host&&!!host_key_hash,activity:acts,organizer:gs.results.find((g:any)=>g.actor===owner)?.name||null,
      details:insider?details:'',hidden,
      // Dietary needs, sleepover requests and pending plus-ones are visible only to the organizer and the guest.
      guests:gs.results.map(({actor:a,interests,dietary,staying,extra_count,extra_names,extra_status,avatar,photo_updated,...g}:any)=>{const own=a===actor,see=host||own,extra=see||extra_status==='approved';return {...g,avatar:parseAvatar(avatar),photo:photo_updated?`/api/plan/${id}/guests/${g.id}/photo?v=${encodeURIComponent(photo_updated)}`:null,isHost:a===owner,interests:interests?parseInterests(interests):[],isMe:own,extra_count:extra?extra_count:0,extra_names:extra?extra_names:'',extra_status:extra?extra_status:'',...(see?{dietary,staying:!!staying}:{})}}),
@@ -140,6 +152,12 @@ async function handler(req:Request){
    }
    const b=await body();
 
+   if(seg[2]==='host-link'&&seg.length===3&&req.method==='POST'){
+    if(!host)return json({error:'Only the host can make a host link.'},403);
+    if(!/^[a-f0-9-]{36}$/.test(actor))return json({error:'This plan was made in ChatGPT. Manage it there.'},409);
+    const key=newHostKey();await db.batch([db.prepare('UPDATE plans SET host_key_hash=? WHERE id=?').bind(await hashHostKey(key),id),...log(plan.host_key_hash?'You made a new host link. The old one stopped working.':'You made a host link.')]);
+    return json({link:hostLink(url.origin,key),replaced:!!plan.host_key_hash});
+   }
    if(seg.length===2&&req.method==='DELETE'){
     // Only the host can delete a plan. Everything in it goes: guests, items, votes, schedule, memories, updates.
     if(!host)return json({error:'Only the host can delete this plan.'},403);

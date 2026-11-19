@@ -1,0 +1,1 @@
+ALTER TABLE `plans` ADD `host_key_hash` text DEFAULT '' NOT NULL;

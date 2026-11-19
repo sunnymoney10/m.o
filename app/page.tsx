@@ -1,6 +1,7 @@
 'use client';
 import {whenRange,endFor} from '@/lib/when';
 import {PlaceSearch} from '@/components/mo/place-search';
+import {HostLink} from '@/components/mo/host-link';
 import {stayLinks} from '@/lib/places';
 import {planLink} from '@/lib/short-link';
 import {useEffect,useState} from 'react';
@@ -46,14 +47,14 @@ function itemIcon(title:string,category:string){const t=title.toLowerCase(),has=
 
 export default function Home(){
  const [plans,setPlans]=useState<Plan[]>([]),[detail,setDetail]=useState<Detail|null>(null),[view,setView]=useState<'home'|'plans'|'me'>('home'),[me,setMe]=useState<Me|null>(null),[meLoading,setMeLoading]=useState(false),[loading,setLoading]=useState(true),[busy,setBusy]=useState(false),[toast,setToast]=useState(''),[error,setError]=useState(''),[modal,setModal]=useState<'create'|'edit'|'help'|null>(null),[form,setForm]=useState(initial),[tab,setTab]=useState('all'),[addType,setAddType]=useState('bring'),[newItem,setNewItem]=useState(''),[name,setName]=useState(''),[ptab,setPtab]=useState<'overview'|'people'|'list'>('overview'),[hello,setHello]=useState('Hey'),[askName,setAskName]=useState(true),[openAdd,setOpenAdd]=useState(false),[replyMode,setReplyMode]=useState<'new'|'other'|null>(null),[personalG,setPersonalG]=useState<string|null>(null),[sendOpen,setSendOpen]=useState(false),[sharedTick,setSharedTick]=useState(0);
- const [showEnd,setShowEnd]=useState(false);
+ const [showEnd,setShowEnd]=useState(false),[hostKey,setHostKey]=useState<string|null>(null),[claiming,setClaiming]=useState(false);
  const demo=!!detail?.plan.id.startsWith('demo-');
  async function api(path:string,method='GET',data?:unknown){const r=await fetch('/api/'+path,{method,headers:{'Content-Type':'application/json'},...(data!=null?{body:JSON.stringify(data)}:{})});let j:any;try{j=await r.json()}catch{throw Error('Couldn’t reach m.o. Check your connection and try again.')}if(!r.ok)throw Error(j.error||'Something went wrong.');return j}
  function notify(t:string){setToast(t);setTimeout(()=>setToast(''),4000)}
  async function list(){try{const d=await api('plans');setPlans(d.plans)}catch(e:any){setError(e.message)}finally{setLoading(false)}}
  async function loadMe(){setMeLoading(true);try{setMe(await api('me'))}catch(e:any){setError(e.message)}finally{setMeLoading(false)}}
  async function open(id:string,history=true){setError('');setView('home');if(history||id!==detail?.plan.id)setPtab('overview');if(id.startsWith('demo-')){setDetail(structuredClone(DEMOS.find(d=>d.plan.id===id)!));setName('You')}else{setBusy(true);try{const d=await api('plan/'+id);setDetail(d);const mine=d.guests.find((g:Guest)=>g.isMe);setName(mine?.name||localStorage.getItem('mo-name')||'')}catch(e:any){setError(e.message)}finally{setBusy(false)}}if(history)window.history.pushState({},'','/?plan='+id);window.scrollTo(0,0)}
- useEffect(()=>{list();if(new URLSearchParams(location.search).get('view')!=='me')api('me').then(setMe).catch(()=>{});const h=new Date().getHours();setHello(h<12?'Good morning':h<17?'Good afternoon':'Good evening');const read=()=>{const q=new URLSearchParams(location.search),id=q.get('plan');setPersonalG(q.get('g'));if(id)open(id,false);else if(q.get('view')==='me'){setDetail(null);setView('me');loadMe()}else if(q.get('view')==='plans'){setDetail(null);setView('plans')}else{setDetail(null);setView('home')}};read();window.addEventListener('popstate',read);return()=>window.removeEventListener('popstate',read)},[]);
+ useEffect(()=>{list();if(new URLSearchParams(location.search).get('view')!=='me')api('me').then(setMe).catch(()=>{});const h=new Date().getHours();setHello(h<12?'Good morning':h<17?'Good afternoon':'Good evening');const read=()=>{const q=new URLSearchParams(location.search),id=q.get('plan');setPersonalG(q.get('g'));setHostKey(q.get('hostkey'));if(id)open(id,false);else if(q.get('view')==='me'){setDetail(null);setView('me');loadMe()}else if(q.get('view')==='plans'){setDetail(null);setView('plans')}else{setDetail(null);setView('home')}};read();window.addEventListener('popstate',read);return()=>window.removeEventListener('popstate',read)},[]);
  // Keeps an open plan current without running up requests: every 30s while visible, pausing after 10 minutes
  // without interaction, and refreshing once when the person comes back.
  useEffect(()=>{if(!detail||demo)return;const id=detail.plan.id;let last=Date.now(),idle=false;const refresh=()=>api('plan/'+id).then(setDetail).catch(()=>{});
@@ -124,6 +125,11 @@ export default function Home(){
     :<button className="me-dot" aria-label="Your m.o profile" onClick={profile}>{myName?<Face seed={me?.profile?.handle||myName} avatar={me?.profile?.avatar} photo={me?.profile?.photo}/>:<HelpCircle size={20}/>}</button>}
    </header>
    <main className="screen">
+   {hostKey&&<section className="host-claim" aria-labelledby="claim-title"><span className="eyebrow">HOST LINK</span><h2 id="claim-title">Manage this plan on this device?</h2>
+    <p>This is a private host link. Tap below to open the plan as its host here. Your other phone stays signed in too.</p>
+    <p className="fine">Heads up: if you made or answered other plans on this browser before, they won’t show here after this. Use a different browser for those, or skip this.</p>
+    <span className="row-gap"><button className="primary" disabled={claiming} onClick={async()=>{setClaiming(true);try{const r=await fetch('/api/host-link',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:hostKey})});const d:any=await r.json();if(!r.ok)throw new Error(d.error);location.replace('/?plan='+d.plan)}catch(e:any){notify(e.message||'That didn’t work. Try again.');setClaiming(false)}}}>{claiming?'Opening…':'Open as host'}</button>
+    <button className="text-button" onClick={()=>{setHostKey(null);history.replaceState({},'','/')}}>Cancel</button></span></section>}
    {error&&<div className="error" role="alert">{error}<button onClick={()=>{setError('');list()}}>Try again</button></div>}
 
    {where==='me'?<ProfileView me={me} loading={meLoading} save={saveProfile} openPlan={id=>open(id)} start={()=>create()} uploadPhoto={async url=>{try{await api('me/photo','PUT',{photo:url});await loadMe();notify('Photo saved. It shows next to your name in plans.');return true}catch(e:any){notify(e.message);return false}}} removePhoto={async()=>{try{await api('me/photo','DELETE');await loadMe();notify('Photo removed.');return true}catch(e:any){notify(e.message);return false}}}/>
@@ -214,9 +220,10 @@ export default function Home(){
      {(()=>{const S={setter:detail!.host?<SetterPanel key="setter" detail={detail!} link={link} notify={notify}/>:null,decisions:detail!.host||detail!.polls.length?<Decisions key="decisions" detail={detail!} act={act} busy={busy} member={member}/>:null,live:<LivePlan key="live" detail={detail!} act={act} busy={busy}/>,replay:!detail!.host&&!p!.made_it&&!detail!.memories.length?null:<Replay key="replay" detail={detail!} act={act} busy={busy} canPost={detail!.host||mine_?.status==='in'}/>};
       if(!detail!.host)return (p!.made_it?['replay','live','decisions']:['decisions','live','replay']).map(k=>S[k as keyof typeof S]);
       // Hosts get the outcomes up top; drafting tools, votes, itinerary and the replay live one tap away.
-      return <details key="more" className="more-tools" open={!!p!.made_it}><summary>More tools<small>Group messages, votes, schedule, photos{detail!.plan.invite_url?'':', Apple Invites'}</small></summary><div className="stack">{(p!.made_it?['replay','setter','live','decisions']:['setter','decisions','live','replay']).map(k=>S[k as keyof typeof S])}
+      const hl=!demo&&<HostLink key="host-link" planId={p!.id} hasKey={!!detail!.hasHostKey} notify={notify} onMade={()=>{}}/>;
+      return <>{!detail!.hasHostKey&&hl}<details key="more" className="more-tools" open={!!p!.made_it}><summary>More tools<small>Group messages, votes, schedule, photos{detail!.plan.invite_url?'':', Apple Invites'}</small></summary><div className="stack">{(p!.made_it?['replay','setter','live','decisions']:['setter','decisions','live','replay']).map(k=>S[k as keyof typeof S])}{detail!.hasHostKey&&hl}
       {<section className="soft-card"><span className="eyebrow">OTHER INVITES</span><h3>Using Apple Invites or another invite?</h3><p>Add this plan’s link to it so guests can see the bring list.</p>{p!.invite_url&&<a className="text-button" href={p!.invite_url} target="_blank" rel="noopener noreferrer">Open original invitation <ArrowUpRight size={14}/></a>}<button className="text-button" onClick={share}>Copy plan link <Copy size={14}/></button><small>RSVPs there don’t show up here.</small></section>}
-      </div></details>})()}
+      </div></details></>})()}
      <p className="access-note"><Lock size={12}/>Anyone with the link can see this plan and RSVP. Only people who RSVP see the address. Don’t post the link publicly.</p>
     </div>}
 

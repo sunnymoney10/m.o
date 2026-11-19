@@ -34,6 +34,8 @@ async function withInvitePreview(request: Request, env: Cloudflare.Env, pending:
 // They redirect to the full address, which also carries the group-chat preview.
 async function shortLink(request: Request, env: Cloudflare.Env): Promise<Response | null> {
   const url = new URL(request.url);
+  const hk = url.pathname.match(/^\/h\/([A-Za-z0-9_-]{24})\/?$/);
+  if (hk && (request.method === "GET" || request.method === "HEAD")) return Response.redirect(`${url.origin}/?hostkey=${hk[1]}`, 302);
   const m = url.pathname.match(/^\/([pi])\/([A-Za-z0-9_-]{22})\/?$/);
   if (!m || (request.method !== "GET" && request.method !== "HEAD")) return null;
   const id = longId(m[2]);
