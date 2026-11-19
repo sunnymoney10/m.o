@@ -2,7 +2,7 @@
 
 Updated 2026-11-19. Each claim names its evidence level:
 1 = design exists, 2 = code reviewed, 3 = automated tests pass, 4 = real people completed it on the live site.
-Nothing is level 4 yet: no real guest has used m.o.
+First level 4 evidence (2026-11-19): a real host (Queen Valesha) sent a real guest (Kofi) a personal invite to a UniverSoul Circus trip. Found: the page needed zooming out on his iPhone, guests could copy the invite link, and the trip said "bring". All three fixed (level 3) and waiting for a second real try.
 
 ## Scorecard
 
@@ -47,5 +47,7 @@ Typing in a box is counted separately from taps. "Send in Messages" counts as on
 Done outside the backlog (2026-11-19): trip "Search Airbnb / Search hotels" links (level 3, host and guest journeys), and Escape no longer closes the plan form while suggestions are open (level 3).
 
 Fixed 2026-11-19 (found by the owner on a real iPhone): the schedule only made the trip's days obvious as a blank box that also overflowed the screen. It now has a Day picker for every trip day plus a Time box, and the width check covers the schedule and vote forms (level 3).
+
+Lesson: tests on short test phones hid the plan picture, so they never saw it widen the page. `journeys:guest` now uses a tall iPhone too, and forces the picture to its drawn width like Safari does.
 
 Not this release: trip sections, event search (waiting on Ticketmaster key approval), reminder texts.

@@ -6,7 +6,7 @@ import {useEffect,useState} from 'react';
 import {Send,Check,X,Pencil,Lock} from 'lucide-react';
 import type {Detail,Guest} from '@/lib/types';
 import {ago} from '@/lib/types';
-import {DEFAULT_MESSAGE,fillMessage,loadInvites,nameKey,personalLink,saveInvites,smsHref} from '@/lib/invite';
+import {DEFAULT_MESSAGE,TRIP_MESSAGE,fillMessage,loadInvites,nameKey,personalLink,saveInvites,smsHref} from '@/lib/invite';
 import {Face} from './art';
 
 function whenText(date:string,end?:string){return whenRange(date,end,' at ')}
@@ -15,7 +15,7 @@ export function SendInvites({detail,notify,onClose,onSent}:{detail:Detail;notify
  const id=detail.plan.id,[store,setStore]=useState<{phones:Record<string,string>;sent:Record<string,string>;template?:string}>({phones:{},sent:{}}),[editing,setEditing]=useState(false);
  useEffect(()=>{setStore(loadInvites(id))},[id]);
  const update=(s:{phones:Record<string,string>;sent:Record<string,string>;template?:string})=>{setStore(s);saveInvites(id,s)};
- const template=store.template||DEFAULT_MESSAGE;
+ const template=store.template||(detail.plan.kind==='trip'?TRIP_MESSAGE:DEFAULT_MESSAGE);
  const guests=detail.guests.filter(g=>!g.isHost&&g.id);
  const origin=typeof location!=='undefined'?location.origin:'';
  const message=(g:Guest)=>fillMessage(template,{first:g.name.split(' ')[0],plan:detail.plan.title,when:whenText(detail.plan.date,detail.plan.end_date),link:personalLink(origin,id,g.id!)});

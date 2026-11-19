@@ -610,3 +610,10 @@ legend{font-weight:600;font-size:14px;margin-bottom:8px;color:var(--ink)}
 input[type=date],input[type=time],input[type=datetime-local]{min-width:0;max-width:100%;box-sizing:border-box;-webkit-appearance:none;appearance:none;min-height:50px;text-align:left}
 input::-webkit-date-and-time-value{text-align:left}
 .form-row>label{min-width:0}
+
+/* Nothing may make the page wider than the phone. Safari can size a column to a picture's drawn width (the plan
+   artwork is drawn 400 wide), which made guests zoom out. Single-column grids get a column that can shrink. */
+.screen,.stack,.plan-head,.invite-card,.host-claim,.host-link,.setter-panel,.send-invites,.plan-form,.more-body{grid-template-columns:minmax(0,1fr)}
+.screen>*,.stack>*{min-width:0}
+svg.scene{min-width:0;max-width:100%}
+html,body{overflow-x:clip}

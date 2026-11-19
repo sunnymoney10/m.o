@@ -75,7 +75,7 @@ export default function Home(){
  async function quickAnswer(g:Guest,status:'in'|'maybe'|'out'){
   if(!g.isMe&&!(await act(`guests/${g.id}/pick`,'POST',{},d=>{for(const x of d.guests)x.isMe=x.id===g.id})))return;
   const body={name:g.name,status,note:g.note||'',extraCount:g.extra_count||0,extraNames:g.extra_names||'',dietary:g.dietary||'',staying:!!g.staying};
-  const ok=await act('rsvp','POST',body,d=>{const x=d.guests.find(y=>y.id===g.id);if(x)Object.assign(x,{status,source:'guest',isMe:true})},status==='in'?'You’re in. Now pick something to bring.':status==='maybe'?'Saved. Change it when you know.':`Got it. Thanks for letting ${hostName||'the host'} know.`);
+  const ok=await act('rsvp','POST',body,d=>{const x=d.guests.find(y=>y.id===g.id);if(x)Object.assign(x,{status,source:'guest',isMe:true})},status==='in'?(detail!.plan.kind==='trip'?'You’re in. Now pick something to handle.':'You’re in. Now pick something to bring.'):status==='maybe'?'Saved. Change it when you know.':`Got it. Thanks for letting ${hostName||'the host'} know.`);
   if(ok){setPersonalG(null);try{const u=new URL(location.href);u.searchParams.delete('g');history.replaceState({},'',u)}catch{}if(status!=='out'&&unclaimed.length){setPtab('list');window.scrollTo(0,0)}}
  }
  function goTab(tab:'people'|'list',opts:{add?:boolean;send?:boolean}={}){setOpenAdd(!!opts.add);setSendOpen(!!opts.send);setPtab(tab);window.scrollTo(0,0)}
@@ -166,7 +166,7 @@ export default function Home(){
      <p className="host-line"><Face className="mini-avatar" seed={hostName||'?'} avatar={hostGuest?.avatar} photo={hostGuest?.photo}/>Hosted by {hostIsMe?'you':hostName||'the organizer'}</p>
      <p className="meta-line"><CalendarDays size={20} strokeWidth={1.7}/>{when(p!.date,p!.end_date)}</p>
      <p className="meta-line"><MapPin size={20} strokeWidth={1.7}/>{p!.place||(detail!.hidden?<span className="locked"><Lock size={14}/>Address shared after you RSVP</span>:'Place to decide')}</p>
-     {(answered||detail!.host||demo)&&<div className="plan-actions"><button className="outline-button brick" onClick={demo?()=>create(p!.kind):share}>{demo?<Plus size={16}/>:<LinkIcon size={16}/>}{demo?'Make a real plan':'Copy invite link'}</button><button className="outline-button" onClick={calendar}><CalendarDays size={16}/>Add to calendar</button></div>}
+     {(detail!.host||demo)&&<div className="plan-actions"><button className="outline-button brick" onClick={demo?()=>create(p!.kind):share}>{demo?<Plus size={16}/>:<LinkIcon size={16}/>}{demo?'Make a real plan':'Copy invite link'}</button><button className="outline-button" onClick={calendar}><CalendarDays size={16}/>Add to calendar</button></div>}
     </section>
     {/* A guest arriving from an invite link: the invite is the first thing, with their name one tap away. */}
     {!answered&&!detail!.host&&!demo&&!(mine_&&ptab==='people')&&(()=>{const names=guests.filter(g=>!g.isMe&&!g.isHost&&(g.status==='invited'||g.source==='host')),others=guests.filter(g=>!g.isMe&&!g.isHost&&g.status!=='invited'&&g.source!=='host');
@@ -174,7 +174,7 @@ export default function Home(){
      const target=mine_||(personalG?guests.find(g=>g.id===personalG&&!g.isHost&&(g.status==='invited'||g.source==='host')):undefined),first=target?.name.split(' ')[0];
      return <section className="invite-card" aria-labelledby="invite-title">
       <h2 id="invite-title">{target?`Hi ${first}! ${mine_?'Can you make it?':`${hostName||'Your friend'} invited you`}`:`${hostName||'Your friend'} invited you`}</h2>
-      <p>{detail!.hidden?'Reply to see the address and arrival details, then pick something to bring.':'Say if you’re coming, then pick something to bring.'}</p>
+      <p>{detail!.hidden?'Reply to see the address and arrival details, then '+(detail!.plan.kind==='trip'?'pick something to handle.':'pick something to bring.'):'Say if you’re coming, then pick something to bring.'}</p>
       {target?<>
        <div className="quick-answers">{([['in','I’m in',Check],['maybe','Still checking',Clock],['out','Can’t make it',X]] as const).map(([k,label,Icon])=><button key={k} className={k==='in'?'primary':'outline-button'} disabled={busy} onClick={()=>quickAnswer(target,k)}><Icon size={17}/>{label}</button>)}</div>
        <div className="invite-more"><button className="text-button quiet" onClick={()=>mine_?startReply(null):pickName(target)}>Add details: extra guests, dietary needs</button>{!mine_&&<button className="text-button quiet" onClick={()=>setPersonalG(null)}>Not {first}?</button>}</div>
@@ -191,7 +191,7 @@ export default function Home(){
      {detail!.host&&<GetItReady detail={detail!} link={link} shared={sharedTick>=0&&(()=>{try{return !!localStorage.getItem('mo-shared-'+p!.id)}catch{return false}})()} go={goTab} edit={openEdit} share={share} notify={notify}/>}
      {!detail!.host&&answered&&<section className="you-set"><span className="eyebrow">{mine_!.status==='out'?'YOUR ANSWER':'YOU’RE SET'}</span>
       <strong>{mine_!.status==='in'?'You’re going':mine_!.status==='maybe'?'You’re still checking':'You can’t make it'}{mine_!.extra_status==='approved'&&mine_!.extra_count?` with +${mine_!.extra_count}`:''}</strong>
-      {mine_!.status!=='out'&&<>{mine.length?<p>You’re bringing: <b>{mine.map(t=>t.title).join(', ')}</b></p>:unclaimed.length?<button className="primary" onClick={()=>goTab('list')}>Pick something to bring</button>:<p>Everything on the list is covered.</p>}
+      {mine_!.status!=='out'&&<>{mine.length?<p>You’re bringing: <b>{mine.map(t=>t.title).join(', ')}</b></p>:unclaimed.length?<button className="primary" onClick={()=>goTab('list')}>{detail!.plan.kind==='trip'?'Pick something to handle':'Pick something to bring'}</button>:<p>Everything on the list is covered.</p>}
        <p>{when(p!.date,p!.end_date)}{p!.place?` · ${p!.place}`:''}</p><div className="you-set-actions"><button className="outline-button" onClick={calendar}><CalendarDays size={16}/>Add to calendar</button>{p!.place&&<a className="outline-button" href={'https://maps.apple.com/?q='+encodeURIComponent(p!.place)} target="_blank" rel="noopener noreferrer"><MapPin size={16}/>Directions</a>}</div></>}
      </section>}
      {detail!.host?<>
