@@ -57,5 +57,6 @@ Every text colour pair above passes WCAG AA (4.5:1). Check new pairs before usin
 ## Before you finish
 
 - `npm run check`, `npm test`, `npm run build` pass.
-- For UI changes, with `npm run dev` running: `npm run journeys`, `npm run journeys:quiet`, `npm run journeys:invites`, `npm run journeys:profile -- <photo.jpg>`, `npm run a11y`, and `npm run ux:metrics` (compare with the last run).
+- Test both sides of every change: the host's interaction and the guest's (a separate browser, as a stranger first, then after they answer). A feature isn't done until both pass.
+- For UI changes, with `npm run dev` running: `npm run journeys`, `npm run journeys:quiet`, `npm run journeys:invites`, `npm run journeys:places`, `npm run journeys:dates`, `npm run journeys:profile -- <photo.jpg>`, `npm run a11y`, and `npm run ux:metrics` (compare with the last run).
 - Update the README when behaviour, migrations or scripts change.

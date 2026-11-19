@@ -16,6 +16,7 @@ The setter is the friend who makes an outing happen. m.o gives that person a sha
 - Short links: shared plan links are `/p/<code>` and personal invites `/i/<code>`; the code is the same random ID in 22 characters. They redirect to the full `/?plan=…` address, which still works and still shows the group-chat preview.
 - Address search: typing in "Where" suggests venues and addresses from OpenStreetMap (free, no key) through `GET /api/places?q=`, capped at 30 searches a minute per person. Picking one fills in the full address; typing your own still works. Event names that move city to city won't match, so search the venue or city.
 - Booking links: a plan can keep an Airbnb, Vrbo or hotel link (`booking_url`, migration 0008). Pasting one into "Where" moves it to the booking field. It shows as "Open the Airbnb booking" and, like the address, only to the host and people who said they're coming. m.o can't read the booking or its address.
+- Multi-day plans: "More than one day? Add an end date" adds an end (`end_date`, migration 0009). Everyone sees "Fri, Dec 4, 6:00 PM – Sun, Dec 6", invite texts use it, and Add to calendar spans the whole stay.
 - Extra guests: a guest can ask to bring up to four people; they count in the headcount only after the organizer approves.
 - Dietary needs and sleepover requests are visible only to the organizer and that guest. The address, arrival and house notes, and the itinerary are shared with the organizer and people who answered in or checking.
 - Claim, release, add and complete contributions and responsibilities.
@@ -73,6 +74,7 @@ node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1
 node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0006_overjoyed_synch.sql
 node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0007_keen_archangel.sql
 node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0008_slimy_stellaris.sql
+node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0009_shocking_molly_hayes.sql
 npm run dev
 ```
 
@@ -84,7 +86,7 @@ npm test
 npm run build
 ```
 
-With `npm run dev` running, `npm run journeys` replays the Friendsgiving phone journeys (a host; guests picking names, RSVPing with an extra guest, claiming, switching browsers and cancelling) using the preinstalled Playwright. Pass a folder to keep screenshots: `npm run journeys -- ./shots`. `npm run journeys:profile -- <photo.jpg>` checks avatars and photo upload. `npm run a11y` checks 44px tap targets and large text. `npm run ux:metrics` measures form fields, overview length and guest taps for before/after comparisons. `npm run journeys:places` checks address search and booking links. `npm run journeys:invites` checks personal invites (and that no phone number reaches the server). `npm run journeys:quiet` replays the host recording answers for friends who never open the link, then one of them confirming later.
+With `npm run dev` running, `npm run journeys` replays the Friendsgiving phone journeys (a host; guests picking names, RSVPing with an extra guest, claiming, switching browsers and cancelling) using the preinstalled Playwright. Pass a folder to keep screenshots: `npm run journeys -- ./shots`. `npm run journeys:profile -- <photo.jpg>` checks avatars and photo upload. `npm run a11y` checks 44px tap targets and large text. `npm run ux:metrics` measures form fields, overview length and guest taps for before/after comparisons. `npm run journeys:places` checks address search and booking links (host and guest). `npm run journeys:dates` checks multi-day plans (host and guest). `npm run journeys:invites` checks personal invites (and that no phone number reaches the server). `npm run journeys:quiet` replays the host recording answers for friends who never open the link, then one of them confirming later.
 
 GitHub Actions runs these checks on pull requests, and again before every deploy from `main`.
 

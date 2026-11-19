@@ -5,7 +5,7 @@ const sqlite=new DatabaseSync(':memory:');
 for(const f of readdirSync(new URL('../drizzle',import.meta.url)).filter(f=>f.endsWith('.sql')).sort())sqlite.exec(readFileSync(new URL('../drizzle/'+f,import.meta.url),'utf8'));
 class Statement{constructor(sql){this.sql=sql;this.args=[]}bind(...args){this.args=args;return this}async first(){return sqlite.prepare(this.sql).get(...this.args)||null}async all(){return {results:sqlite.prepare(this.sql).all(...this.args)}}async run(){const r=sqlite.prepare(this.sql).run(...this.args);return {meta:{changes:r.changes}}}}
 globalThis.__moTestEnv={DB:{prepare:sql=>new Statement(sql),batch:async ss=>{sqlite.exec('BEGIN');try{const results=[];for(const s of ss)results.push(await s.run());sqlite.exec('COMMIT');return results}catch(e){sqlite.exec('ROLLBACK');throw e}}}};
-registerHooks({resolve(specifier,context,next){if(specifier==='cloudflare:workers')return {url:'data:text/javascript,export const env = globalThis.__moTestEnv',shortCircuit:true};if(specifier==='../api/[[...path]]/route')return {url:new URL('../api/[[...path]]/route.ts',context.parentURL).href,shortCircuit:true};if(/^\.\.?\//.test(specifier)&&!/\.[cm]?[jt]sx?$/.test(specifier)&&context.parentURL?.includes('/app/'))return {url:new URL(specifier+'.ts',context.parentURL).href,shortCircuit:true};return next(specifier,context)}});
+registerHooks({resolve(specifier,context,next){if(specifier==='cloudflare:workers')return {url:'data:text/javascript,export const env = globalThis.__moTestEnv',shortCircuit:true};if(specifier==='../api/[[...path]]/route')return {url:new URL('../api/[[...path]]/route.ts',context.parentURL).href,shortCircuit:true};if(/^\.\.?\//.test(specifier)&&!/\.[cm]?[jt]sx?$/.test(specifier)&&(context.parentURL?.includes('/app/')||context.parentURL?.includes('/lib/')))return {url:new URL(specifier+'.ts',context.parentURL).href,shortCircuit:true};return next(specifier,context)}});
 const route=await import('../app/api/[[...path]]/route.ts');
 const originalFetch=globalThis.fetch;
 globalThis.fetch=async (url,options={})=>{if(String(url).startsWith('http://127.0.0.1:4173/api/')){const req=new Request(url,options);return route[req.method](req)}return originalFetch(url,options)};
@@ -15,6 +15,7 @@ await import('./friendsgiving.mjs');
 await import('./host-noted.mjs');
 await import('./profile-photo.mjs');
 await import('./places.mjs');
+await import('./end-date.mjs');
 console.log('Actual route handlers verified against SQLite with separate guest sessions.');
 
 const assert=(await import('node:assert/strict')).default;

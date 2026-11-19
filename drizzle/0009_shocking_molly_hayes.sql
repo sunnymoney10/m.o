@@ -1,0 +1,1 @@
+ALTER TABLE `plans` ADD `end_date` text DEFAULT '' NOT NULL;

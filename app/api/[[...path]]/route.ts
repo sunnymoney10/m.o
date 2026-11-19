@@ -5,6 +5,8 @@ import {cleanAvatar,parseAvatar,parsePhoto} from '../../../lib/avatar';
 export const dynamic='force-dynamic';
 function https(v:unknown){const s=str(v,1000);if(!s)return null;try{const u=new URL(s);return u.protocol==='https:'?u.href:null}catch{return null}}
 const invitation=https;
+// An end date is optional; when given it needs a start, must come after it, and the plan can't run past 60 days.
+function endError(start:string,end:string){if(!end)return '';if(Number.isNaN(Date.parse(end)))return 'Choose a valid end date.';if(!start)return 'Add a start date before an end date.';const a=Date.parse(start),b=Date.parse(end);if(b<=a)return 'The end date needs to be after the start.';if(b-a>60*86400000)return 'Plans can last up to 60 days.';return ''}
 function str(v:unknown,max=300){return typeof v==='string'?v.trim().slice(0,max):''}
 const STYLES=['setter','details','down','wildcard','snacks'];
 const HANDLE=/^[a-z0-9_]{2,24}$/;
@@ -72,7 +74,7 @@ async function handler(req:Request){
   if(seg[0]==='plans'&&seg.length===1){
    if(req.method==='GET'){
     // Address is shared only with the organizer and people who said in or maybe.
-    const {results}=await db.prepare(`SELECT p.id,p.title,p.kind,p.date,CASE WHEN p.owner=?1 OR EXISTS(SELECT 1 FROM guests m WHERE m.plan_id=p.id AND m.actor=?1 AND m.status IN ('in','maybe')) THEN p.place ELSE '' END AS place,p.budget,p.note,p.invite_url,p.created,p.made_it,
+    const {results}=await db.prepare(`SELECT p.id,p.title,p.kind,p.date,p.end_date,CASE WHEN p.owner=?1 OR EXISTS(SELECT 1 FROM guests m WHERE m.plan_id=p.id AND m.actor=?1 AND m.status IN ('in','maybe')) THEN p.place ELSE '' END AS place,p.budget,p.note,p.invite_url,p.created,p.made_it,
      (SELECT coalesce(sum(1+CASE WHEN g.extra_status='approved' THEN g.extra_count ELSE 0 END),0) FROM guests g WHERE g.plan_id=p.id AND g.status='in') AS going,
      (SELECT count(*) FROM guests g WHERE g.plan_id=p.id AND g.status='maybe') AS maybe,
      (SELECT count(*) FROM guests g WHERE g.plan_id=p.id AND g.status='invited') AS invited,
@@ -83,13 +85,14 @@ async function handler(req:Request){
    if(req.method==='POST'){
     const b=await body();const title=str(b.title,100),name=str(b.name,60);if(!title||!name)return json({error:'Give the plan a title and tell us your name.'},400);
     if(b.date&&Number.isNaN(Date.parse(b.date)))return json({error:'Choose a valid date.'},400);
+    {const e=endError(str(b.date,40),str(b.endDate,40));if(e)return json({error:e},400)}
     if(b.inviteUrl&&!invitation(b.inviteUrl))return json({error:'Use a valid HTTPS invitation link.'},400);
     if(b.bookingUrl&&!https(b.bookingUrl))return json({error:'Use a valid HTTPS booking link.'},400);
     // Site-wide ceiling so scripted abuse can't run usage past the free tier; never limits RSVPs or existing plans.
     const today=await db.prepare('SELECT count(*) AS n FROM plans WHERE created>?').bind(new Date(Date.now()-86400000).toISOString()).first<any>();if((today?.n||0)>=dailyNewPlans())return json({error:'m.o has reached today’s limit for new plans. Please try again tomorrow.'},429);
     const recent=await db.prepare('SELECT count(*) AS n FROM plans WHERE owner=? AND created>?').bind(actor,new Date(Date.now()-86400000).toISOString()).first<any>();if((recent?.n||0)>=20)return json({error:'You’ve started a lot of plans today. Try again tomorrow.'},429);
     const id=crypto.randomUUID();const kind=b.kind==='trip'?'trip':'gathering';const taskList=Array.isArray(b.tasks)?b.tasks.slice(0,30):[];
-    const statements=[db.prepare('INSERT INTO plans (id,owner,title,kind,date,place,budget,note,invite_url,created,details,booking_url) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)').bind(id,actor,title,kind,str(b.date,40),str(b.place,160),str(b.budget,60),str(b.note,2000),invitation(b.inviteUrl),new Date().toISOString(),str(b.details,1000),https(b.bookingUrl)),db.prepare('INSERT INTO guests (plan_id,actor,name,status,note,id) VALUES (?,?,?,?,?,?)').bind(id,actor,name,'in','',crypto.randomUUID())];
+    const statements=[db.prepare('INSERT INTO plans (id,owner,title,kind,date,place,budget,note,invite_url,created,details,booking_url,end_date) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)').bind(id,actor,title,kind,str(b.date,40),str(b.place,160),str(b.budget,60),str(b.note,2000),invitation(b.inviteUrl),new Date().toISOString(),str(b.details,1000),https(b.bookingUrl),str(b.endDate,40)),db.prepare('INSERT INTO guests (plan_id,actor,name,status,note,id) VALUES (?,?,?,?,?,?)').bind(id,actor,name,'in','',crypto.randomUUID())];
     for(const t of taskList){if(str(t?.title,160))statements.push(db.prepare('INSERT INTO tasks (id,plan_id,title,category,done) VALUES (?,?,?,?,0)').bind(crypto.randomUUID(),id,str(t.title,160),t.category==='bring'?'bring':'todo'));}
     await db.batch(statements);return json({id},201);
    }
@@ -139,14 +142,15 @@ async function handler(req:Request){
    }
    if(seg.length===2&&req.method==='PATCH'){
     if(!host)return json({error:'Only the organizer can change the plan details.'},403);
-    const m={...plan,inviteUrl:plan.invite_url,bookingUrl:plan.booking_url,madeIt:!!plan.made_it,...b};if(typeof m.details!=='string')m.details=plan.details;
+    const m={...plan,inviteUrl:plan.invite_url,bookingUrl:plan.booking_url,endDate:plan.end_date,madeIt:!!plan.made_it,...b};if(typeof m.details!=='string')m.details=plan.details;
     if(m.date&&Number.isNaN(Date.parse(m.date)))return json({error:'Choose a valid date.'},400);
+    {const e=endError(str(m.date,40),str(m.endDate,40));if(e)return json({error:e},400)}
     if(m.inviteUrl&&!invitation(m.inviteUrl))return json({error:'Use a valid HTTPS invitation link.'},400);
     if(m.bookingUrl&&!https(m.bookingUrl))return json({error:'Use a valid HTTPS booking link.'},400);
     const title=str(m.title,100);if(!title)return json({error:'The plan needs a title.'},400);
-    const next={booking_url:https(m.bookingUrl)||'',title,date:str(m.date,40),place:str(m.place,160),budget:str(m.budget,60),note:str(m.note,2000),details:str(m.details,1000)};
-    const changed=([['booking_url','booking link'],['title','name'],['date','date and time'],['place','address'],['details','arrival notes'],['note','description'],['budget','budget']] as const).filter(([k])=>(plan[k]||'')!==next[k]).map(([,l])=>l);
-    await db.batch([db.prepare('UPDATE plans SET booking_url=?,title=?,date=?,place=?,budget=?,note=?,invite_url=?,made_it=?,details=? WHERE id=?').bind(next.booking_url||null,title,next.date,next.place,next.budget,next.note,invitation(m.inviteUrl),m.madeIt===true?1:0,next.details,id),
+    const next={booking_url:https(m.bookingUrl)||'',end_date:str(m.endDate,40),title,date:str(m.date,40),place:str(m.place,160),budget:str(m.budget,60),note:str(m.note,2000),details:str(m.details,1000)};
+    const changed=([['end_date','end date'],['booking_url','booking link'],['title','name'],['date','date and time'],['place','address'],['details','arrival notes'],['note','description'],['budget','budget']] as const).filter(([k])=>(plan[k]||'')!==next[k]).map(([,l])=>l);
+    await db.batch([db.prepare('UPDATE plans SET end_date=?,booking_url=?,title=?,date=?,place=?,budget=?,note=?,invite_url=?,made_it=?,details=? WHERE id=?').bind(next.end_date,next.booking_url||null,title,next.date,next.place,next.budget,next.note,invitation(m.inviteUrl),m.madeIt===true?1:0,next.details,id),
      ...(changed.length?log('You changed the '+changed.join(', ')):[]),...(m.madeIt===true&&!plan.made_it?log('You marked the plan as made it out'):[])]);return json({ok:true});
    }
    if(seg[2]==='rsvp'&&req.method==='POST'){
