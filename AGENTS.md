@@ -58,6 +58,6 @@ Every text colour pair above passes WCAG AA (4.5:1). Check new pairs before usin
 
 - `npm run check`, `npm test`, `npm run build` pass.
 - Test both sides of every change: the host's interaction and the guest's (a separate browser, as a stranger first, then after they answer). A feature isn't done until both pass.
-- For UI changes, with `npm run dev` running: `npm run journeys`, `npm run journeys:quiet`, `npm run journeys:invites`, `npm run journeys:places`, `npm run journeys:dates`, `npm run journeys:profile -- <photo.jpg>`, `npm run a11y`, `npm run ux:metrics` and `npm run ux:taps` (compare with the last run in `docs/release-readiness.md`).
+- For UI changes, with `npm run dev` running: `npm run journeys`, `npm run journeys:quiet`, `npm run journeys:invites`, `npm run journeys:places`, `npm run journeys:dates`, `npm run journeys:host`, `npm run journeys:profile -- <photo.jpg>`, `npm run a11y`, `npm run ux:metrics` and `npm run ux:taps` (compare with the last run in `docs/release-readiness.md`).
 - Update the README when behaviour, migrations or scripts change.
 - Update `docs/release-readiness.md`: scorecard, evidence level for each claim (1 design, 2 code, 3 automated tests, 4 real users on the live site), and the ordered backlog. Never claim a higher level than the evidence.

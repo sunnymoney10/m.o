@@ -597,3 +597,11 @@ legend{font-weight:600;font-size:14px;margin-bottom:8px;color:var(--ink)}
 .find-stay{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .find-stay>span{font-weight:700;width:100%}
 .find-stay>small{width:100%;color:#6f6066;font-size:13px}
+
+/* host link */
+.host-link{display:grid;gap:8px}
+.host-link .eyebrow{display:flex;align-items:center;gap:6px}
+.host-link-url{font-family:ui-monospace,Menlo,monospace;font-size:13px;overflow-wrap:anywhere;background:var(--cream);border-radius:10px;padding:8px 12px}
+.host-link small{color:var(--muted);font-size:13px}
+/* host link on another device */
+.host-claim{display:grid;gap:12px;padding:24px;border-radius:var(--radius);background:var(--butter-soft);border:1.5px solid #e9cf7a}

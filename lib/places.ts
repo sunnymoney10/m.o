@@ -44,7 +44,7 @@ export function withHouseNumber(text:string,rows:{name:string;address:string}[])
  return [...fixed.filter((r,i)=>r!==rows[i]),...fixed.filter((r,i)=>r===rows[i])];
 }
 // US Census address finder (free, no key): exact house addresses. "4202 NANTUCKET DR, WILSON, NC, 27896" → readable.
-const title=(s:string)=>s.toLowerCase().replace(/\b[a-z]/g,c=>c.toUpperCase());
+const title=(s:string)=>s.toLowerCase().replace(/\b[a-z]/g,c=>c.toUpperCase()).replace(/\b(Nw|Ne|Sw|Se)\b/g,m=>m.toUpperCase());
 export function censusResults(d:any){const out:{name:string;address:string}[]=[];
  for(const m of Array.isArray(d?.result?.addressMatches)?d.result.addressMatches.slice(0,3):[]){const a=typeof m?.matchedAddress==='string'?m.matchedAddress:'';const parts=a.split(',').map((x:string)=>x.trim()).filter(Boolean);if(parts.length<2)continue;
   const [street,...rest]=parts;const area=rest.map((p:string,i:number)=>i===rest.length-2&&/^[A-Z]{2}$/.test(p)?p:title(p)).join(', ');out.push({name:title(street),address:area})}

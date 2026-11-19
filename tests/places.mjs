@@ -32,6 +32,7 @@ assert.deepEqual(withHouseNumber('120 Maple Drive, Springfield',[{name:'120 Elm 
 assert.deepEqual(withHouseNumber('Maple Drive',[{name:'Maple Drive',address:'x'}]),[{name:'Maple Drive',address:'x'}]);
 assert.deepEqual(censusResults({result:{addressMatches:[{matchedAddress:'120 MAPLE DR, SPRINGFIELD, OH, 45501'}]}}),[{name:'120 Maple Dr',address:'Springfield, OH, 45501'}]);
 assert.deepEqual(censusResults({}),[]);
+assert.equal(censusResults({result:{addressMatches:[{matchedAddress:'1600 PENNSYLVANIA AVE NW, WASHINGTON, DC, 20500'}]}})[0].name,'1600 Pennsylvania Ave NW');
 // Short searches return nothing without calling out; searches are capped per person.
 let r=await request(host,'places?q=ab');assert.deepEqual(r.body,{results:[],events:[]});
 r=await request(host,'places?q=near%20me');assert.deepEqual(r.body,{results:[],events:[]},'near me alone is not a search');
