@@ -15,6 +15,27 @@ Nothing is level 4 yet: no real guest has used m.o.
 | Live matches tested code | Works | 3. Every deploy goes through GitHub after checks pass. Live checks confirm new features are present. | The live site doesn't show which version it runs. |
 | Monitoring and recovery | Not ready | 2. Cloudflare request logs are on. | No alert when errors happen. Database restore has never been tried. |
 
+## Tap counts (`npm run ux:taps`, 2026-11-19, level 3)
+
+Typing in a box is counted separately from taps. "Send in Messages" counts as one tap.
+
+| Who | Task | Taps | Boxes typed |
+| --- | --- | --- | --- |
+| Host | Create a plan (name, where, when) | 3 | 4 |
+| Host | Add 3 guests (pasted list) | 3 | 1 |
+| Host | Add 1 guest with iPhone AutoFill Contact | 6 | 0 |
+| Host | Send the first invite | 4 | 0 |
+| Host | Send each next invite | 2 | 0 |
+| Host | Record an answer for a friend who texted back | 4 | 0 |
+| Host | Change the date | 2 | 1 |
+| Host | Delete the plan | 3 | 0 |
+| Guest | Personal link: say I'm in | 1 | 0 |
+| Guest | then pick something to bring | 1 | 0 |
+| Guest | Add to calendar | 2 | 0 |
+| Guest | Open the address in Maps | 1 | 0 |
+| Guest | Change answer to can't go | 4 | 0 |
+| Guest | Group-chat link: answer | 3 | 0 |
+
 ## Backlog, in order
 
 1. Host recovery: a private host link so the host can manage the plan from another phone or after clearing the browser. Biggest risk for Kaela's real event.
