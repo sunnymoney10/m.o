@@ -23,4 +23,6 @@ Nothing is level 4 yet: no real guest has used m.o.
 4. Restore drill: practise restoring the database once, and write down the steps.
 5. Real-user check: Kaela sends invites to 2 or 3 friends; record what they got stuck on (level 4).
 
+Done outside the backlog (2026-11-19): trip "Search Airbnb / Search hotels" links (level 3, host and guest journeys), and Escape no longer closes the plan form while suggestions are open (level 3).
+
 Not this release: trip sections, event search (waiting on Ticketmaster key approval), reminder texts.

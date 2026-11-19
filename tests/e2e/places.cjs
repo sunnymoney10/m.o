@@ -20,6 +20,8 @@ const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173',O=process.argv[2]||requ
  check(await where.inputValue()==='Atlanta Civic Center, 395 Piedmont Ave NE, Atlanta, Georgia, 30308','picking fills the full address');
  await where.fill('https://www.airbnb.com/trips/v1/abc123');await h.waitForTimeout(300);
  check(await where.inputValue()===''&&await h.getByLabel(/Booking link/).inputValue()==='https://www.airbnb.com/trips/v1/abc123','an Airbnb link pasted in Where becomes the booking link');
+ await where.fill('civic');await h.waitForTimeout(900);await where.press('Escape');await h.waitForTimeout(300);
+ check(await h.getByRole('listbox').count()===0&&await where.isVisible(),'Escape closes the suggestions, not the form');
  await where.fill('Atlanta Civic Center');await h.waitForTimeout(900);await h.getByRole('button',{name:'Use what I typed'}).click();
  check(await where.inputValue()==='Atlanta Civic Center','typing your own text still works');
  await h.getByRole('button',{name:/create plan/i}).click();await h.waitForTimeout(2000);
