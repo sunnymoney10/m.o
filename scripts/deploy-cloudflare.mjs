@@ -12,4 +12,6 @@ const wrangler=(...args)=>execFileSync(process.execPath,['node_modules/wrangler/
 // New migrations run before the new code goes live; ones already applied are skipped.
 wrangler('d1','migrations','apply',cf.databaseName,'--remote','--config','dist/server/wrangler.deploy.json');
 wrangler('deploy','--config','dist/server/wrangler.deploy.json');
+// Optional event search key (free Ticketmaster key), stored as a Worker secret, never in the code.
+if(process.env.TICKETMASTER_KEY){execFileSync(process.execPath,['node_modules/wrangler/bin/wrangler.js','secret','put','TICKETMASTER_KEY','--config','dist/server/wrangler.deploy.json'],{input:process.env.TICKETMASTER_KEY,stdio:['pipe','inherit','inherit'],env});}
 console.log(`Deployed: https://${cf.workerName}.${process.env.WORKERS_SUBDOMAIN||'<your-subdomain>'}.workers.dev`);
