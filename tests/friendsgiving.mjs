@@ -45,7 +45,15 @@ r=await request(tess,'plan/'+id);assert.equal(r.body.guests.find(g=>g.isMe).extr
 r=await request(tess,'plan/'+id);const pie=r.body.tasks.find(x=>x.title==='Pie');
 r=await request(tess,`plan/${id}/tasks/${pie.id}`,'PATCH',{action:'claim'});assert.equal(r.status,200);
 r=await request(tess2,'plan/'+id);const spot=r.body.guests.find(g=>g.name==='Tess');
-r=await request(tess2,`plan/${id}/guests/${spot.id}/pick`,'POST');assert.equal(r.status,200);
+// Tess has answered, so her spot is protected: a stranger, or Tess's new phone without her personal link, can't take it.
+assert.equal(spot.key,undefined,'guests never see anyone’s private key');
+r=await request(stranger,`plan/${id}/guests/${spot.id}/pick`,'POST');assert.equal(r.status,403,'an answered spot cannot be taken by tapping the name');assert.equal(r.body.code,'answered');assert.match(r.body.error,/personal link Ari sent you/);
+r=await request(tess2,`plan/${id}/guests/${spot.id}/pick`,'POST',{key:'wrong'});assert.equal(r.status,403,'a wrong key does not work');
+r=await request(tess,'plan/'+id);assert.ok(r.body.guests.find(g=>g.name==='Tess').isMe,'Tess still holds her spot');assert.ok(r.body.guests.every(g=>g.key===undefined),'not even Tess sees keys');
+{const host=(await request(ari,'plan/'+id)).body;const t=host.guests.find(g=>g.name==='Tess');assert.match(t.key,/^[0-9a-f-]{36}$/,'the host sees each spot’s key for personal links');assert.equal(host.guests.find(g=>g.isHost).key,undefined);
+ assert.equal((await request(ari,'plan/'+id)).body.guests.find(g=>g.name==='Tess').key,t.key,'the key stays the same');
+ // With the key from her personal link (the host's OK), Tess moves her spot to the new phone.
+ r=await request(tess2,`plan/${id}/guests/${spot.id}/pick`,'POST',{key:t.key});assert.equal(r.status,200);}
 r=await request(tess2,'plan/'+id);assert.ok(r.body.tasks.find(x=>x.title==='Pie').isMine,'claim followed Tess');assert.equal(r.body.guests.filter(g=>g.name==='Tess').length,1);
 r=await request(jordan,`plan/${id}/guests/${spot.id}/pick`,'POST');assert.equal(r.status,409,'a phone that already answered cannot take another spot');
 r=await request(stranger,`plan/${id}/guests/not-a-row/pick`,'POST');assert.equal(r.status,404);

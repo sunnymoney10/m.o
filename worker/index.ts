@@ -36,7 +36,7 @@ async function shortLink(request: Request, env: Cloudflare.Env): Promise<Respons
   const url = new URL(request.url);
   const hk = url.pathname.match(/^\/h\/([A-Za-z0-9_-]{24})\/?$/);
   if (hk && (request.method === "GET" || request.method === "HEAD")) return Response.redirect(`${url.origin}/?hostkey=${hk[1]}`, 302);
-  const m = url.pathname.match(/^\/([pi])\/([A-Za-z0-9_-]{22})\/?$/);
+  const m = url.pathname.match(/^\/([pi])\/([A-Za-z0-9_-]{22})([A-Za-z0-9_-]{22})?\/?$/);
   if (!m || (request.method !== "GET" && request.method !== "HEAD")) return null;
   const id = longId(m[2]);
   const home = (q: string) => Response.redirect(`${url.origin}/${q}`, 302);
@@ -44,7 +44,8 @@ async function shortLink(request: Request, env: Cloudflare.Env): Promise<Respons
   if (m[1] === "p") return home(`?plan=${id}`);
   const db = (env as unknown as { DB?: D1Database }).DB;
   const row = db && (await db.prepare("SELECT plan_id FROM guests WHERE id = ?").bind(id).first<{ plan_id: string }>().catch(() => null));
-  return row ? home(`?plan=${row.plan_id}&g=${id}`) : home("");
+  const key = m[1] === "i" && m[3] ? longId(m[3]) : null;
+  return row ? home(`?plan=${row.plan_id}&g=${id}${key ? `&k=${key}` : ""}`) : home("");
 }
 
 const worker = {

@@ -18,7 +18,7 @@ export function SendInvites({detail,notify,onClose,onSent}:{detail:Detail;notify
  const template=store.template||(detail.plan.kind==='trip'?TRIP_MESSAGE:DEFAULT_MESSAGE);
  const guests=detail.guests.filter(g=>!g.isHost&&g.id);
  const origin=typeof location!=='undefined'?location.origin:'';
- const message=(g:Guest)=>fillMessage(template,{first:g.name.split(' ')[0],plan:detail.plan.title,when:whenText(detail.plan.date,detail.plan.end_date),link:personalLink(origin,id,g.id!)});
+ const message=(g:Guest)=>fillMessage(template,{first:g.name.split(' ')[0],plan:detail.plan.title,when:whenText(detail.plan.date,detail.plan.end_date),link:personalLink(origin,id,g.id!,g.key)});
  const queue=guests.filter(g=>!store.sent[nameKey(g.name)]&&g.status==='invited');
  const next=queue[0];
  function markSent(g:Guest){update({...store,sent:{...store.sent,[nameKey(g.name)]:new Date().toISOString()}});onSent();notify(`Opening Messages for ${g.name}. Tap Send there, then come back.`)}

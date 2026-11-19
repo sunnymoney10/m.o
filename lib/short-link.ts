@@ -18,4 +18,5 @@ export function longId(code:string){
  return `${h.slice(0,8)}-${h.slice(8,12)}-${h.slice(12,16)}-${h.slice(16,20)}-${h.slice(20)}`;
 }
 export const planLink=(origin:string,planId:string)=>`${origin}/p/${shortId(planId)}`;
-export const guestLink=(origin:string,guestId:string)=>`${origin}/i/${shortId(guestId)}`;
+// A personal link can also carry the spot's private key (22 more characters), so that person can continue on a new phone.
+export const guestLink=(origin:string,guestId:string,key?:string)=>`${origin}/i/${shortId(guestId)}${key&&UUID.test(key)?shortId(key):''}`;

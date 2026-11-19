@@ -129,7 +129,9 @@ async function handler(req:Request){
    const answer=(status:string,count:number,names:string)=>(status==='in'?'going':status==='maybe'?'still checking':status==='out'?'can’t make it':'no reply yet')+(count?` (+${count}${names?' '+names:''})`:'');
 
    if(seg.length===2 && req.method==='GET'){
-    const gs=await db.prepare('SELECT g.id,g.name,g.status,g.note,g.actor,g.extra_count,g.extra_names,g.extra_status,g.dietary,g.staying,g.source,g.updated,g.check_back,pr.handle,pr.mo,pr.interests,pr.avatar,pr.photo_updated FROM guests g LEFT JOIN profiles pr ON pr.actor=g.actor WHERE g.plan_id=? ORDER BY g.rowid').bind(id).all<any>();
+    const gs=await db.prepare('SELECT g.id,g.name,g.status,g.note,g.actor,g.extra_count,g.extra_names,g.extra_status,g.dietary,g.staying,g.source,g.updated,g.check_back,g.key,pr.handle,pr.mo,pr.interests,pr.avatar,pr.photo_updated FROM guests g LEFT JOIN profiles pr ON pr.actor=g.actor WHERE g.plan_id=? ORDER BY g.rowid').bind(id).all<any>();
+    // Each spot's private key goes in that person's personal link (host-only). Made when the host first needs it.
+    if(host){const missing=gs.results.filter((g:any)=>!g.key&&g.actor!==plan.owner);if(missing.length){for(const g of missing)g.key=crypto.randomUUID();await db.batch(missing.map((g:any)=>db.prepare("UPDATE guests SET key=? WHERE plan_id=? AND id=? AND key=''").bind(g.key,id,g.id)))}}
     const ts=await db.prepare('SELECT * FROM tasks WHERE plan_id=? ORDER BY rowid').bind(id).all<any>();
     const ps=await db.prepare('SELECT * FROM polls WHERE plan_id=? ORDER BY created').bind(id).all<any>();
     const os=await db.prepare('SELECT o.id,o.poll_id,o.label FROM poll_options o JOIN polls p ON p.id=o.poll_id WHERE p.plan_id=? ORDER BY o.rowid').bind(id).all<any>();
@@ -145,7 +147,7 @@ async function handler(req:Request){
     return json({plan:safe,host,hasHostKey:host&&!!host_key_hash,activity:acts,organizer:gs.results.find((g:any)=>g.actor===owner)?.name||null,
      details:insider?details:'',hidden,
      // Dietary needs, sleepover requests and pending plus-ones are visible only to the organizer and the guest.
-     guests:gs.results.map(({actor:a,interests,dietary,staying,check_back,extra_count,extra_names,extra_status,avatar,photo_updated,...g}:any)=>{const own=a===actor,see=host||own,extra=see||extra_status==='approved';return {...g,avatar:parseAvatar(avatar),photo:photo_updated?`/api/plan/${id}/guests/${g.id}/photo?v=${encodeURIComponent(photo_updated)}`:null,isHost:a===owner,interests:interests?parseInterests(interests):[],isMe:own,extra_count:extra?extra_count:0,extra_names:extra?extra_names:'',extra_status:extra?extra_status:'',...(see?{dietary,staying:!!staying,check_back:check_back||''}:{})}}),
+     guests:gs.results.map(({actor:a,key,interests,dietary,staying,check_back,extra_count,extra_names,extra_status,avatar,photo_updated,...g}:any)=>{const own=a===actor,see=host||own,extra=see||extra_status==='approved';return {...g,avatar:parseAvatar(avatar),photo:photo_updated?`/api/plan/${id}/guests/${g.id}/photo?v=${encodeURIComponent(photo_updated)}`:null,isHost:a===owner,interests:interests?parseInterests(interests):[],isMe:own,extra_count:extra?extra_count:0,extra_names:extra?extra_names:'',extra_status:extra?extra_status:'',...(see?{dietary,staying:!!staying,check_back:check_back||''}:{}),...(host&&a!==owner?{key}:{})}}),
      tasks:ts.results.map(({claimed_by,...t}:any)=>({...t,isMine:claimed_by===actor})),
      polls,stops:insider?ss.results:[],
      memories:ms.results.map(({actor:a,...m}:any)=>({...m,isMine:a===actor}))});
@@ -240,6 +242,12 @@ async function handler(req:Request){
      if(row.actor===plan.owner)return json({error:'That’s the organizer. Pick your own name.'},403);
      if(row.actor===actor)return json({ok:true});
      const mine=await db.prepare('SELECT name FROM guests WHERE plan_id=? AND actor=?').bind(id,actor).first<any>();if(mine)return json({error:`This phone already answered as ${mine.name}. Update that response instead.`},409);
+     // Once someone has answered from their own phone, their spot is theirs. Moving it to another phone needs the
+     // key from their personal link, which only the host can see and send (that is the host's OK).
+     if(row.status!=='invited'&&!String(row.actor).startsWith('invite:')&&!(row.key&&typeof b.key==='string'&&b.key===row.key)){
+      const hostRow=await db.prepare('SELECT name FROM guests WHERE plan_id=? AND actor=?').bind(id,plan.owner).first<any>();
+      return json({error:`${row.name} already answered on another phone. To continue here, open the personal link ${hostRow?.name||'the host'} sent you, or ask them to send it again.`,code:'answered'},403);
+     }
      await db.batch([db.prepare('UPDATE guests SET actor=? WHERE plan_id=? AND id=?').bind(actor,id,row.id),db.prepare('UPDATE tasks SET claimed_by=? WHERE plan_id=? AND claimed_by=?').bind(actor,id,row.actor),db.prepare('UPDATE poll_votes SET actor=? WHERE actor=? AND poll_id IN (SELECT id FROM polls WHERE plan_id=?)').bind(actor,row.actor,id),db.prepare('UPDATE memories SET actor=? WHERE plan_id=? AND actor=?').bind(actor,id,row.actor),...log(`${row.name} opened the invite`,false)]);
      return json({ok:true});
     }

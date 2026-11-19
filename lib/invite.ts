@@ -4,7 +4,11 @@
 const PHONE=/\+?\d[\d\s().-]{5,}\d/;
 
 import {guestLink} from './short-link';
-export function personalLink(origin:string,_planId:string,guestId:string){return guestLink(origin,guestId)}
+export function personalLink(origin:string,_planId:string,guestId:string,key?:string){return guestLink(origin,guestId,key)}
+// The key from a personal link opened in this tab. It lets that person move their answered spot to this phone.
+let personal:{g:string;k:string}|null=null;
+export function setPersonalKey(g:string|null,k:string|null){if(g&&k)personal={g,k}}
+export function keyFor(guestId?:string){return personal&&guestId&&personal.g===guestId?personal.k:undefined}
 
 export const TRIP_MESSAGE="Hi {first}! I'm planning {plan}{when} and I'd love for you to come. Tap to say if you're in and see what still needs doing: {link}";
 export const DEFAULT_MESSAGE="Hi {first}! I'm hosting {plan}{when} and I'd love for you to come. Tap to say if you can make it and pick something to bring: {link}";

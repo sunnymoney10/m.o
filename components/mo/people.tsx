@@ -10,7 +10,7 @@ import type {Act,Detail,Guest} from '@/lib/types';
 import {ago} from '@/lib/types';
 import {Face} from './art';
 import {splitNames,cleanName} from '@/lib/names';
-import {loadInvites,saveInvites,phonesFromText} from '@/lib/invite';
+import {keyFor,loadInvites,saveInvites,phonesFromText} from '@/lib/invite';
 import {SendInvites} from './send-invites';
 
 // The browser contact picker (Chrome on Android). Not available in Safari on iPhone by default, so the button only
@@ -59,8 +59,9 @@ export function PeopleTab({detail,act,busy,notify,startAdding=false,startMode=nu
  const showForm=host?editing:(!answered&&(!!me||notListed||unanswered.length===0))||editing;
 
  async function pick(g:Guest){
-  if(g.status!=='invited'&&g.source!=='host'&&!confirm(`${g.name} already answered from another phone or browser. Continue as ${g.name} here?`))return;
-  const ok=await act(`guests/${g.id}/pick`,'POST',{},d=>{for(const x of d.guests)x.isMe=x.id===g.id},`Hi ${g.name}.`);
+  // An answered spot only moves to this phone with that person's personal link (the server checks this too).
+  if(g.status!=='invited'&&g.source!=='host'){if(!keyFor(g.id)){notify(`${g.name} already answered on another phone. To continue here, open the personal link ${detail.organizer||'the host'} sent you.`);return}if(!confirm(`Continue as ${g.name} on this phone?`))return}
+  const ok=await act(`guests/${g.id}/pick`,'POST',{key:keyFor(g.id)},d=>{for(const x of d.guests)x.isMe=x.id===g.id},`Hi ${g.name}.`);
   if(ok){setF(x=>({...x,name:g.name,status:g.status==='invited'?'':g.status,extra:g.extra_count||0,extraNames:g.extra_names||'',dietary:g.dietary||'',staying:!!g.staying,note:g.note||''}));setOtherPhone(false);if(g.status!=='invited'&&g.source!=='host')setEditing(false)}
  }
  async function send(e:React.FormEvent){e.preventDefault();
@@ -98,7 +99,7 @@ export function PeopleTab({detail,act,busy,notify,startAdding=false,startMode=nu
    <div className="name-chips">{unanswered.map(g=><button key={g.id} className="name-chip" disabled={busy} onClick={()=>pick(g)}><Face className="mini-avatar" seed={g.name} avatar={g.avatar} photo={g.photo}/>{g.name}</button>)}</div>
    <button className="text-button" onClick={()=>setNotListed(true)}>I’m not on the list</button>
   </div>}
-  {!host&&!me&&others.length>0&&<div className="other-phone">{otherPhone?<><span className="fine">Answered on another phone? Tap your name to continue here.</span><div className="name-chips">{others.map(g=><button key={g.id} className="name-chip" disabled={busy} onClick={()=>pick(g)}><Face className="mini-avatar" seed={g.name} avatar={g.avatar} photo={g.photo}/>{g.name}</button>)}</div></>
+  {!host&&!me&&others.length>0&&<div className="other-phone">{otherPhone?<><span className="fine">Answered on another phone? Open the personal link from your text to continue here, then tap your name.</span><div className="name-chips">{others.map(g=><button key={g.id} className="name-chip" disabled={busy} onClick={()=>pick(g)}><Face className="mini-avatar" seed={g.name} avatar={g.avatar} photo={g.photo}/>{g.name}</button>)}</div></>
    :<button className="text-button quiet" onClick={()=>setOtherPhone(true)}>Answered on another phone?</button>}</div>}
 
   {/* Your RSVP, summarized once you've answered. */}

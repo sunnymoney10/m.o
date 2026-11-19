@@ -10,8 +10,8 @@ First level 4 evidence (2026-11-19): a real host (Queen Valesha) sent a real gue
 | --- | --- | --- | --- |
 | Core journeys: create, invite, RSVP, update, cancel | Works | 3. Local phone journeys (host and guest) pass. Live check 2026-11-19: create, address search, add guests, personal invite text, guest RSVP, claim item, host sees it; test plan then deleted. | Update and cancel were tested locally, not live. No real users yet. |
 | Data persists | Works | 3. Live: a guest's answer from a second browser showed on the host's page after reload (real database). | None found. |
-| Permissions and privacy | Mostly | 3. API tests: host-only edits, address and booking link hidden until RSVP, phone numbers never reach the server, host links (host-only, hashed, replaceable, tries capped). Live: a stranger did not see the address. | Anyone with the plan link can tap another guest's name and take over their spot (by design, for "answered on another phone"). Host recovery is level 3 until tried live. |
-| Automated tests | Works | 3. 9 API suites and 8 phone journeys pass. GitHub runs type check, API tests and build before every deploy. | Phone journeys run only on demand, not in GitHub. |
+| Permissions and privacy | Mostly | 3. API tests: host-only edits, answered spots can't be taken over without that guest's personal link (2026-11-19), address and booking link hidden until RSVP, phone numbers never reach the server, host links (host-only, hashed, replaceable, tries capped). Live: a stranger did not see the address. | Host recovery and protected spots are level 3 until tried live. |
+| Automated tests | Works | 3. 9 API suites and 11 phone journeys pass. GitHub runs type check, API tests and build before every deploy. | Phone journeys run only on demand, not in GitHub. |
 | Live matches tested code | Works | 3. Every deploy goes through GitHub after checks pass. Live checks confirm new features are present. | The live site doesn't show which version it runs. |
 | Monitoring and recovery | Not ready | 2. Cloudflare request logs are on. | No alert when errors happen. Database restore has never been tried. |
 
@@ -39,7 +39,7 @@ Typing in a box is counted separately from taps. "Send in Messages" counts as on
 ## Backlog, in order
 
 1. ~~Host recovery~~ built 2026-11-19 (level 3: API tests and a three-device journey). Known limit: opening a host link on a browser that already has its own plans hides those plans there.
-2. Protect answered spots: once a guest has answered, taking over their name needs the host's OK (or their personal link).
+2. ~~Protect answered spots~~ built 2026-11-19 (level 3: API tests and `journeys:spots` with host, stranger and two guest phones on an iPhone 14 Pro Max). Moving phones needs the guest's personal link; the host gives their OK by sending it. Known limit: personal links sent before this change don't carry the key, so a guest who already answered needs a new link from Send invites to move phones.
 3. Error alert: notify the owner when the live site has errors.
 4. Restore drill: practise restoring the database once, and write down the steps.
 5. Real-user check: Kaela sends invites to 2 or 3 friends; record what they got stuck on (level 4).

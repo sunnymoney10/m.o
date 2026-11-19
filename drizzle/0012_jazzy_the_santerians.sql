@@ -1,0 +1,1 @@
+ALTER TABLE `guests` ADD `key` text DEFAULT '' NOT NULL;

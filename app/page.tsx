@@ -1,5 +1,6 @@
 'use client';
 import {whenRange,endFor} from '@/lib/when';
+import {keyFor,setPersonalKey} from '@/lib/invite';
 import {PlaceSearch} from '@/components/mo/place-search';
 import {HostLink} from '@/components/mo/host-link';
 import {DeclinedCard,CheckBackCard,TryMo} from '@/components/mo/answer-cards';
@@ -57,7 +58,7 @@ export default function Home(){
  async function list(){const n=++listSeq.current;try{const d=await api('plans');if(n===listSeq.current)setPlans(d.plans)}catch(e:any){if(n===listSeq.current)setError(e.message)}finally{if(n===listSeq.current)setLoading(false)}}
  async function loadMe(){const n=++meSeq.current;setMeLoading(true);try{const m=await api('me');if(n===meSeq.current)setMe(m)}catch(e:any){if(n===meSeq.current)setError(e.message)}finally{if(n===meSeq.current)setMeLoading(false)}}
  async function open(id:string,history=true){setError('');setView('home');if(history||id!==detail?.plan.id)setPtab('overview');if(id.startsWith('demo-')){setDetail(structuredClone(DEMOS.find(d=>d.plan.id===id)!));setName('You')}else{setBusy(true);try{const d=await api('plan/'+id);setDetail(d);const mine=d.guests.find((g:Guest)=>g.isMe);setName(mine?.name||localStorage.getItem('mo-name')||'')}catch(e:any){setError(e.message)}finally{setBusy(false)}}if(history)window.history.pushState({},'','/?plan='+id);window.scrollTo(0,0)}
- useEffect(()=>{list();if(new URLSearchParams(location.search).get('view')!=='me')api('me').then(setMe).catch(()=>{});const h=new Date().getHours();setHello(h<12?'Good morning':h<17?'Good afternoon':'Good evening');const read=()=>{const q=new URLSearchParams(location.search),id=q.get('plan');setPersonalG(q.get('g'));setHostKey(q.get('hostkey'));if(id)open(id,false);else if(q.get('view')==='me'){setDetail(null);setView('me');loadMe()}else if(q.get('view')==='plans'){setDetail(null);setView('plans')}else{setDetail(null);setView('home')}};read();window.addEventListener('popstate',read);return()=>window.removeEventListener('popstate',read)},[]);
+ useEffect(()=>{list();if(new URLSearchParams(location.search).get('view')!=='me')api('me').then(setMe).catch(()=>{});const h=new Date().getHours();setHello(h<12?'Good morning':h<17?'Good afternoon':'Good evening');const read=()=>{const q=new URLSearchParams(location.search),id=q.get('plan');setPersonalG(q.get('g'));setPersonalKey(q.get('g'),q.get('k'));setHostKey(q.get('hostkey'));if(id)open(id,false);else if(q.get('view')==='me'){setDetail(null);setView('me');loadMe()}else if(q.get('view')==='plans'){setDetail(null);setView('plans')}else{setDetail(null);setView('home')}};read();window.addEventListener('popstate',read);return()=>window.removeEventListener('popstate',read)},[]);
  // Keeps an open plan current without running up requests: every 30s while visible, pausing after 10 minutes
  // without interaction, and refreshing once when the person comes back.
  useEffect(()=>{if(!detail||demo)return;const id=detail.plan.id;let last=Date.now(),idle=false;const refresh=()=>api('plan/'+id).then(setDetail).catch(()=>{});
@@ -77,13 +78,13 @@ export default function Home(){
  function openEdit(){const p=detail!.plan;setShowEnd(false);setForm({...initial,title:p.title,kind:p.kind,place:p.place,budget:p.budget,note:p.note,details:detail!.details||'',date:local(p.date),name,inviteUrl:p.invite_url||'',bookingUrl:p.booking_url||'',endDate:local(p.end_date)});setModal('edit')}
  // Opens the reply form for a guest and brings it into view (the tabs stay above it).
  function startReply(mode:'new'|'other'|null){setReplyMode(mode);setPtab('people');setTimeout(()=>document.querySelector('.rsvp-form,.pick-card,.other-phone')?.scrollIntoView({behavior:'smooth',block:'start'}),120)}
- async function pickName(g:Guest){const ok=await act(`guests/${g.id}/pick`,'POST',{},d=>{for(const x of d.guests)x.isMe=x.id===g.id},`Hi ${g.name}.`);if(ok)startReply(null)}
+ async function pickName(g:Guest){const ok=await act(`guests/${g.id}/pick`,'POST',{key:keyFor(g.id)},d=>{for(const x of d.guests)x.isMe=x.id===g.id},`Hi ${g.name}.`);if(ok)startReply(null)}
  // One tap from a personal invite: claim that name on this phone, then save the answer.
  async function quickAnswer(g:Guest,status:'in'|'maybe'|'out'){
-  if(!g.isMe&&!(await act(`guests/${g.id}/pick`,'POST',{},d=>{for(const x of d.guests)x.isMe=x.id===g.id})))return;
+  if(!g.isMe&&!(await act(`guests/${g.id}/pick`,'POST',{key:keyFor(g.id)},d=>{for(const x of d.guests)x.isMe=x.id===g.id})))return;
   const body={name:g.name,status,note:g.note||'',extraCount:g.extra_count||0,extraNames:g.extra_names||'',dietary:g.dietary||'',staying:!!g.staying};
   const ok=await act('rsvp','POST',body,d=>{const x=d.guests.find(y=>y.id===g.id);if(x)Object.assign(x,{status,source:'guest',isMe:true})},status==='in'?(detail!.plan.kind==='trip'?'You’re in. Now pick something to handle.':'You’re in. Now pick something to bring.'):status==='maybe'?'Saved. Change it when you know.':`Got it. Thanks for letting ${hostName||'the host'} know.`);
-  if(ok){setPersonalG(null);try{const u=new URL(location.href);u.searchParams.delete('g');history.replaceState({},'',u)}catch{}if(status!=='out'&&unclaimed.length){setPtab('list');window.scrollTo(0,0)}}
+  if(ok){setPersonalG(null);try{const u=new URL(location.href);u.searchParams.delete('g');u.searchParams.delete('k');history.replaceState({},'',u)}catch{}if(status!=='out'&&unclaimed.length){setPtab('list');window.scrollTo(0,0)}}
  }
  function goTab(tab:'people'|'list',opts:{add?:boolean;send?:boolean}={}){setOpenAdd(!!opts.add);setSendOpen(!!opts.send);setPtab(tab);window.scrollTo(0,0)}
  function plansView(){if(!detail&&view==='plans'){window.scrollTo(0,0);return}setDetail(null);setView('plans');setError('');go('/?view=plans');list();window.scrollTo(0,0)}
@@ -178,7 +179,7 @@ export default function Home(){
     {/* A guest arriving from an invite link: the invite is the first thing, with their name one tap away. */}
     {!answered&&!detail!.host&&!demo&&!(mine_&&ptab==='people')&&(()=>{const names=guests.filter(g=>!g.isMe&&!g.isHost&&(g.status==='invited'||g.source==='host')),others=guests.filter(g=>!g.isMe&&!g.isHost&&g.status!=='invited'&&g.source!=='host');
      // A personal invite link (?g=) names the guest, so they can answer in one tap.
-     const target=mine_||(personalG?guests.find(g=>g.id===personalG&&!g.isHost&&(g.status==='invited'||g.source==='host')):undefined),first=target?.name.split(' ')[0];
+     const target=mine_||(personalG?guests.find(g=>g.id===personalG&&!g.isHost&&(g.status==='invited'||g.source==='host'||!!keyFor(g.id))):undefined),first=target?.name.split(' ')[0];
      return <section className="invite-card" aria-labelledby="invite-title">
       <h2 id="invite-title">{target?`Hi ${first}! ${mine_?'Can you make it?':`${hostName||'Your friend'} invited you`}`:`${hostName||'Your friend'} invited you`}</h2>
       <p>{detail!.hidden?'Reply to see the address and arrival details, then '+(detail!.plan.kind==='trip'?'pick something to handle.':'pick something to bring.'):'Say if you’re coming, then pick something to bring.'}</p>
