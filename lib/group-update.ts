@@ -16,16 +16,16 @@ export function groupUpdate(d:UpdateInput,link:string){
  const going=d.guests.filter(g=>g.status==='in').map(g=>g.name),maybe=d.guests.filter(g=>g.status==='maybe').map(g=>g.name);
  const open=d.tasks.filter(t=>!t.claimed_name).map(t=>t.title);
  const polls=(d.polls||[]).filter(x=>!x.decided_option);
- lines.push(`📍 ${p.title}`);
- const facts=[whenRange(p.date,p.end_date)||'Date still to decide',p.place||'Place still to decide'];
- lines.push(facts.join(' — '));
+ lines.push(p.title);
+ lines.push(whenRange(p.date,p.end_date,' at ')||'Date still to decide');
+ lines.push(p.place||'Place still to decide');
  lines.push('');
- lines.push(going.length?`✅ In (${going.length}): ${names(going)}`:'✅ Nobody has said they’re in yet.');
- if(maybe.length)lines.push(`🤔 Still checking: ${names(maybe)}`);
- for(const x of polls){const lead=[...x.options].sort((a,b)=>b.votes-a.votes)[0];lines.push(`🗳️ Vote: ${x.question}${lead&&lead.votes?` (leaning ${optionLabel(x.kind,lead.label)})`:''}`)}
- if(open.length)lines.push(`🙋 Up for grabs: ${open.slice(0,6).join(', ')}${open.length>6?` +${open.length-6} more`:''}`);
+ lines.push(going.length?`Going (${going.length}): ${names(going)}`:'Nobody has said they’re going yet.');
+ if(maybe.length)lines.push(`Still checking: ${names(maybe)}`);
+ for(const x of polls){const lead=[...x.options].sort((a,b)=>b.votes-a.votes)[0];lines.push(`Vote: ${x.question}${lead&&lead.votes?` (leaning ${optionLabel(x.kind,lead.label)})`:''}`)}
+ if(open.length)lines.push(`Still needed: ${open.slice(0,6).join(', ')}${open.length>6?` +${open.length-6} more`:''}`);
  lines.push('');
- lines.push(open.length||polls.length?`Claim something or vote here 👉 ${link}`:`Everything has an owner. Details here 👉 ${link}`);
+ lines.push(open.length||polls.length?`Pick something or vote here: ${link}`:`Everything is covered. Details here: ${link}`);
  return lines.join('\n');
 }
 
@@ -33,7 +33,7 @@ export function nudgeMaybes(d:UpdateInput,link:string){
  // People still checking and people on the host's list who haven't answered yet.
  const maybe=d.guests.filter(g=>g.status==='maybe'||g.status==='invited').map(g=>g.name);
  if(!maybe.length)return '';
- return `Hey ${names(maybe)} — no pressure, just locking in numbers for ${d.plan.title}${when(d.plan.date)?` (${whenRange(d.plan.date,d.plan.end_date)})`:''}. Can you let us know if you’re in? 👉 ${link}`;
+ return `Hey ${names(maybe)} — no pressure, just locking in numbers for ${d.plan.title}${when(d.plan.date)?` (${whenRange(d.plan.date,d.plan.end_date)})`:''}. Can you let us know if you’re in? ${link}`;
 }
 
 export function nextStep(d:UpdateInput){

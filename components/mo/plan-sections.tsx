@@ -1,8 +1,9 @@
 'use client';
 import {useState} from 'react';
-import {Check,Lock,LockOpen,Plus,Trash2,Vote,Route,ExternalLink,Camera,PartyPopper,MessageCircle,Copy,X} from 'lucide-react';
+import {Check,Lock,LockOpen,Plus,Trash2,Vote,Route,ExternalLink,Camera,PartyPopper,MessageCircle,Copy,X,Send} from 'lucide-react';
 import type {Act,Detail,Poll,Stop,Memory} from '@/lib/types';
 import {groupUpdate,nudgeMaybes,nextStep,optionLabel} from '@/lib/group-update';
+import {smsHref} from '@/lib/invite';
 
 const uid=()=>crypto.randomUUID();
 const isoOrBlank=(local:string)=>local?new Date(local).toISOString():'';
@@ -15,18 +16,18 @@ export function SetterPanel({detail,link,notify}:{detail:Detail;link:string;noti
  async function copy(){try{await navigator.clipboard.writeText(text);notify('Copied. Paste it in your group chat.')}catch{notify('Select the message and copy it.')}}
  return <section className="setter-panel">
   <span className="eyebrow">GROUP MESSAGES</span>
-  <h2>Keep the group updated.</h2>
+  <h2>Keep the group updated</h2>
   <div className="setter-checks">{checks.map(([ok,yes,no])=><span key={yes} className={ok?'settled':''}><Check size={14}/>{ok?yes:no}</span>)}</div>
   <div className="next-nudge"><span>NEXT STEP</span><p>{nextStep(detail)}</p></div>
   {detail.host&&<div className="chat-draft">
-   <div className="draft-tabs" role="tablist" aria-label="Message drafts">
-    <button role="tab" aria-selected={which==='update'} className={which==='update'?'on':''} onClick={()=>setWhich('update')}><MessageCircle size={14}/>Status update</button>
-    {nudge&&<button role="tab" aria-selected={which==='nudge'} className={which==='nudge'?'on':''} onClick={()=>setWhich('nudge')}>Reminder</button>}
-   </div>
+   {nudge?<div className="draft-tabs" role="tablist" aria-label="Which message">
+    <button role="tab" aria-selected={which==='update'} className={which==='update'?'on':''} onClick={()=>setWhich('update')}>Plan update</button>
+    <button role="tab" aria-selected={which==='nudge'} className={which==='nudge'?'on':''} onClick={()=>setWhich('nudge')}>Reminder to reply</button>
+   </div>:<h3 className="draft-title">Message for your group chat</h3>}
    <div className="bubble" aria-live="polite">{text}</div>
-   <button className="primary" onClick={copy}><Copy size={16}/>Copy message</button>
+   <div className="draft-actions"><a className="primary" href={smsHref('',text)}><Send size={16}/>Open in Messages</a><button className="outline-button" onClick={copy}><Copy size={16}/>Copy</button></div>
   </div>}
-  <p className="setter-caption">Written from this plan’s details. You send it; m.o never messages anyone.</p>
+  <p className="setter-caption">Open in Messages, then pick your group chat and tap Send. m.o never sends anything for you.</p>
  </section>
 }
 

@@ -13,6 +13,10 @@ const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173';
  await p.goto(B+'/?plan='+id);await p.waitForTimeout(1200);await small('host overview');
  await p.getByRole('tab',{name:'People'}).click();await p.waitForTimeout(300);await small('host people');
  await p.getByRole('tab',{name:/Bring list/}).click();await p.waitForTimeout(300);await small('host bring list');
+ // Nothing wider than the phone: host with More tools open (long links in the group message), then a guest.
+ const wide=async label=>{const over=await p.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth);if(over>1){fails++;console.log(`SIDEWAYS SCROLL on ${label}: ${over}px wider than the screen`)}else console.log(`ok width: ${label}`)};
+ await p.getByRole('tab',{name:'Overview'}).click();await p.getByText('More tools').click();await p.waitForTimeout(400);await wide('host overview with More tools open');
+ {const gp=await (await b.newContext({...devices['iPhone 14']})).newPage();await gp.goto(B+'/?plan='+id);await gp.waitForTimeout(1500);const over=await gp.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth);if(over>1){fails++;console.log('SIDEWAYS SCROLL on guest view')}else console.log('ok width: guest view')}
  await p.goto(B+'/?view=me');await p.waitForTimeout(1000);await small('profile');
  // Large text: 150% root font size, then check nothing scrolls sideways.
  for(const [label,url] of [['home','/'],['plan',`/?plan=${id}`],['profile','/?view=me']]){
