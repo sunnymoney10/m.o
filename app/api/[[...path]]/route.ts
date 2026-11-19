@@ -1,6 +1,6 @@
 import {env} from 'cloudflare:workers';
 import {cleanName} from '../../../lib/names';
-import {placeResults,eventResults,eventTries,readQuery} from '../../../lib/places';
+import {placeResults,eventResults,eventTries,readQuery,withHouseNumber,censusResults} from '../../../lib/places';
 import {cleanAvatar,parseAvatar,parsePhoto} from '../../../lib/avatar';
 export const dynamic='force-dynamic';
 function https(v:unknown){const s=str(v,1000);if(!s)return null;try{const u=new URL(s);return u.protocol==='https:'?u.href:null}catch{return null}}
@@ -36,14 +36,17 @@ async function handler(req:Request){
    hits.push(t);placeHits.set(actor,hits);if(placeHits.size>5000)placeHits.clear();
    // "Near me": the phone's rough location (about 1 km), used for this search only and never stored.
    const lat=Number(url.searchParams.get('lat')),lon=Number(url.searchParams.get('lon'));const here=Number.isFinite(lat)&&Number.isFinite(lon)&&Math.abs(lat)<=90&&Math.abs(lon)<=180&&url.searchParams.has('lat')?{lat:lat.toFixed(2),lon:lon.toFixed(2)}:null;
-   const places=(async()=>{const r=await fetch('https://photon.komoot.io/api/?limit=6&lang=en&q='+encodeURIComponent(text)+(here?`&lat=${here.lat}&lon=${here.lon}`:''),{headers:{'User-Agent':'m.o-planner/1.0 (+https://mo.mymoapp.workers.dev)',Accept:'application/json'},signal:AbortSignal.timeout(5000)});if(!r.ok)throw new Error('places '+r.status);return placeResults(await r.json())})();
+   const places=(async()=>{const r=await fetch('https://photon.komoot.io/api/?limit=6&lang=en&q='+encodeURIComponent(text)+(here?`&lat=${here.lat}&lon=${here.lon}`:''),{headers:{'User-Agent':'m.o-planner/1.0 (+https://mo.mymoapp.workers.dev)',Accept:'application/json'},signal:AbortSignal.timeout(5000)});if(!r.ok)throw new Error('places '+r.status);return withHouseNumber(text,placeResults(await r.json()))})();
+   // A typed house address (starts with a number and has a comma or 3+ words) is also checked with the US Census address finder.
+   const census=(async()=>{if(!/^\d+[a-z]?\s/i.test(text)||text.split(/\s+/).length<3)return [];const r=await fetch('https://geocoding.geo.census.gov/geocoder/locations/onelineaddress?benchmark=Public_AR_Current&format=json&address='+encodeURIComponent(text),{headers:{Accept:'application/json'},signal:AbortSignal.timeout(5000)});if(!r.ok)return [];return censusResults(await r.json())})().catch(()=>[]);
    const key=(env as {TICKETMASTER_KEY?:string}).TICKETMASTER_KEY;
    const events=(async()=>{if(!key)return [];for(const tr of eventTries(text)){const u=new URL('https://app.ticketmaster.com/discovery/v2/events.json');u.searchParams.set('apikey',key);u.searchParams.set('keyword',tr.keyword);u.searchParams.set('size','10');u.searchParams.set('sort','date,asc');
      if(tr.city)u.searchParams.set('city',tr.city);if(here&&!tr.city){u.searchParams.set('latlong',here.lat+','+here.lon);u.searchParams.set('radius','75');u.searchParams.set('unit','miles')}
      const r=await fetch(u,{signal:AbortSignal.timeout(5000)});if(!r.ok)throw new Error('events '+r.status);const found=eventResults(await r.json());if(found.length)return found}return []})();
-   const [p,e]=await Promise.allSettled([places,events]);
-   if(p.status==='rejected'&&e.status==='rejected')return json({error:'Search isn’t working right now. Type the address instead.'},502);
-   return json({results:p.status==='fulfilled'?p.value:[],events:e.status==='fulfilled'?e.value:[],eventsOn:!!key});
+   const [p,e,c]=await Promise.allSettled([places,events,census]);
+   if(p.status==='rejected'&&e.status==='rejected'&&!(c.status==='fulfilled'&&c.value.length))return json({error:'Search isn’t working right now. Type the address instead.'},502);
+   const exact=c.status==="fulfilled"?c.value:[],mapped=p.status==='fulfilled'?p.value:[];
+   return json({results:[...exact,...mapped.filter(x=>!exact.some(y=>y.name.toLowerCase()===x.name.toLowerCase()))].slice(0,6),events:e.status==='fulfilled'?e.value:[],eventsOn:!!key});
   }
   // ---- Your m.o profile ----
   // ---- Profile photo: a small image resized on the phone, stored in the database (no file storage service) ----

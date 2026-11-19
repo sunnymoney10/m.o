@@ -196,9 +196,14 @@ small{font-size:13px}
 .chat-draft{margin-top:16px}
 .draft-tabs{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
 .draft-tabs button{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;padding:7px 12px;border-radius:999px;border:1.5px solid var(--sky);color:var(--ink)}
-.draft-tabs .on{background:var(--ink);color:#fff;border-color:var(--ink)}
-.bubble{white-space:pre-wrap;background:#2f7bf6;color:#fff;border-radius:20px 20px 6px 20px;padding:14px 16px;font-size:15px;line-height:1.45;margin-bottom:12px;font-family:-apple-system,'SF Pro Text',system-ui,sans-serif}
-.setter-panel .primary{background:var(--ink)}
+.draft-tabs button{min-height:44px}
+.draft-tabs .on{background:var(--butter);color:var(--ink);border-color:var(--butter)}
+.bubble{white-space:pre-wrap;overflow-wrap:anywhere;background:var(--paper);color:var(--text);border:1.5px solid var(--line);border-radius:14px;padding:16px;font-size:15px;line-height:1.5;margin-bottom:16px}
+.draft-title{font-size:17px;margin-bottom:8px}
+.draft-actions{display:flex;flex-wrap:wrap;gap:8px}
+.draft-actions .primary{background:var(--brick)}
+.draft-actions>*{flex:1 1 auto;justify-content:center}
+
 .setter-caption{font-size:12px;color:var(--muted);margin-top:12px}
 
 /* people */
