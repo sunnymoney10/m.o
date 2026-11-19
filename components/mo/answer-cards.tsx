@@ -3,8 +3,8 @@
 // Can't make it: a thank-you, nothing else to do, and a way to change the answer.
 // Still checking: they pick when to decide. The host sees that day; the guest can add a phone reminder.
 // m.o never sends messages or notifications itself.
-import {useEffect,useRef} from 'react';
-import {Check,Clock,CalendarPlus,Heart} from 'lucide-react';
+import {useEffect,useRef,useState} from 'react';
+import {Check,Clock,CalendarPlus,Heart,Plus,UserRound} from 'lucide-react';
 import type {Detail,Guest} from '@/lib/types';
 
 const ymd=(d:Date)=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
@@ -18,7 +18,6 @@ export function DeclinedCard({detail,host,onChange}:{detail:Detail;host:string;o
   <Heart size={26} strokeWidth={1.8} aria-hidden="true"/>
   <h2 id="declined-title">Thanks for letting {host||'them'} know</h2>
   <p className="next-time">Make it out next time!</p>
-  <p>You won’t get any more tasks for {detail.plan.title}.</p>
   <span className="eyebrow">CHANGED YOUR MIND?</span>
   <div className="quick-answers"><button className="primary" onClick={()=>onChange('in')}><Check size={17}/>I can make it</button><button className="outline-button" onClick={()=>onChange('maybe')}><Clock size={17}/>Still checking</button></div>
  </section>
@@ -54,5 +53,18 @@ export function CheckBackCard({detail,me,host,busy,link,save,onChange}:{detail:D
   </>}
   <span className="eyebrow">ALREADY KNOW?</span>
   <div className="quick-answers"><button className="outline-button" onClick={()=>onChange('in')}><Check size={17}/>I’m in</button><button className="outline-button" onClick={()=>onChange('out')}>Can’t make it</button></div>
+ </section>
+}
+
+// For guests (never hosts): a light invitation to use m.o for their own plans. "Not now" hides it on this phone.
+export function TryMo({host,start,profile}:{host:string;start:()=>void;profile:()=>void}){
+ const [hidden,setHidden]=useState(()=>{try{return localStorage.getItem('mo-try-hidden')==='1'}catch{return false}});
+ if(hidden)return null;
+ return <section className="try-mo" aria-labelledby="try-title">
+  <span className="eyebrow">FREE FOR EVERYONE</span>
+  <h3 id="try-title">Planning something yourself?</h3>
+  <p>m.o is how {host||'your host'} keeps this plan out of the group chat. Use it for your own: one link, everyone answers, nobody asks twice.</p>
+  <div className="draft-actions"><button className="primary" onClick={start}><Plus size={16}/>Start a plan</button><button className="outline-button" onClick={profile}><UserRound size={16}/>Set up my profile</button></div>
+  <button className="text-button quiet" onClick={()=>{setHidden(true);try{localStorage.setItem('mo-try-hidden','1')}catch{}}}>Not now</button>
  </section>
 }

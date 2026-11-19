@@ -2,7 +2,7 @@
 import {whenRange,endFor} from '@/lib/when';
 import {PlaceSearch} from '@/components/mo/place-search';
 import {HostLink} from '@/components/mo/host-link';
-import {DeclinedCard,CheckBackCard} from '@/components/mo/answer-cards';
+import {DeclinedCard,CheckBackCard,TryMo} from '@/components/mo/answer-cards';
 import {stayLinks} from '@/lib/places';
 import {planLink} from '@/lib/short-link';
 import {useEffect,useRef,useState} from 'react';
@@ -193,6 +193,7 @@ export default function Home(){
      </section>})()}
     <NotedBanner detail={detail!} act={act} busy={busy} onChange={()=>{setPtab('people');window.scrollTo(0,0)}}/>
     {declined&&<DeclinedCard detail={detail!} host={hostName} onChange={st=>quickAnswer(mine_!,st)}/>}
+    {declined&&<TryMo host={hostName} start={()=>create()} profile={profile}/>}
     {stillChecking&&<CheckBackCard detail={detail!} me={mine_!} host={hostName} busy={busy} link={link} save={day=>act('check-back','POST',{date:day},d=>{const x=d.guests.find(g=>g.isMe);if(x)x.check_back=day},day?'Saved. '+(hostName||'The host')+' can see it.':undefined)} onChange={st=>quickAnswer(mine_!,st)}/>}
     {!declined&&<div className="seg plan-tabs" role="tablist" aria-label="Plan sections">{([['overview','Overview'],['people','People'],['list',listLabel]] as const).map(([k,label])=><button key={k} role="tab" aria-selected={ptab===k} className={ptab===k?'on':''} onClick={()=>setPtab(k)}>{label}{k==='list'&&unclaimed.length>0?<span className="tab-count">{unclaimed.length}</span>:null}</button>)}</div>}
 
@@ -236,6 +237,7 @@ export default function Home(){
      <p className="access-note"><Lock size={12}/>Anyone with the link can see this plan and RSVP. Only people who RSVP see the address. Don’t post the link publicly.</p>
     </div>}
 
+    {!declined&&answered&&!detail!.host&&!demo&&ptab==='overview'&&<TryMo host={hostName} start={()=>create()} profile={profile}/>}
     {!declined&&ptab==='people'&&<PeopleTab key={detail!.plan.id+(mine_?.id||'')+(openAdd?':add':'')+(sendOpen?':send':'')+(replyMode||'')} detail={detail!} act={act} busy={busy} notify={notify} startAdding={openAdd} startMode={replyMode} startSending={sendOpen} onInviteSent={()=>{try{localStorage.setItem('mo-shared-'+detail!.plan.id,'1')}catch{}setSharedTick(x=>x+1)}} onRsvp={status=>{if(status!=='out'&&!mine.length&&unclaimed.length){setPtab('list');window.scrollTo(0,0)}}}/>}
 
     {!declined&&ptab==='list'&&<section className="stack">

@@ -627,3 +627,6 @@ html,body{overflow-x:clip}
 .answer-card .check-day{font-size:15px}
 .check-due{display:inline-flex!important;align-items:center;gap:5px;font-size:13px!important;font-weight:700;color:var(--brick)!important}
 .answer-card .next-time{font-size:22px;font-weight:800;color:var(--ink)}
+.try-mo{display:grid;gap:8px;grid-template-columns:minmax(0,1fr);padding:20px;border-radius:var(--radius);background:var(--sky-soft);color:var(--ink)}
+.try-mo .eyebrow{color:var(--sky-ink)}
+.try-mo .text-button{justify-self:start}
