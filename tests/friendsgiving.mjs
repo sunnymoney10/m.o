@@ -18,10 +18,13 @@ assert.ok(!leaks(r.body,'1420 Elm','Buzz 3B',ari,tess,'invite:'),'no private det
 const tessRow=r.body.guests.find(g=>g.name==='Tess');assert.equal(tessRow.status,'invited');
 r=await request(stranger,'plans');assert.ok(!r.body.plans.some(p=>p.id===id),'opening a link does not add the plan to your list');
 
+const issued=(await request(ari,`plan/${id}/guests/${tessRow.id}/invite`,'POST',{})).body.link;const token=issued.split('/').at(-1);
 // Tess picks her name, RSVPs with a plus-one, dietary needs and a sleepover request.
-r=await request(tess,`plan/${id}/guests/${tessRow.id}/pick`,'POST');assert.equal(r.status,200);
+r=await request(tess,`plan/${id}/guests/${tessRow.id}/pick`,'POST',{token});assert.equal(r.status,200);
 r=await request(tess,'plan/'+id);assert.equal(r.body.plan.place,'','picking a name alone does not reveal the address');
 r=await request(tess,`plan/${id}/rsvp`,'POST',{name:'Tess',status:'in',note:'',extraCount:1,extraNames:'Ben',dietary:'Vegetarian',staying:true});assert.equal(r.status,200);
+assert.equal((await request(tess,'plan/'+id)).body.plan.place,'','RSVP alone does not approve arrival access');
+await request(ari,`plan/${id}/guests/${tessRow.id}/access`,'POST',{approved:true});
 r=await request(tess,'plan/'+id);assert.equal(r.body.plan.place,'1420 Elm St, Apt 3B');assert.equal(r.body.details,'Park on Elm. Buzz 3B.');
 let me=r.body.guests.find(g=>g.isMe);assert.equal(me.extra_status,'requested');assert.equal(me.dietary,'Vegetarian');assert.equal(me.staying,true);
 assert.equal(r.body.guests.filter(g=>g.name==='Tess').length,1,'picked spot, not a duplicate');
@@ -45,7 +48,7 @@ r=await request(tess,'plan/'+id);assert.equal(r.body.guests.find(g=>g.isMe).extr
 r=await request(tess,'plan/'+id);const pie=r.body.tasks.find(x=>x.title==='Pie');
 r=await request(tess,`plan/${id}/tasks/${pie.id}`,'PATCH',{action:'claim'});assert.equal(r.status,200);
 r=await request(tess2,'plan/'+id);const spot=r.body.guests.find(g=>g.name==='Tess');
-r=await request(tess2,`plan/${id}/guests/${spot.id}/pick`,'POST');assert.equal(r.status,200);
+r=await request(tess2,`plan/${id}/guests/${spot.id}/pick`,'POST',{token});assert.equal(r.status,200);
 r=await request(tess2,'plan/'+id);assert.ok(r.body.tasks.find(x=>x.title==='Pie').isMine,'claim followed Tess');assert.equal(r.body.guests.filter(g=>g.name==='Tess').length,1);
 r=await request(jordan,`plan/${id}/guests/${spot.id}/pick`,'POST');assert.equal(r.status,409,'a phone that already answered cannot take another spot');
 r=await request(stranger,`plan/${id}/guests/not-a-row/pick`,'POST');assert.equal(r.status,404);

@@ -5,6 +5,8 @@ async function request(actor,path,method='GET',body){const r=await fetch(origin+
 let r=await request(host,'plans','POST',{title:'QA Atlanta weekend',name:'QA setter',kind:'trip'});assert.equal(r.status,201);const id=r.body.id;
 assert.equal((await request(guest,`plan/${id}/rsvp`,'POST',{name:'QA friend',status:'in'})).status,200);
 
+const member=(await request(host,'plan/'+id)).body.guests.find(g=>g.name==='QA friend');
+await request(host,`plan/${id}/guests/${member.id}/access`,'POST',{approved:true});
 // Group decisions
 assert.equal((await request(guest,`plan/${id}/polls`,'POST',{question:'Which weekend?',kind:'date',options:['2026-12-04T17:00:00Z','2026-12-11T17:00:00Z']})).status,403,'guests cannot start decisions');
 assert.equal((await request(host,`plan/${id}/polls`,'POST',{question:'Which weekend?',kind:'date',options:['not a date','2026-12-11T17:00:00Z']})).status,400,'date options validated');

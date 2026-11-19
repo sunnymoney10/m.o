@@ -630,3 +630,5 @@ html,body{overflow-x:clip}
 .try-mo{display:grid;gap:8px;grid-template-columns:minmax(0,1fr);padding:20px;border-radius:var(--radius);background:var(--sky-soft);color:var(--ink)}
 .try-mo .eyebrow{color:var(--sky-ink)}
 .try-mo .text-button{justify-self:start}
+
+.invite-rows li{flex-wrap:wrap}.invite-access-actions{display:flex;flex:1 1 100%;gap:12px;flex-wrap:wrap;padding-left:48px}.invite-access-actions button{min-height:44px}.invite-access-actions button:active{transform:translateY(1px)}

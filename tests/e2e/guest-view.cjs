@@ -1,3 +1,4 @@
+const {personalLink,approve}=require('./access.cjs');
 // Guest view, as a real guest gets it: a trip from a personal text link, on small and regular iPhones.
 // Checks the page never needs zooming out (including a Safari-like picture size), that host-only tools stay hidden,
 // and that trips talk about things to handle, not things to bring. Needs `npm run dev` running.
@@ -16,7 +17,7 @@ const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173',O=process.argv[2]||requ
   await h.evaluate(async id=>{const c=(u,m,bd)=>fetch('/api/'+u,{method:m,headers:{'Content-Type':'application/json'},body:bd?JSON.stringify(bd):undefined}).then(r=>r.json());await c('plan/'+id+'/polls','POST',{question:'Concessions',kind:'general',options:['Popcorn','Cotton candy']});const d=await c('plan/'+id);const poll=d.polls[0];await c('plan/'+id+'/polls/'+poll.id+'/decide','POST',{optionId:poll.options[0].id})},id);
   const gid=await h.evaluate(async id=>(await (await fetch('/api/plan/'+id)).json()).guests.find(g=>g.name==='Kofi').id,id);
   const g=await (await b.newContext({...devices[dev]})).newPage();g.on('pageerror',e=>{fails++;console.log('PAGEERROR',e.message)});
-  await g.goto(`${B}/?plan=${id}&g=${gid}`);await g.waitForTimeout(2500);
+  await g.goto(await personalLink(h,id,'Kofi'));await g.waitForTimeout(2500);
   await fits(g,dev+' invite');
   check(await g.getByRole('button',{name:'Copy invite link'}).count()===0,dev+' guest has no Copy invite link before answering');
   check((await g.locator('.invite-card').innerText()).includes('pick something to handle'),dev+' trip invite talks about things to handle');

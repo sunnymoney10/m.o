@@ -1,3 +1,4 @@
+import {inviteHash} from '../lib/guest-access';
 import handler from "vinext/server/fetch-handler";
 import { runWithConnectorBinding } from "../lib/connector-context";
 import { longId } from "../lib/short-link";
@@ -34,6 +35,12 @@ async function withInvitePreview(request: Request, env: Cloudflare.Env, pending:
 // They redirect to the full address, which also carries the group-chat preview.
 async function shortLink(request: Request, env: Cloudflare.Env): Promise<Response | null> {
   const url = new URL(request.url);
+  const personal=url.pathname.match(/^\/i\/([A-Za-z0-9_-]{43})\/?$/);
+  if(personal&&(request.method==='GET'||request.method==='HEAD')){
+    const db=(env as unknown as {DB?:D1Database}).DB;
+    const row=db&&await db.prepare("SELECT plan_id,id FROM guests WHERE invite_hash=? AND invite_expires>?").bind(await inviteHash(personal[1]),new Date().toISOString()).first<{plan_id:string;id:string}>();
+    return row?new Response(null,{status:302,headers:{Location:`${url.origin}/?plan=${row.plan_id}&g=${row.id}#invite=${personal[1]}`,'Cache-Control':'no-store','Referrer-Policy':'no-referrer'}}):new Response('This invitation has expired or was revoked. Ask your host for a new personal link.',{status:410,headers:{'Content-Type':'text/plain; charset=utf-8','Cache-Control':'no-store','Referrer-Policy':'no-referrer'}});
+  }
   const hk = url.pathname.match(/^\/h\/([A-Za-z0-9_-]{24})\/?$/);
   if (hk && (request.method === "GET" || request.method === "HEAD")) return Response.redirect(`${url.origin}/?hostkey=${hk[1]}`, 302);
   const m = url.pathname.match(/^\/([pi])\/([A-Za-z0-9_-]{22})\/?$/);
@@ -71,7 +78,16 @@ const worker = {
       };
     }
     const response = runWithConnectorBinding(binding, () => handler.fetch(request, env, ctx));
-    return withInvitePreview(request, env, response);
+    const rendered=await withInvitePreview(request,env,response);
+    // Establish the visitor before the page starts parallel /me and /plans loads.
+    // Otherwise two first-load API responses can race to overwrite the host's cookie.
+    if((rendered.headers.get('content-type')||'').includes('text/html')){
+      const headers=new Headers(rendered.headers);headers.set('Referrer-Policy','no-referrer');headers.set('Cache-Control','no-store');
+      if(!/(?:^|; )mo_session=[a-f0-9-]{36}(?:;|$)/.test(request.headers.get('cookie')||''))headers.append('Set-Cookie',`mo_session=${crypto.randomUUID()}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=31536000`);
+      headers.set('Cache-Control','private, no-store');
+      return new Response(rendered.body,{status:rendered.status,statusText:rendered.statusText,headers});
+    }
+    return rendered;
   },
 };
 

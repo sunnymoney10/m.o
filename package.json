@@ -27,7 +27,8 @@
     "journeys:host": "node tests/e2e/host-link.cjs",
     "journeys:guest": "node tests/e2e/guest-view.cjs",
     "journeys:tabs": "node tests/e2e/fast-tabs.cjs",
-    "journeys:answers": "node tests/e2e/answers.cjs"
+    "journeys:answers": "node tests/e2e/answers.cjs",
+    "journeys:access": "node tests/e2e/guest-access.cjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

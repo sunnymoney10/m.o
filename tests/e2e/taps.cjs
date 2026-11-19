@@ -1,3 +1,4 @@
+const {personalLink,approve}=require('./access.cjs');
 // Tap efficiency: counts taps (and boxes typed in) for every main task, host and guest, on an iPhone-sized screen.
 // Scrolling isn't counted. Typing a box counts as one "box", not a tap. Needs `npm run dev` running.
 // Usage: npm run ux:taps [-- <screenshot dir>]
@@ -32,8 +33,9 @@ const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173',O=process.argv[2]||requ
  await task('Host','Send the first invite (from the plan page)',async()=>{
   await tap(h.getByRole('tab',{name:'People'}));await tap(h.getByRole('button',{name:/Send invites/}).first());
   await h.evaluate(()=>document.querySelectorAll('.send-invites a').forEach(a=>a.addEventListener('click',e=>e.preventDefault())));
-  await tap(h.locator('.send-invites a.primary'));taps++/* Send in Messages */;await h.waitForTimeout(300)});
- await task('Host','Send each next invite',async()=>{await tap(h.locator('.send-invites a.primary'));taps++/* Send in Messages */});
+  if(await h.getByRole('button',{name:/^Prepare invite for/}).count()){await tap(h.getByRole('button',{name:/^Prepare invite for/}));await h.locator('.send-invites a.primary').waitFor()}await tap(h.locator('.send-invites a.primary'));taps++/* Send in Messages */;await h.waitForTimeout(300)});
+ await task('Host','Send each next invite',async()=>{if(await h.getByRole('button',{name:/^Prepare invite for/}).count()){await tap(h.getByRole('button',{name:/^Prepare invite for/}));await h.locator('.send-invites a.primary').waitFor()}await tap(h.locator('.send-invites a.primary'));taps++/* Send in Messages */});
+ if(await h.getByRole('button',{name:/^Prepare invite for/}).count()){await h.getByRole('button',{name:/^Prepare invite for/}).click();await h.locator('.send-invites a.primary').waitFor()}
  const personal=decodeURIComponent(await h.locator('.send-invites a.primary').getAttribute('href')).match(/https?:\/\/\S+/)[0];
  await task('Host','Record an answer for a friend who texted back',async()=>{
   await h.goto(url);await h.waitForTimeout(1500);taps=0;
@@ -46,13 +48,14 @@ const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173',O=process.argv[2]||requ
  await task('Guest','Personal link: say I’m in',async()=>{await g.goto(personal);await g.waitForTimeout(2000);await tap(g.getByRole('button',{name:'I’m in'}).first());await g.waitForTimeout(1200)});
  await task('Guest','…then pick something to bring',async()=>{await tap(g.getByRole('button',{name:'I can bring this'}).first());await g.waitForTimeout(800)});
  await task('Guest','Add to calendar',async()=>{await tap(g.getByRole('tab',{name:'Overview'}));await Promise.all([g.waitForEvent('download'),tap(g.getByRole('button',{name:'Add to calendar'}).first())])});
+ await h.evaluate(async id=>{const d=await (await fetch('/api/plan/'+id)).json();for(const g of d.guests.filter(g=>!g.isHost&&g.status==='in'))await fetch(`/api/plan/${id}/guests/${g.id}/access`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({approved:true})})},new URL(url).searchParams.get('plan'));await g.reload();await g.waitForTimeout(800);await g.getByRole('tab',{name:'Overview'}).click();
  await task('Guest','Open the address in Maps',async()=>{const l=g.getByRole('link',{name:/Open in Maps/}).first();taps++;if(!await l.count())throw new Error('no maps link')});
  await task('Guest','Change answer to can’t go',async()=>{
   await tap(g.getByRole('tab',{name:'People'}));await tap(g.getByRole('button',{name:'Change',exact:true}));await tap(g.getByRole('button',{name:/Can’t make it|Can’t go/}).first());
   const s=g.getByRole('button',{name:/Send RSVP|Save/});if(await s.count())await tap(s.first());await g.waitForTimeout(1000)});
  s2=await phone();
  await task('Guest','Group-chat link: answer (no personal link)',async()=>{await s2.goto(url);await s2.waitForTimeout(2000);console.log('  guest list:',(await h.evaluate(async id=>(await (await fetch('/api/plan/'+id)).json()).guests.map(x=>x.name+':'+x.status).join(', '),id)));
-  const chip=s2.getByRole('button',{name:'Rio',exact:true});if(await chip.count())await tap(chip);else{const n=s2.getByLabel(/Your name/).first();await type(n,'Sam')}
+  const chip=s2.getByRole('button',{name:'Rio',exact:true});if(await chip.count())await tap(chip);else{await tap(s2.getByRole('button',{name:'Reply',exact:true}).first());const n=s2.getByPlaceholder('What should we call you?');await type(n,'Rio')}
   await tap(s2.getByRole('button',{name:'I’m in'}).first());const s=s2.getByRole('button',{name:'Send RSVP'});if(await s.count()&&await s.isVisible())await tap(s);await s2.waitForTimeout(1200)});
  await task('Host','Delete the plan',async()=>{await h.goto(url);await h.waitForTimeout(1500);taps=0;await tap(h.getByRole('button',{name:'Edit plan details'}));await tap(h.getByRole('button',{name:'Delete this plan'}));taps++/* confirm */;await h.waitForTimeout(1200)});
  console.table(rows);require('fs').writeFileSync(O+'/taps.json',JSON.stringify(rows,null,1));

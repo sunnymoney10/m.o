@@ -10,7 +10,7 @@ First level 4 evidence (2026-11-19): a real host (Queen Valesha) sent a real gue
 | --- | --- | --- | --- |
 | Core journeys: create, invite, RSVP, update, cancel | Works | 3. Local phone journeys (host and guest) pass. Live check 2026-11-19: create, address search, add guests, personal invite text, guest RSVP, claim item, host sees it; test plan then deleted. | Update and cancel were tested locally, not live. No real users yet. |
 | Data persists | Works | 3. Live: a guest's answer from a second browser showed on the host's page after reload (real database). | None found. |
-| Permissions and privacy | Mostly | 3. API tests: host-only edits, address and booking link hidden until RSVP, phone numbers never reach the server, host links (host-only, hashed, replaceable, tries capped). Live: a stranger did not see the address. | Anyone with the plan link can tap another guest's name and take over their spot (by design, for "answered on another phone"). Host recovery is level 3 until tried live. |
+| Permissions and privacy | Mostly | 3. API tests: host-only edits, address and booking link hidden until RSVP, phone numbers never reach the server, host links (host-only, hashed, replaceable, tries capped). Live: a stranger did not see the address. | This branch blocks answered-spot takeover by name, adds expiring/revocable personal secrets and requires host approval for arrival access. Local API and independent-device browser checks pass. Forwarded links still authorize their intended guest; door codes stay host-only. Not deployed or tested by real users yet. Host recovery is level 3 until tried live. |
 | Automated tests | Works | 3. 9 API suites and 8 phone journeys pass. GitHub runs type check, API tests and build before every deploy. | Phone journeys run only on demand, not in GitHub. |
 | Live matches tested code | Works | 3. Every deploy goes through GitHub after checks pass. Live checks confirm new features are present. | The live site doesn't show which version it runs. |
 | Monitoring and recovery | Not ready | 2. Cloudflare request logs are on. | No alert when errors happen. Database restore has never been tried. |
@@ -39,7 +39,7 @@ Typing in a box is counted separately from taps. "Send in Messages" counts as on
 ## Backlog, in order
 
 1. ~~Host recovery~~ built 2026-11-19 (level 3: API tests and a three-device journey). Known limit: opening a host link on a browser that already has its own plans hides those plans there.
-2. Protect answered spots: once a guest has answered, taking over their name needs the host's OK (or their personal link).
+2. Protect answered spots: implemented on this branch; host-issued personal secrets recover a guest across devices. Replacement/revocation invalidate prior devices. Pending PR review and deployment; evidence level 3.
 3. Error alert: notify the owner when the live site has errors.
 4. Restore drill: practise restoring the database once, and write down the steps.
 5. Real-user check: Kaela sends invites to 2 or 3 friends; record what they got stuck on (level 4).
@@ -55,3 +55,20 @@ Found on a real iPhone (2026-11-19): a vote made Final ran off the screen. Cause
 Lesson: tests on short test phones hid the plan picture, so they never saw it widen the page. `journeys:guest` now uses a tall iPhone too, and forces the picture to its drawn width like Safari does.
 
 Not this release: trip sections, event search (waiting on Ticketmaster key approval), reminder texts.
+
+## Personal-link access branch — review evidence
+
+Base: `cd3ca62` (#19). Production deployment and audience were left unchanged.
+
+- Level 3: API handlers against SQLite verify independent random personal secrets, host-only issue/replace/revoke, private RSVP notes, guest-only changes, multi-device recovery, expiry and invalidated device access.
+- Level 3: `journeys:access` passed against the local Worker/D1 database with independent phone sessions. Host prepares a link; guest answers and claims; arrival approval is checked separately; door codes remain absent; a second device recovers the same record; revocation blocks writes and the old URL returns 410.
+- Guest RSVP remains one tap from a prepared personal invite. Host sending now includes an explicit preparation step: first invite 5 taps (previously 4); each next invite 3 (previously 2). This cost creates a revocable credential. Arrival approval is a separate host action.
+- Existing deployment history is preserved. Only new migrations 0012 and 0013 are added.
+- A first-HTML-response cookie avoids competing first-visit API responses replacing the visitor identity.
+- Not claimed: production tests, verified real identities from links, automatic message delivery, error alerting, or a completed database restore drill.
+
+Next: review and deploy the access branch, then run one controlled real host/three-guest check. Error alerts and a documented restore drill remain subsequent work; no monitoring credentials or live infrastructure were changed in this branch.
+
+Validation completed locally for this branch: `npm test`, `npm run check`, `npm run build`; `journeys`, `journeys:quiet`, `journeys:invites`, `journeys:places`, `journeys:dates`, `journeys:host`, `journeys:guest`, `journeys:answers`, `journeys:tabs`, `journeys:profile`, `journeys:access`, `a11y`, `ux:metrics`, and `ux:taps` passed. Browser journey source fixtures now issue real personal secrets and explicitly approve arrival access. Final Friendsgiving run uses an exact plus-one Approve selector (the new arrival button also contains “Approve”); places rerun waits for hydration. Initial parallel attempts hit hydration/selector timeouts; the final reruns passed. Screenshots use synthetic local records only.
+
+Host tap counts measured locally: create 3 taps/4 typed boxes; paste three guests 3/1; prepare/send first invite 5/0; each next invite 3/0; note a texted answer 4/0; change date 2/1. Guest: personal RSVP 1/0; claim 1/0; calendar 2/0; Maps 1/0 after host approval; cancel 4/0. Form-detail RSVP path measured 3 taps, 4 including a claim. These are automated level-3 measurements, not observed real-user conversion.

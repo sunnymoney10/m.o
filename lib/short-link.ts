@@ -18,4 +18,5 @@ export function longId(code:string){
  return `${h.slice(0,8)}-${h.slice(8,12)}-${h.slice(12,16)}-${h.slice(16,20)}-${h.slice(20)}`;
 }
 export const planLink=(origin:string,planId:string)=>`${origin}/p/${shortId(planId)}`;
+// Legacy identifier link only; it is not a credential. New personal links must come from the host API.
 export const guestLink=(origin:string,guestId:string)=>`${origin}/i/${shortId(guestId)}`;

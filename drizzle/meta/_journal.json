@@ -85,6 +85,20 @@
       "when": 1795062570306,
       "tag": "0011_low_ser_duncan",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1795065203290,
+      "tag": "0012_military_squadron_sinister",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "6",
+      "when": 1795065780404,
+      "tag": "0013_graceful_lake",
+      "breakpoints": true
     }
   ]
 }
