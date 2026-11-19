@@ -1,0 +1,45 @@
+name: Check the live site
+# Every 30 minutes GitHub checks https://mo.mymoapp.workers.dev. If this check fails, GitHub emails the owner
+# (Settings → Notifications → Actions: "Notify me only for failed workflows" by email).
+# It fails when: the home page doesn't load, the database doesn't answer, or m.o wrote down errors in the last 35 minutes.
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: monitor
+  cancel-in-progress: true
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      SITE: https://mo.mymoapp.workers.dev
+    steps:
+      - name: Home page loads
+        run: |
+          code=$(curl -s -o page.html -w '%{http_code}' --retry 2 --retry-delay 20 --max-time 30 "$SITE/")
+          if [ "$code" != "200" ] || ! grep -q 'm.o' page.html; then
+            echo "### The live site is down (home page answered $code)" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+      - name: Database answers and no new errors
+        run: |
+          body=$(curl -s --retry 2 --retry-delay 20 --max-time 30 "$SITE/api/health?minutes=35" || true)
+          echo "Health: $body"
+          ok=$(echo "$body" | jq -r '.database // false' 2>/dev/null || echo false)
+          n=$(echo "$body" | jq -r '.recentErrors // -1' 2>/dev/null || echo -1)
+          if [ "$ok" != "true" ]; then
+            echo "### The live site's database is not answering" >> "$GITHUB_STEP_SUMMARY"
+            echo "Answer: $body" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          if [ "$n" != "0" ]; then
+            echo "### m.o had $n error(s) in the last 35 minutes" >> "$GITHUB_STEP_SUMMARY"
+            echo "Where: $(echo "$body" | jq -r '.areas | join(", ")')" >> "$GITHUB_STEP_SUMMARY"
+            echo "Details are in Cloudflare: Workers & Pages → mo → Logs." >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          echo "All good: site up, database answering, no new errors." >> "$GITHUB_STEP_SUMMARY"

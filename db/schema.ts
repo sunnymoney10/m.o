@@ -17,3 +17,5 @@ export const activity=sqliteTable('activity',{id:text('id').primaryKey(),planId:
 
 // A personal link grants this visitor access to one guest only. Rotating its hash invalidates every old grant.
 export const guestAccess=sqliteTable('guest_access',{guestId:text('guest_id').notNull(),visitor:text('visitor').notNull(),inviteHash:text('invite_hash').notNull()},t=>[primaryKey({columns:[t.guestId,t.visitor]}),index('guest_access_visitor_idx').on(t.visitor)]);
+// Server errors, for the owner's alert. Only when and where (like "POST plan/rsvp"): no IDs, names or messages. Keeps the newest 500.
+export const errors=sqliteTable('errors',{id:text('id').primaryKey(),at:text('at').notNull(),area:text('area').notNull()},t=>[index('errors_at_idx').on(t.at)]);
