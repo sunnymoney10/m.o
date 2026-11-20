@@ -13,14 +13,22 @@ async function withInvitePreview(request: Request, env: Cloudflare.Env, pending:
   const response = await pending;
   const url = new URL(request.url);
   const id = url.searchParams.get("plan") || "";
-  if (request.method !== "GET" || url.pathname !== "/" || !PLAN_ID.test(id) || !(response.headers.get("content-type") || "").includes("text/html")) return response;
+  if (request.method !== "GET" || url.pathname !== "/" || !(response.headers.get("content-type") || "").includes("text/html")) return response;
+  // A preview picture for every shared link: the plan's own cover (a photo or Genmoji the host chose), otherwise an
+  // m.o illustration (public/og, made by scripts/og-images.cjs). Never the address or anyone's details.
+  const image = (src: string, w: number, h: number, alt: string) => `<meta property="og:image" content="${src}"><meta property="og:image:width" content="${w}"><meta property="og:image:height" content="${h}"><meta property="og:image:alt" content="${esc(alt)}"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="${src}">`;
+  if (!PLAN_ID.test(id)) {
+    if (url.search) return response;
+    const home = `<meta property="og:title" content="m.o: Make it out the groupchat"><meta property="og:description" content="One link for the plan, who’s coming, and who’s bringing what. Free."><meta property="og:type" content="website"><meta property="og:site_name" content="m.o"><meta property="og:url" content="${url.origin}/">${image(`${url.origin}/og/home.png`, 1200, 630, "Friends around a table, drawn in m.o’s style")}`;
+    return new HTMLRewriter().on("head", { element(el) { el.append(home, { html: true }); } }).transform(response);
+  }
   try {
     const db = (env as unknown as { DB?: D1Database }).DB;
-    const row = db && (await db.prepare("SELECT p.title, p.kind, g.name AS host FROM plans p LEFT JOIN guests g ON g.plan_id = p.id AND g.actor = p.owner WHERE p.id = ?").bind(id).first<{ title: string; kind: string; host: string | null }>());
+    const row = db && (await db.prepare("SELECT p.title, p.kind, p.cover_updated, length(p.cover_image) > 0 AS has_cover, g.name AS host FROM plans p LEFT JOIN guests g ON g.plan_id = p.id AND g.actor = p.owner WHERE p.id = ?").bind(id).first<{ title: string; kind: string; cover_updated: string | null; has_cover: number; host: string | null }>());
     if (!row) return response;
     const title = esc(row.host ? `${row.host} invited you: ${row.title}` : `You're invited: ${row.title}`);
     const description = esc(row.kind === "trip" ? "Tap to see the plan, say if you're in, and see what still needs doing." : "Tap to see the plan, say if you're coming, and pick something to bring.");
-    const tags = `<meta property="og:title" content="${title}"><meta property="og:description" content="${description}"><meta property="og:type" content="website"><meta property="og:site_name" content="m.o"><meta name="twitter:card" content="summary"><meta name="twitter:title" content="${title}"><meta name="description" content="${description}">`;
+    const tags = `<meta property="og:title" content="${title}"><meta property="og:description" content="${description}"><meta property="og:type" content="website"><meta property="og:site_name" content="m.o"><meta name="twitter:title" content="${title}"><meta name="description" content="${description}">${row.has_cover ? image(`${url.origin}/api/plan/${id}/cover?v=${encodeURIComponent(row.cover_updated || "")}`, 1000, 500, "The plan’s invite picture") : image(`${url.origin}/og/${row.kind === "trip" ? "trip" : "gathering"}.png`, 1200, 630, row.kind === "trip" ? "A road trip, drawn in m.o’s style" : "Friends around a table, drawn in m.o’s style")}`;
     return new HTMLRewriter()
       .on("title", { element(el) { el.setInnerContent(title, { html: true }); } })
       .on('meta[name="description"]', { element(el) { el.remove(); } })
