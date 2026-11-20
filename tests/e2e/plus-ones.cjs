@@ -46,11 +46,12 @@ const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173',O=process.argv[2]||requ
  await m.reload();await m.waitForTimeout(2500);await m.getByRole('tab',{name:'Overview'}).click().catch(()=>{});await m.waitForTimeout(400);
  {const yes=m.getByRole('button',{name:/Ari said yes to Cynthia/});check(await yes.count()===1,'Mom’s overview says Ari said yes to Cynthia');await yes.click();await m.waitForTimeout(600)}
  await noSms(m);const send=m.locator('.bring-someone-list').getByRole('button',{name:'Send Cynthia the invite'});check(await send.count()===1,'Mom sees “Send Cynthia the invite”');
+ check((await m.locator('.bring-someone-list li',{hasText:'Cynthia'}).innerText()).includes('hasn’t answered yet'),'Mom sees Cynthia hasn’t answered yet');
  await send.click();await m.waitForTimeout(2000);
  const cynLink=await m.evaluate(()=>{const v=Object.values(JSON.parse(localStorage.getItem('mo-plus-links')||'{}'))[0];return v&&v.url});
  check(/\/i\/[A-Za-z0-9_-]{43}$/.test(cynLink||''),'Cynthia’s own link was made on Mom’s phone');
  if(!m.url().startsWith(B)){await m.goto(B+'/?plan='+id);await m.waitForTimeout(2000);await m.getByRole('tab',{name:'People'}).click()}
- await m.waitForTimeout(500);const again=await m.locator('.bring-someone-list a').first().getAttribute('href');check(decodeURIComponent(again).includes('Hi Cynthia! I’m bringing you to Skate day')&&decodeURIComponent(again).includes('Ari said yes')&&/\/i\/[A-Za-z0-9_-]{43}/.test(decodeURIComponent(again)),'the text to Cynthia is filled in: '+decodeURIComponent(again).slice(4,90));
+ await m.waitForTimeout(500);const again=await m.locator('.bring-someone-list a').first().getAttribute('href');check(decodeURIComponent(again).includes('Hi Cynthia! I asked Ari if you could come to Skate day')&&decodeURIComponent(again).includes('as my plus one, and Ari said yes')&&/\/i\/[A-Za-z0-9_-]{43}/.test(decodeURIComponent(again)),'the text to Cynthia is filled in: '+decodeURIComponent(again).slice(4,90));
  // Ari's Send invites shows Mom already has it.
  await h.reload();await h.waitForTimeout(2000);await h.getByRole('tab',{name:'People'}).click();await h.getByRole('button',{name:'Send invites',exact:true}).click();await h.waitForTimeout(500);
  check((await h.locator('.invite-rows li',{hasText:'Cynthia'}).innerText()).includes('Mom already has their link'),'Ari’s Send invites says Mom already has Cynthia’s link');
@@ -58,11 +59,17 @@ const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173',O=process.argv[2]||requ
  await fits(h,'Ari’s Send invites');
  // Cynthia answers and sees the address.
  const c=await phone();await c.goto(cynLink);await c.waitForTimeout(2500);
- check((await c.locator('.invite-card h2').innerText()).startsWith('Hi Cynthia!'),'Cynthia gets a personal greeting');
+ {const card=await c.locator('.invite-card').innerText();check(card.startsWith('Hi Cynthia! Mom is bringing you'),'Cynthia’s greeting says Mom is bringing her: '+card.split('\n')[0]);check(/Mom asked Ari if you could come as their plus one, and Ari said yes/.test(card),'it explains she’s Mom’s plus one');}
+ check(await c.locator('.quick-answers').getByRole('button',{name:'Can’t make it'}).count()===1,'Cynthia answers for herself: I’m in / Still checking / Can’t make it');
  await c.locator('.quick-answers').getByRole('button',{name:'I’m in'}).click();await c.waitForTimeout(2500);
  await c.getByRole('tab',{name:'Overview'}).click();await c.waitForTimeout(500);
  check((await c.locator('body').innerText()).includes('Roller Palace'),'Cynthia sees the address after answering (Ari’s yes covered it)');
  await fits(c,'Cynthia');await c.screenshot({path:O+'/po3-cynthia.png'});
+ await m.reload();await m.waitForTimeout(2000);await m.getByRole('tab',{name:'People'}).click();await m.waitForTimeout(400);
+ check((await m.locator('.bring-someone-list li',{hasText:'Cynthia'}).innerText()).includes('Going'),'Mom sees Cynthia is going');
+ await h.reload();await h.waitForTimeout(2000);await h.getByRole('tab',{name:'People'}).click();await h.waitForTimeout(400);
+ check(/Going/.test(await h.locator('.guest-block',{hasText:'Cynthia'}).innerText()),'Ari sees Cynthia is going, in the main guest list');
+ // Ari's own invite text for a plus-one is personal too (checked on a second plus-one Ari sends himself).
  // Open plan: Ari lets guests bring people without asking; Mom adds Gus straight away.
  await h.goto(B+'/?plan='+id);await h.waitForTimeout(2000);await h.getByRole('button',{name:'Edit plan details'}).click();await h.waitForTimeout(400);
  await h.getByLabel(/Guests can bring someone without asking me/).check();await h.getByRole('button',{name:/Save/}).first().click();await h.waitForTimeout(1500);
@@ -71,6 +78,10 @@ const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173',O=process.argv[2]||requ
  await m.locator('.bring-someone').getByPlaceholder('Their name').fill('Gus');await m.locator('.bring-someone').getByRole('button',{name:'Add them'}).click();await m.waitForTimeout(1500);
  check((await m.locator('.bring-someone-list li',{hasText:'Gus'}).innerText()).includes('On the list'),'Gus is on the list straight away');
  await h.reload();await h.waitForTimeout(2000);check(await h.locator('.plus-one-ask').count()===0,'Ari isn’t asked about Gus');
+ // Ari sends Gus his invite himself: the text says Mom asked to bring him.
+ await h.getByRole('tab',{name:'People'}).click();await h.getByRole('button',{name:'Send invites',exact:true}).click();await h.waitForTimeout(500);
+ const gusRow=h.locator('.invite-rows li',{hasText:'Gus'});await gusRow.getByRole('button',{name:'Prepare personal link'}).click();await h.waitForTimeout(1200);
+ {const href=decodeURIComponent(await gusRow.locator('a.outline-button').first().getAttribute('href'));check(href.includes('Hi Gus! Mom asked to bring you to Skate day')&&href.includes('as their plus one'),'Ari’s invite text to a plus-one is personal: '+href.split('body=')[1]?.slice(0,70))}
  await h.evaluate(async id=>fetch('/api/plan/'+id,{method:'DELETE'}),id);
  console.log(fails?`${fails} problem(s)`:'All plus-one checks passed');await b.close();process.exitCode=fails?1:0;
 })();

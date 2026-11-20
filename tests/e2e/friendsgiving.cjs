@@ -4,6 +4,7 @@ const {personalLink,approve}=require('./access.cjs');
 const {chromium,devices}=require('playwright');
 const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173',O=process.argv[2]||require('node:os').tmpdir();
 const log=(...a)=>console.log(...a);
+const check=(ok,m)=>{if(!ok)throw Error('FAIL: '+m);console.log('ok:',m)};
 (async()=>{
  const b=await chromium.launch();
  const phone=async()=>{const c=await b.newContext({...devices['iPhone 14'],permissions:['clipboard-read','clipboard-write'],timezoneId:'America/New_York'});const p=await c.newPage();p.on('pageerror',e=>log('PAGEERROR',e.message));p.on('dialog',d=>{log('  dialog:',d.message());d.accept()});return p};
@@ -32,11 +33,13 @@ const log=(...a)=>console.log(...a);
  await t.waitForTimeout(400);await shot(t,'t2-pick');
  await t.getByRole('button',{name:/Add details:/}).click();await t.waitForTimeout(1500);log('T2 pick toast:',await toast(t));
  await shot(t,'t3-form');
- await t.getByRole('button',{name:'I’m in'}).click();await t.getByRole('button',{name:'One more'}).click();
- await t.getByPlaceholder(/Their names/).fill('Ben');await t.getByLabel(/Dietary needs/).fill('Vegetarian');await t.getByLabel(/stay over/).check();
+ await t.getByRole('button',{name:'I’m in'}).click();check((await t.locator('.rsvp-form').innerText()).includes('Bringing someone? Answer first'),'answer form points to “Bringing someone?” instead of a +1 counter');
+ await t.getByLabel(/Dietary needs/).fill('Vegetarian');await t.getByLabel(/stay over/).check();
  await shot(t,'t4-form-filled');
  await t.getByRole('button',{name:'Send RSVP'}).click();await t.waitForTimeout(1500);log('T4 RSVP toast:',await toast(t));
  await tab(t,'People');await shot(t,'t5-after');log('T5 my rsvp:',await text(t,'.my-rsvp'));
+ // Tess asks to bring Ben: he becomes a real guest after Ari says yes.
+ await t.locator('.bring-someone').getByPlaceholder('Their name').fill('Ben');await t.locator('.bring-someone').getByRole('button',{name:/^Ask /}).click();await t.waitForTimeout(1500);log('T5 asked to bring Ben:',await text(t,'.bring-someone-list'));
  await approve(k,planId,'Tess');await t.reload();await t.waitForTimeout(800);await tab(t,'Overview');await t.waitForTimeout(300);log('T5 address visible now:',(await t.locator('body').innerText()).includes('Buzz 3B'));await shot(t,'t6-overview');
  await tab(t,/Bring list/);await t.getByRole('button',{name:'I can bring this'}).first().click();await t.waitForTimeout(1500);log('T6 claim toast:',await toast(t));
  // Jordan picks name, still checking
@@ -50,7 +53,9 @@ await tab(j,'People');
  // Ari's overview
  await k.reload();await k.waitForTimeout(1500);await shot(k,'k3-overview');
  log('K headcount:',await text(k,'.status-card'));log('K host notes:',await text(k,'.host-notes'));
- await tab(k,'People');await k.getByRole('button',{name:'Approve',exact:true}).click();await k.waitForTimeout(1500);log('K approve toast:',await toast(k));
+ await tab(k,'People');check((await text(k,'.plus-one-pending')).includes('with Tess'),'Ari’s guest list shows Ben waiting for an OK, with Tess');
+ await k.locator('.plus-one-pending').getByRole('button',{name:'Yes, Ben can come'}).click();await k.waitForTimeout(1500);log('K approve toast:',await toast(k));
+ check((await text(k,'.guest-list')).includes('with Tess'),'Ben is on Ari’s main guest list “with Tess”');
  log('K people:',await text(k,'.guest-list'));await shot(k,'k4-people');
  await tab(k,'Overview');log('K headcount after approve:',await text(k,'.status-number'));
  // Ari changes the time

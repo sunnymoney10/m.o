@@ -99,7 +99,13 @@ export default function Home(){
   const ok=await act('rsvp','POST',body,d=>{const x=d.guests.find(y=>y.id===g.id);if(x)Object.assign(x,{status,source:'guest',isMe:true})},status==='in'?(detail!.plan.kind==='trip'?'You’re in. Now pick something to handle.':'You’re in. Now pick something to bring.'):status==='maybe'?'Saved. Change it when you know.':`Got it. Thanks for letting ${hostName||'the host'} know.`);
   if(ok){setPersonalG(null);try{const u=new URL(location.href);u.searchParams.delete('g');history.replaceState({},'',u)}catch{}if(status!=='out'&&unclaimed.length){setPtab('list');window.scrollTo(0,0)}}
  }
- function goTab(tab:'people'|'list',opts:{add?:boolean;send?:boolean}={}){setOpenAdd(!!opts.add);setSendOpen(!!opts.send);setPtab(tab);window.scrollTo(0,0)}
+ // After switching tabs, show the new tab from its top, just under the (sticky) tab bar. Only moves the screen if
+ // you had scrolled past the tab bar; otherwise you stay where you are.
+ function showTabTop(){requestAnimationFrame(()=>{const bar=document.querySelector<HTMLElement>('.plan-tabs'),prev=bar?.previousElementSibling;if(!bar||!prev){window.scrollTo(0,0);return}
+  // Where the tab bar sits before it sticks: just below the element above it (plus the gap between them).
+  const gap=parseFloat(getComputedStyle(bar.parentElement!).rowGap)||0,natural=window.scrollY+prev.getBoundingClientRect().bottom+gap;
+  const target=Math.max(0,natural-(parseFloat(getComputedStyle(bar).top)||0)-8);if(window.scrollY>target+1)window.scrollTo({top:target,behavior:'auto'})})}
+ function goTab(tab:'people'|'list',opts:{add?:boolean;send?:boolean}={}){setOpenAdd(!!opts.add);setSendOpen(!!opts.send);setPtab(tab);showTabTop()}
  function plansView(){if(!detail&&view==='plans'){window.scrollTo(0,0);return}setDetail(null);setView('plans');setError('');go('/?view=plans');list();window.scrollTo(0,0)}
  function profile(){if(!detail&&view==='me'){window.scrollTo(0,0);return}setDetail(null);setView('me');setError('');go('/?view=me');loadMe();window.scrollTo(0,0)}
  function create(kind='gathering'){setShowEnd(false);setForm({...initial,kind,name:me?.profile?.name||localStorage.getItem('mo-name')||'',items:''});setAskName(!(me?.profile?.name||localStorage.getItem('mo-name')));setModal('create')}
@@ -196,7 +202,7 @@ export default function Home(){
      // A personal invite link (?g=) names the guest, so they can answer in one tap.
      const target=mine_||(personalG?guests.find(g=>g.id===personalG&&!g.isHost):undefined),first=target?.name.split(' ')[0];
      return <section className="invite-card" aria-labelledby="invite-title">
-      <h2 id="invite-title">{target?`Hi ${first}! ${mine_&&mine_.status!=='invited'?'Can you make it?':`${hostName||'Your friend'} invited you`}`:`${hostName||'Your friend'} invited you`}</h2>
+      <h2 id="invite-title">{target?`Hi ${first}! ${mine_&&mine_.status!=='invited'?'Can you make it?':target.withName?`${target.withName} is bringing you`:`${hostName||'Your friend'} invited you`}`:`${hostName||'Your friend'} invited you`}</h2>{target?.withName&&(!mine_||mine_.status==='invited')&&<p className="plus-one-intro">{target.withName} asked {hostName||'the host'} if you could come as their plus one, and {hostName||'the host'} said yes.</p>}
       <p>{detail!.hidden?'Reply to your host, then '+(detail!.plan.kind==='trip'?'pick something to handle.':'pick something to bring.'):'Say if you’re coming, then pick something to bring. Keep your personal link private.'}</p>
       {target?<>
        <div className="quick-answers">{([['in','I’m in',Check],['maybe','Still checking',Clock],['out','Can’t make it',X]] as const).map(([k,label,Icon])=><button key={k} className={k==='in'?'primary':'outline-button'} disabled={busy} onClick={()=>quickAnswer(target,k)}><Icon size={17}/>{label}</button>)}</div>
@@ -211,7 +217,7 @@ export default function Home(){
     {declined&&<DeclinedCard detail={detail!} host={hostName} onChange={st=>quickAnswer(mine_!,st)}/>}
     {declined&&<TryMo host={hostName} start={()=>create()} profile={profile}/>}
     {stillChecking&&<CheckBackCard detail={detail!} me={mine_!} host={hostName} busy={busy} link={link} save={day=>act('check-back','POST',{date:day},d=>{const x=d.guests.find(g=>g.isMe);if(x)x.check_back=day},day?'Saved. '+(hostName||'The host')+' can see it.':undefined)} onChange={st=>quickAnswer(mine_!,st)}/>}
-    {!declined&&<div className="seg plan-tabs" role="tablist" aria-label="Plan sections">{([['overview','Overview'],['people','People'],['list',listLabel]] as const).map(([k,label])=><button key={k} role="tab" tabIndex={ptab===k?0:-1} onKeyDown={e=>{const keys=['overview','people','list'] as const,index=keys.indexOf(k);const next=e.key==='Home'?0:e.key==='End'?2:e.key==='ArrowRight'?(index+1)%3:e.key==='ArrowLeft'?(index+2)%3:-1;if(next<0)return;e.preventDefault();setPtab(keys[next]);(e.currentTarget.parentElement?.querySelectorAll<HTMLElement>('[role=tab]')[next])?.focus()}} aria-selected={ptab===k} className={ptab===k?'on':''} onClick={()=>setPtab(k)}>{label}{k==='list'&&unclaimed.length>0?<span className="tab-count">{unclaimed.length}</span>:null}</button>)}</div>}
+    {!declined&&<div className="seg plan-tabs" role="tablist" aria-label="Plan sections">{([['overview','Overview'],['people','People'],['list',listLabel]] as const).map(([k,label])=><button key={k} role="tab" tabIndex={ptab===k?0:-1} onKeyDown={e=>{const keys=['overview','people','list'] as const,index=keys.indexOf(k);const next=e.key==='Home'?0:e.key==='End'?2:e.key==='ArrowRight'?(index+1)%3:e.key==='ArrowLeft'?(index+2)%3:-1;if(next<0)return;e.preventDefault();setPtab(keys[next]);(e.currentTarget.parentElement?.querySelectorAll<HTMLElement>('[role=tab]')[next])?.focus()}} aria-selected={ptab===k} className={ptab===k?'on':''} onClick={()=>{setPtab(k);showTabTop()}}>{label}{k==='list'&&unclaimed.length>0?<span className="tab-count">{unclaimed.length}</span>:null}</button>)}</div>}
 
     {!declined&&ptab==='overview'&&<div className="stack">
      {detail!.host&&approved&&<section className="soft-card plus-one-told" aria-live="polite"><p><strong>{approved.name} is on the list.</strong> Let {approved.withName} know, so they can send {approved.name.split(' ')[0]} the invite.</p>
