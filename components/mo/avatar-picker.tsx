@@ -1,7 +1,7 @@
 'use client';
 // "Your picture": draw your own avatar from a few choices, use a Genmoji or emoji, or upload a photo. Photos are shrunk on the phone
 // to a small square before upload, so they fit the free database and load quickly for everyone.
-import {useState} from 'react';
+import {useEffect,useRef,useState} from 'react';
 import {Camera,Trash2,LoaderCircle,Palette,Smile} from 'lucide-react';
 import type {Avatar} from '@/lib/avatar';
 import {AVATAR,DEFAULT_AVATAR,PHOTO_MAX_BYTES} from '@/lib/avatar';
@@ -31,16 +31,37 @@ const lastEmoji=(t:string)=>{const parts=[...new Intl.Segmenter('en',{granularit
 
 // Tap the box, open the emoji keyboard and pick a Genmoji (iPhone with Genmoji) or any emoji. Safari puts a
 // Genmoji into an editable box as a small picture; we read that picture and save it like a photo.
+// Turn whatever picture Safari put in the box into a file. Copy it from the screen first (works for data:, blob:
+// and Safari's own internal picture links); fall back to downloading it.
+async function pictureFile(el:HTMLImageElement){
+ if(!el.complete||!el.naturalWidth)await el.decode().catch(()=>new Promise(r=>{el.addEventListener('load',r,{once:true});el.addEventListener('error',r,{once:true});setTimeout(r,2500)}));
+ if(el.naturalWidth){try{const c=document.createElement('canvas');c.width=el.naturalWidth;c.height=el.naturalHeight;c.getContext('2d')!.drawImage(el,0,0);const b=await new Promise<Blob|null>(r=>c.toBlob(r,'image/png'));if(b&&b.size)return b}catch{}}
+ const src=el.currentSrc||el.src;if(src){const r=await fetch(src);if(r.ok)return await r.blob()}
+ throw Error('unreadable');
+}
+// A short description of what arrived in the box, shown only if we can't read it (to fix it from a screenshot).
+const describe=(box:HTMLElement)=>[...box.querySelectorAll('*')].slice(0,6).map(n=>{const src=n.getAttribute('src')||n.getAttribute('srcset')||'';return n.tagName.toLowerCase()+(n.getAttribute('type')?' '+n.getAttribute('type'):'')+(src?' '+src.split(':')[0]:'')}).join(', ')||'text only';
+
 function GenmojiPicker({upload,busy,setBusy,setError}:{upload:(dataUrl:string)=>Promise<boolean>;busy:boolean;setBusy:(b:boolean)=>void;setError:(e:string)=>void}){
  const [picked,setPicked]=useState<{image?:Blob;emoji?:string;preview:string}|null>(null),[bg,setBg]=useState<string>(AVATAR.backgrounds[0][1]),[hint,setHint]=useState('');
- async function read(box:HTMLDivElement){setHint('');const img=box.querySelector('img');
-  if(img?.src){try{const blob=await (await fetch(img.src)).blob();setPicked({image:blob,preview:img.src})}catch{setHint('Couldn’t read that Genmoji. Try another one.')}box.innerHTML='';return}
-  const e=lastEmoji(box.textContent||'');if(e){setPicked({emoji:e,preview:''});box.textContent='';return}
-  if((box.textContent||'').trim()){setHint('Pick a Genmoji or emoji from the emoji keyboard. Letters don’t work here.');box.textContent=''}}
- async function pasted(e:React.ClipboardEvent<HTMLDivElement>){const f=[...e.clipboardData.files].find(f=>f.type.startsWith('image/'));if(f){e.preventDefault();setPicked({image:f,preview:URL.createObjectURL(f)})}}
+ const ref=useRef<HTMLDivElement>(null),reading=useRef(false);
+ async function read(){const box=ref.current;if(!box||reading.current)return;
+  // A Genmoji arrives as a picture (sometimes inside <picture>, sometimes only as a <source>).
+  let img=box.querySelector('img');const source=box.querySelector('source[srcset]');
+  if(!img&&source){img=new Image();img.src=(source.getAttribute('srcset')||'').split(/\s+/)[0]}
+  if(img){reading.current=true;setHint('');const what=describe(box);
+   try{const blob=await pictureFile(img);setPicked({image:blob,preview:URL.createObjectURL(blob)})}
+   catch{setHint(`Couldn’t read that Genmoji. Please take a screenshot of this message and send it to us. (It arrived as: ${what})`)}
+   finally{box.innerHTML='';reading.current=false}return}
+  const text=box.textContent||'';if(!text.trim())return;
+  const e=lastEmoji(text);if(e){setHint('');setPicked({emoji:e,preview:''});box.textContent='';return}
+  setHint('Pick a Genmoji or emoji from the emoji keyboard. Letters don’t work here.');box.textContent=''}
+ // Watch the box itself: Safari doesn't always send an "input" event when it puts a Genmoji in.
+ useEffect(()=>{const box=ref.current;if(!box)return;let t=0;const obs=new MutationObserver(()=>{clearTimeout(t);t=window.setTimeout(read,60)});obs.observe(box,{childList:true,subtree:true,characterData:true});return()=>{obs.disconnect();clearTimeout(t)}},[]);
+ async function pasted(e:React.ClipboardEvent<HTMLDivElement>){const f=[...e.clipboardData.files,...[...e.clipboardData.items].filter(i=>i.kind==='file').map(i=>i.getAsFile()).filter((x):x is File=>!!x)].find(f=>f.type.startsWith('image/'));if(f){e.preventDefault();setHint('');setPicked({image:f,preview:URL.createObjectURL(f)})}}
  async function use(){if(!picked)return;setError('');setBusy(true);try{const url=await stickerPicture(picked,bg);if(await upload(url))setPicked(null)}catch(err:any){setError(err.message||'Couldn’t use that picture. Try another.')}finally{setBusy(false)}}
  return <>
-  <div className="genmoji-box" role="textbox" aria-label="Tap here, then pick a Genmoji or emoji" contentEditable suppressContentEditableWarning spellCheck={false} onInput={e=>read(e.currentTarget)} onPaste={pasted}/>
+  <div className="genmoji-box" role="textbox" aria-label="Tap here, then pick a Genmoji or emoji" contentEditable suppressContentEditableWarning spellCheck={false} ref={ref} onInput={()=>read()} onPaste={pasted}/>
   <p className="fine">Tap the box, then the smiley-face key on your keyboard, and pick a Genmoji you made or any emoji. To make a new Genmoji on iPhone, tap the smiley-face key, then the Genmoji button.</p>
   {hint&&<p className="form-error" role="alert">{hint}</p>}
   {picked&&<>
