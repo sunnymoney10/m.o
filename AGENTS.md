@@ -34,8 +34,11 @@ Run `npm run check`, `npm test`, and `npm run build` for relevant code changes. 
 | Selected / highlight | butter `#f5d36a` (ink text) |
 | Info / callouts | periwinkle `#c5d4f0`, `#e4ebf8` |
 | Noted (not confirmed) | `#7a5600`, dashed outlines; confirmed `#2f6b3a` |
-| Type | Outfit 400–900; Caveat only for handwritten notes. Sizes 13/15/17/22/34 |
-| Spacing / radius | 8px steps (8/16/24); cards 22px, buttons 14px, chips pill |
+| Type | Outfit 400–900; Caveat only for handwritten notes. Size tokens `--fs-*`: 12/13/15/16 (body and fields)/17/22/28/34/46 |
+| Spacing / radius | 8px steps (8/16/24); tokens `--r-s` 8, `--r-m` 14 (buttons), `--radius` 22 (cards), `--r-pill` (chips) |
+| Logo | `Wordmark` / `Mark` in `components/mo/brand.tsx` (drawn, never typed). Rules: `docs/brand.md` |
+
+Every colour, text size and corner in `app/globals.css` comes from a token in `:root`. No hex values or raw px font sizes elsewhere in the stylesheet.
 
 Every text colour pair above passes WCAG AA (4.5:1). Check new pairs before using them.
 
