@@ -83,7 +83,8 @@ Launch audit fixes (2026-11-20, from the full audit; this branch, not deployed y
 - Usage numbers: daily counts per kind of action only, no IDs or names, private to the owner in the Cloudflare dashboard (API test, level 3). Nobody has read them on the live site yet (level 2 there).
 - Privacy and Terms pages: written from what the code actually stores and sends (level 2). Contact: Supportdesk_m.o@proton.me (owner's support address). A lawyer should read them before a wide launch.
 - Live check after PR #33 (2026-11-20): headers, previews, 404, Privacy, Terms and the address rule (named guest sees it after answering; a stranger doesn't) all confirmed on the live site with a throwaway plan, then deleted (level 3 on live; no real users yet). Usage counts: not yet read on live (level 2 there).
-- Help page (`/help`, this branch): fixed answers to the common questions, "Still stuck?" email at the bottom; tall and small iPhone checks (level 3).
+- Brand, direction A (2026-11-20, this branch): drawn logo and mark, app icons and manifest, all stylesheet colours, sizes and corners on tokens, new link previews, and small-phone "Get it ready" rows that keep the text full width. Level 3 (journeys, a11y, icon/manifest checks). The home-screen icon on a real iPhone is still to be checked by the owner (level 4).
+- Help page (`/help`): fixed answers to the common questions, "Still stuck?" email at the bottom; tall and small iPhone checks (level 3).
 - Owner decision: guests invited by name see the address as soon as they answer; strangers from the group link still need the host's OK, and the host can hide it from anyone. API tests and `journeys:access` (host, named guest and stranger on a tall iPhone), level 3. Guests already on live plans keep their current setting.
 
 Not this release: trip sections, event search (waiting on Ticketmaster key approval), reminder texts.

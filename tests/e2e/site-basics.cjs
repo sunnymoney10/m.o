@@ -7,6 +7,10 @@ const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173';
  check(/frame-ancestors 'none'/.test(csp)&&/object-src 'none'/.test(csp)&&/connect-src 'self'/.test(csp),'pages carry a content policy that stops framing and outside connections');
  check(page.headers.get('x-frame-options')==='DENY','pages can’t be shown inside another site');
  for(const [n,r] of [['page',page],['API',api]]){check(r.headers.get('x-content-type-options')==='nosniff',n+': nosniff');check(/max-age=\d+/.test(r.headers.get('strict-transport-security')||''),n+': HTTPS only');check(/camera=\(\)/.test(r.headers.get('permissions-policy')||''),n+': camera and microphone off')}
+ // Brand: the home-screen icon, app icons and manifest are linked and load; the icon opens in the browser so plans made in Safari still show.
+ {const html=await page.text?.()||await (await fetch(B+'/')).text();check(/rel="apple-touch-icon" href="\/apple-touch-icon\.png"/.test(html)&&/rel="manifest"/.test(html),'home-screen icon and manifest are linked');
+  const m=await (await fetch(B+'/manifest.webmanifest')).json();check(m.name==='m.o'&&m.display==='browser'&&m.icons.some(i=>i.purpose==='maskable'),'manifest: name m.o, opens in the browser, has a maskable icon');
+  for(const f of ['/favicon.svg','/apple-touch-icon.png','/icon-192.png','/icon-512.png','/icon-maskable-512.png']){const r=await fetch(B+f);check(r.status===200,f+' loads')}}
  const b=await chromium.launch();
  for(const d of ['iPhone 14 Pro Max','iPhone SE']){const p=await (await b.newContext({...devices[d]})).newPage();const bad=[];p.on('pageerror',e=>bad.push(e.message));
   await p.addInitScript(()=>document.addEventListener('securitypolicyviolation',e=>console.log('CSP-BLOCKED '+e.violatedDirective)));p.on('console',m=>{if(m.text().startsWith('CSP-BLOCKED')&&!/eval/.test(m.text()))bad.push(m.text())});
