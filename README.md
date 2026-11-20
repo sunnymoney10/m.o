@@ -124,9 +124,9 @@ Photo uploads are not stored by m.o; replay photos are HTTPS links. Default illu
 
 No payment processing, paid tier, booked inventory, affiliate revenue, social-platform scraping, automatic message sending, or automatic Apple/Google Calendar sync is implemented. The consumer core is free. A 30-day revenue route still requires validation and actual commercial terms; this prototype does not establish revenue or demand.
 
-## Personal access rollout (this branch)
+## Personal links and arrival access (how it works)
 
-This branch is based on current main `cd3ca62`, not the older version 11 PR. New migrations `0012_military_squadron_sinister.sql` and `0013_graceful_lake.sql` add guest secrets, per-device grants, arrival approval, the host-only door code and a secret lookup index. Existing migrations are unchanged. Apply both new migrations before deploying this code; the existing deployment workflow already applies pending migrations first. No live migration or deployment was run while preparing this branch.
+Migrations `0012_military_squadron_sinister.sql` and `0013_graceful_lake.sql` add guest secrets, per-device grants, arrival approval, the host-only door code and a secret lookup index. Existing migrations are unchanged. Apply both new migrations before deploying this code; the existing deployment workflow already applies pending migrations first. No live migration or deployment was run while preparing this branch.
 
 Existing answered spots keep their original device session until the host issues a new personal link. They cannot be recovered just by name. Legacy unclaimed 22-character invitations may still be claimed once; issuing a new secret link disables that legacy authorization. Hosts should replace old personal links and explicitly approve arrival access before rollout. Arrival approvals default to off for existing records. Existing codes in arrival notes are not automatically extracted: move them to the separate host-only field before approving arrival details.
 
@@ -136,7 +136,7 @@ The initial HTML response establishes the HttpOnly visitor cookie before paralle
 
 `npm run journeys:access` verifies the complete host/guest/revoked-link flow with independent phone sessions and a synthetic local event. It refuses production URLs. API tests also cover answered-spot takeover, replacement, expiry, cross-guest writes, note privacy, arrival approval and door-code exclusion. Hosted deployment and real-user verification remain outstanding.
 
-## Recovery and planning fixes (review branch)
+## Host recovery and planning fixes (how it works)
 
 Source checked on 2026-11-20: main `e3e760c` includes monitoring and the successful restore drill. PR #25 was inspected at `469371f` and then merged as current main `9d33a2e`. It adds item editing/removal, plan-type changes, end times, empty new bring lists and the phone invitation-layout fix. This branch was rebased onto current main `9d33a2e` and preserves that work. It has not been deployed.
 

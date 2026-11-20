@@ -43,7 +43,13 @@ Typing in a box is counted separately from taps. "Send in Messages" counts as on
 2. Protect answered spots: implemented on this branch; host-issued personal secrets recover a guest across devices. Replacement/revocation invalidate prior devices. Deployed in PR #21; evidence level 3.
 3. ~~Error alert~~ built 2026-11-19 (level 3; email delivery level 2 until tried). GitHub checks the live site every 30 minutes and emails the owner on failure.
 4. ~~Restore drill~~ built 2026-11-19: steps in `docs/restore.md`, and a Restore drill workflow. The local rehearsal passed (level 3) and found that a D1 backup can't be loaded as-is (guests before plans), now fixed. Live drill passed 2026-11-19: backup restored into a practice database, all 12 tables and 15 database updates matched, practice copy deleted.
-5. Real-user check: Kaela sends invites to 2 or 3 friends; record what they got stuck on (level 4).
+5. Real-user check: a real host sends personal invites to 2 or 3 friends before Thanksgiving (Nov 26); record what they got stuck on (level 4). Steps: `docs/real-user-checklist.md` (also a private tick-off page for the owner's phone).
+
+   Results (fill in after the run):
+
+   | Step | Who (first name) | Phone / app | What happened | Fixed in |
+   | --- | --- | --- | --- | --- |
+   | | | | | |
 
 Done outside the backlog (2026-11-19): trip "Search Airbnb / Search hotels" links (level 3, host and guest journeys), and Escape no longer closes the plan form while suggestions are open (level 3).
 

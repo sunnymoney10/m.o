@@ -22,7 +22,7 @@ Run `npm run check`, `npm test`, and `npm run build` for relevant code changes. 
 - All reads and writes: `app/api/[[...path]]/route.ts`. Permissions are checked there, never only in the UI. ChatGPT tools in `app/mcp/route.ts` call the same API.
 - Shared rules used by both client and server: `lib/` (`names.ts`, `avatar.ts`, `group-update.ts`, `types.ts`).
 - Schema: `db/schema.ts`, then `npm run db:generate`. Never edit an existing migration.
-- `components/ui/` is unused scaffolding. Don't build on it.
+- No UI kits: the unused shadcn scaffolding (`components/ui/`) and its packages were removed (Nov 2026). Build controls in `components/mo/` with the tokens below.
 
 ## Design language
 
