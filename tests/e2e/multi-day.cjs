@@ -1,3 +1,4 @@
+const {chooseLayout}=require('./access.cjs');
 const {approve}=require('./access.cjs');
 // Phone journey, both sides: a host makes a weekend trip with a start and end date; a guest sees the
 // date range, answers, and adds it to their calendar; then the host makes it one day again.
@@ -10,7 +11,7 @@ const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173',O=process.argv[2]||requ
  const meta=p=>p.locator('.meta-line').first().innerText();
  // Host
  const h=await phone();await h.goto(B);await h.waitForTimeout(2500);
- await h.getByRole('button',{name:'Start a plan'}).first().click();await h.getByRole('button',{name:'Trip'}).click();
+ await h.getByRole('button',{name:'Start your own plan'}).first().click();await chooseLayout(h,'Trip');
  await h.getByLabel('Give it a name').fill('Atlanta weekend');const yn=h.getByLabel('Your name');if(await yn.count())await yn.fill('Ari');
  await h.getByLabel(/^When/).fill('2026-12-04T18:00');
  check(await h.getByLabel(/^Ends/).count()===0,'one-day by default: no end date field');
@@ -51,7 +52,7 @@ const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173',O=process.argv[2]||requ
  // One day with an end time (a skate day, 4–7 PM), host and guest on a tall iPhone.
  {const tall=async()=>{const c=await b.newContext({...devices['iPhone 14 Pro Max'],timezoneId:'America/New_York',acceptDownloads:true});const p=await c.newPage();p.on('pageerror',e=>{fails++;console.log('PAGEERROR',e.message)});p.on('dialog',d=>d.accept());return p};
   const h2=await tall();await h2.goto(B);await h2.waitForTimeout(2500);
-  await h2.getByRole('button',{name:'Start a plan'}).first().click();
+  await h2.getByRole('button',{name:'Start your own plan'}).first().click();
   await h2.getByLabel('Give it a name').fill('Skate day');const yn2=h2.getByLabel('Your name');if(await yn2.count()&&await yn2.isVisible())await yn2.fill('Ari');
   await h2.getByLabel(/^When/).fill('2026-11-29T16:00');
   check(await h2.getByRole('button',{name:/More than one day/}).count()===0,'get-together offers an end time, not trip wording');

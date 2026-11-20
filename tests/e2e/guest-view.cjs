@@ -1,3 +1,4 @@
+const {chooseLayout}=require('./access.cjs');
 const {personalLink,approve}=require('./access.cjs');
 // Guest view, as a real guest gets it: a trip from a personal text link, on small and regular iPhones.
 // Checks the page never needs zooming out (including a Safari-like picture size), that host-only tools stay hidden,
@@ -36,12 +37,12 @@ const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173',O=process.argv[2]||requ
  // A new trip starts with no placeholder jobs, and its list talks about jobs, not bringing.
  {const hc=await b.newContext({...devices['iPhone 14']});const h=await hc.newPage();await h.goto(B);await h.waitForTimeout(1500);
   // A get-together (like a skate day) starts with an empty bring list: m.o never guesses items (it once filled in Thanksgiving dishes).
-  await h.getByRole('button',{name:'Start a plan'}).first().click();await h.getByText('Add more details').click();
+  await h.getByRole('button',{name:'Start your own plan'}).first().click();await h.getByText('Add more details').click();
   {const bring=h.getByLabel(/Things to bring/);check(await bring.inputValue()==='','new get-together has no pre-filled items');
    check(/Things one person can bring/.test(await bring.getAttribute('placeholder')),'the bring box shows examples as grey hints only');
-   await bring.fill('Skates');await h.getByRole('button',{name:'Trip'}).click();check(await h.getByLabel(/Jobs to hand out/).inputValue()==='Skates','switching plan type keeps what you typed');
-   await h.getByRole('button',{name:'Get-together'}).click();await h.getByLabel(/Things to bring/).fill('');}
-  await h.getByRole('button',{name:'Trip'}).click();
+   await bring.fill('Skates');await chooseLayout(h,'Trip');check(await h.getByLabel(/Jobs to hand out/).inputValue()==='Skates','switching plan type keeps what you typed');
+   await chooseLayout(h,'Get-together');await h.getByLabel(/Things to bring/).fill('');}
+  await chooseLayout(h,'Trip');
   const jobs=h.getByLabel(/Jobs to hand out/);check(await jobs.inputValue()==='','new trip has no placeholder jobs');
   check(/Drive from Wilson/.test(await jobs.getAttribute('placeholder')),'the jobs box shows specific examples');
   await h.getByLabel('Give it a name').fill('Beach weekend');const yn=h.getByLabel('Your name');if(await yn.count()&&await yn.isVisible())await yn.fill('Ari');

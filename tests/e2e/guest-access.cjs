@@ -3,7 +3,7 @@ const assert=require('node:assert/strict');const {chromium,devices}=require('pla
 const B=process.env.JOURNEY_URL||'http://127.0.0.1:5174';if(!/^http:\/\/(127\.0\.0\.1|localhost):/.test(B))throw Error('Use an isolated local preview');
 (async()=>{const b=await chromium.launch();try{
  const phone=async()=>{const c=await b.newContext({...devices['iPhone 14 Pro Max']});const p=await c.newPage();p.on('pageerror',e=>{throw e});return p};
- const host=await phone();await host.goto(B);await host.getByRole('button',{name:'Start a plan'}).first().waitFor();
+ const host=await phone();await host.goto(B);await host.getByRole('button',{name:'Start your own plan'}).first().waitFor();
  const id=await host.evaluate(async()=>{const post=(path,body)=>fetch('/api/'+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json());const p=await post('plans',{title:'Access QA · fictional dinner',name:'Synthetic host',place:'PRIVATE TEST ADDRESS',doorCode:'PRIVATE DOOR CODE',tasks:[{title:'Ice',category:'bring'}]});await post(`plan/${p.id}/guests`,{names:['Synthetic guest','Other guest']});return p.id});
  const link=await personalLink(host,id,'Synthetic guest');
  const g=await phone();await g.goto(link);await g.locator('.quick-answers').waitFor();assert.match(await g.locator('.invite-card').innerText(),/Hi Synthetic/);

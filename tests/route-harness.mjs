@@ -20,6 +20,7 @@ await import('./host-link.mjs');
 await import('./answers.mjs');
 await import('./guest-access.mjs');
 await import('./recovery-regressions.mjs');
+await import('./invite-theme.mjs');
 await import('./health.mjs');
 await import('./restore-order.mjs');
 await import('./item-edit.mjs');
@@ -33,8 +34,8 @@ async function rpc(method,params,identity){const body=JSON.stringify({jsonrpc:'2
 const tools=await rpc('tools/list');assert.equal(tools.result.tools.length,11);assert.equal(tools.result.tools.find(t=>t.name==='list_plans').annotations.readOnlyHint,true);
 const denied=await rpc('tools/call',{name:'list_plans',arguments:{}});assert.equal(denied.result.isError,true);
 const created=await rpc('tools/call',{name:'create_plan',arguments:{title:'ChatGPT test trip',name:'Test setter',kind:'trip',tasks:[{title:'Agree budget',category:'todo'}]}},'mcp-test-owner');assert.equal(created.result.isError,false);const createdPlan=JSON.parse(created.result.content[0].text);assert.match(createdPlan.url,/\/p\/[A-Za-z0-9_-]{22}$/);
-const updated=await rpc('tools/call',{name:'update_plan',arguments:{plan_id:createdPlan.id,place:'Test cabin'}},'mcp-test-owner');assert.equal(updated.result.isError,false);
-const read=await rpc('tools/call',{name:'read_plan',arguments:{plan_id:createdPlan.id}},'mcp-test-owner');const saved=JSON.parse(read.result.content[0].text);assert.equal(saved.plan.title,'ChatGPT test trip');assert.equal(saved.plan.place,'Test cabin');assert.equal(saved.tasks[0].title,'Agree budget');
+const updated=await rpc('tools/call',{name:'update_plan',arguments:{plan_id:createdPlan.id,place:'Test cabin',theme:'skating',accent:'sky',emoji:'🛼'}},'mcp-test-owner');assert.equal(updated.result.isError,false);
+const read=await rpc('tools/call',{name:'read_plan',arguments:{plan_id:createdPlan.id}},'mcp-test-owner');const saved=JSON.parse(read.result.content[0].text);assert.equal(saved.plan.title,'ChatGPT test trip');assert.equal(saved.plan.place,'Test cabin');assert.equal(saved.plan.theme,'skating');assert.equal(saved.plan.emoji,'🛼');assert.equal(saved.tasks[0].title,'Agree budget');
 const poll=await rpc('tools/call',{name:'start_decision',arguments:{plan_id:createdPlan.id,question:'Which weekend?',kind:'date',options:['2026-12-04T17:00:00Z','2026-12-11T17:00:00Z']}},'mcp-test-owner');assert.equal(poll.result.isError,false);
 const guestVote=await rpc('tools/call',{name:'start_decision',arguments:{plan_id:createdPlan.id,question:'Nope',kind:'choice',options:['a','b']}},'mcp-test-guest');assert.equal(guestVote.result.isError,true);
 const stop=await rpc('tools/call',{name:'add_itinerary_stop',arguments:{plan_id:createdPlan.id,title:'Check in'}},'mcp-test-owner');assert.equal(stop.result.isError,false);

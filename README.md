@@ -110,7 +110,7 @@ Use `sites-preview start /workspace/sites/mo` for managed browser QA. Apply pend
 
 ## Deliberately unresolved
 
-Photo uploads are not stored by m.o; replay photos are HTTPS links. Illustrations are m.o’s own: flat cut-paper scenes and characters drawn as SVG in `components/mo/art.tsx`, seeded by plan ID or name so each plan and person keeps a consistent picture. No stock or generated photos are bundled.
+Photo uploads are not stored by m.o; replay photos are HTTPS links. Default illustrations are m.o’s own: flat cut-paper scenes and characters drawn as SVG in `components/mo/art.tsx`, seeded by plan ID or name so each plan and person keeps a consistent picture. No stock or generated photos are bundled.
 
 No payment processing, paid tier, booked inventory, affiliate revenue, social-platform scraping, automatic message sending, or automatic Apple/Google Calendar sync is implemented. The consumer core is free. A 30-day revenue route still requires validation and actual commercial terms; this prototype does not establish revenue or demand.
 
@@ -143,3 +143,13 @@ The public Workers host cannot trust an arbitrary `oai-authenticated-user-id` he
 Gateway contract: generate a random secret of at least 32 bytes; keep it only in the gateway and Worker secret store. Send `oai-authenticated-user-id`, `x-mo-identity-time` (Unix seconds), and `x-mo-identity-signature` (lowercase hex HMAC-SHA256). Sign the UTF-8 string formed by joining timestamp, HTTP method, URL path plus query, actor ID, and lowercase hex SHA-256 of the exact request body with newline characters. Assertions are valid within five minutes of Worker time. Body, method, path/query, identity and timestamp are bound to the signature. TLS is still required. Internal MCP-to-API calls preserve the verified identity without forwarding a public header.
 
 `npm run journeys:recovery` exercises refresh, field preservation, scoped host access and revocation, contribution totals, keyboard controls and temporary demos against an isolated local preview only. Original journey fixtures use the new automatic redemption flow. Keep real-device SMS delivery, native contact selection and calendar imports as explicit pilot checks.
+
+## Your own plans and invite themes
+
+“Start your own plan” is above the examples and opens a blank title, with no sample event or invented bring list. Friendsgiving, the weekend away and replay are examples. Trip/Get-together are optional layout settings, not a restriction on the activity: skating, a concert, a walk, a birthday or any other plan can use its own title.
+
+Open “Customize your invite” to choose Good company, Skating, Music, Outdoors, Dinner, Celebration, Travel or Games, then a background color and an optional emoji of your own. A title-based suggestion is offered when there is a simple match; choosing it is explicit, and no model/provider call is made. The compact preview shows the actual entered title. The theme decorates the header and plan cards; event text stays in normal readable fields. Editing appearance never changes RSVPs, assignments or access. Default plans retain m.o’s existing drawn scenes. Emoji artwork is rendered by the device’s emoji font, so glyphs can vary across phones.
+
+New migration `0016_cultured_shatterstar.sql` adds `theme`, `accent` and `emoji` with safe defaults. Apply 0015 and 0016 before deploying this branch. Only hosts can save appearance. API/MCP input accepts known theme/color choices and a single emoji grapheme; it does not accept arbitrary CSS, markup or remote background URLs. No external image service or uploaded background storage is needed for this first version. The guest invite page is themed; social-message link thumbnails still use the existing standard m.o preview.
+
+`npm run journeys:themes` tests an arbitrary custom skating plan, the blank start above examples, optional layout options, emoji validation, saved appearance on a tall host phone and small guest phone, and later appearance changes preserving RSVP data.

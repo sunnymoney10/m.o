@@ -13,7 +13,7 @@ const log=(...a)=>console.log(...a);
  const tab=(p,n)=>p.getByRole('tab',{name:n}).click();
  // Ari creates the plan
  const k=await phone();await k.goto(B);await k.waitForTimeout(3000);
- await k.getByRole('button',{name:'Start a plan'}).first().click();
+ await k.getByRole('button',{name:'Start your own plan'}).first().click();
  await k.getByLabel('Give it a name').fill('Friendsgiving');await k.getByLabel('Your name').fill('Ari');
  await k.getByLabel(/When/).fill('2026-11-26T17:00');await k.getByLabel('Where').fill('1420 Elm St, Apt 3B, Philadelphia');
  await k.getByText('Add more details').click();await k.getByLabel(/Arrival and house notes/).fill('Park on Elm, not in the lot (they tow). Buzz 3B and take the stairs. Shoes off inside.');

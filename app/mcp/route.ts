@@ -1,4 +1,5 @@
 import {env} from 'cloudflare:workers';
+import {INVITE_THEMES,INVITE_COLORS} from '../../lib/invite-theme';
 import {verifiedIdentity,trustIdentity} from '../../lib/request-identity';
 import {planLink} from '../../lib/short-link';
 import {z} from 'zod';
@@ -7,7 +8,7 @@ import {groupUpdate,nudgeMaybes,nextStep} from '../../lib/group-update';
 export const dynamic='force-dynamic';
 const id=z.string().uuid();
 const task=z.object({title:z.string().min(1).max(160),category:z.enum(['bring','todo'])});
-const fields={title:z.string().min(1).max(100),date:z.string().max(40).default(''),place:z.string().max(160).default(''),budget:z.string().max(60).default(''),note:z.string().max(2000).default(''),inviteUrl:z.string().max(1000).default('')};
+const fields={theme:z.enum(INVITE_THEMES.map(t=>t[0]) as [string,...string[]]).optional(),accent:z.enum(Object.keys(INVITE_COLORS) as [string,...string[]]).optional(),emoji:z.string().max(32).optional(),title:z.string().min(1).max(100),date:z.string().max(40).default(''),place:z.string().max(160).default(''),budget:z.string().max(60).default(''),note:z.string().max(2000).default(''),inviteUrl:z.string().max(1000).default('')};
 const definitions=[
  {name:'list_plans',description:'List the current user’s m.o plans. Read-only. Use to find an existing plan before creating another.',schema:z.object({}),read:true},
  {name:'read_plan',description:'Read a m.o plan, attendance, bring-list, responsibilities, open group decisions with vote counts, itinerary, replay memories, and outstanding items. Use for a setter briefing; distinguish confirmed facts from missing information. Accept an ID from an m.o invitation link.',schema:z.object({plan_id:id}),read:true},
@@ -21,7 +22,7 @@ const definitions=[
  {name:'add_itinerary_stop',description:'Organizer only. Add a stop or key link to the plan’s live itinerary using details the user confirmed. Time is optional ISO 8601; links must be HTTPS. Does not book anything.',schema:z.object({plan_id:id,title:z.string().min(1).max(120),at:z.string().max(40).default(''),detail:z.string().max(300).default(''),url:z.string().max(1000).default('')}),read:false},
  {name:'draft_group_update',description:'Read-only. Return a group-chat status update, a nudge for people still deciding, and the next useful step, built only from what is saved in the plan. The user copies and sends it themselves; m.o sends nothing.',schema:z.object({plan_id:id}),read:true}
 ];
-function schemaFor(zod:any):any{return zod._def.typeName==='ZodObject'?{type:'object',properties:Object.fromEntries(Object.entries(zod.shape).map(([k,v]:any)=>[k,schemaFor(v)])),required:Object.entries(zod.shape).filter(([k,v]:any)=>!v.isOptional()).map(([k])=>k),additionalProperties:false}:zod._def.typeName==='ZodDefault'?schemaFor(zod._def.innerType):zod._def.typeName==='ZodArray'?{type:'array',items:schemaFor(zod._def.type),maxItems:30}:zod._def.typeName==='ZodEnum'?{type:'string',enum:zod._def.values}:{type:'string',...(zod._def.checks?.find((x:any)=>x.kind==='uuid')?{format:'uuid'}:{})}}
+function schemaFor(zod:any):any{return zod._def.typeName==='ZodObject'?{type:'object',properties:Object.fromEntries(Object.entries(zod.shape).map(([k,v]:any)=>[k,schemaFor(v)])),required:Object.entries(zod.shape).filter(([k,v]:any)=>!v.isOptional()).map(([k])=>k),additionalProperties:false}:['ZodDefault','ZodOptional'].includes(zod._def.typeName)?schemaFor(zod._def.innerType):zod._def.typeName==='ZodArray'?{type:'array',items:schemaFor(zod._def.type),maxItems:30}:zod._def.typeName==='ZodEnum'?{type:'string',enum:zod._def.values}:{type:'string',...(zod._def.checks?.find((x:any)=>x.kind==='uuid')?{format:'uuid'}:{})}}
 export async function POST(req:Request){const identity=await verifiedIdentity(req,(env as {MO_IDENTITY_SECRET?:string}).MO_IDENTITY_SECRET);let message:any;try{message=await req.json()}catch{return new Response('Invalid JSON',{status:400})}const reply=(result:any,error?:any)=>Response.json({jsonrpc:'2.0',id:message.id??null,...(error?{error}:{result})},{headers:{'Cache-Control':'no-store'}});
  if(message.method==='server/discover')return reply({supportedVersions:['2026-07-28'],capabilities:{tools:{}}});
  if(message.method==='initialize')return reply({protocolVersion:'2026-07-28',capabilities:{tools:{}},serverInfo:{name:'mo-setter',version:'0.1.0'}});

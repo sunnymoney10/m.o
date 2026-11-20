@@ -1,3 +1,5 @@
 // Fixtures use the same host-issued capability as the sending screen.
 exports.personalLink=async(h,id,name)=>h.evaluate(async({id,name})=>{const call=(p,body)=>fetch('/api/'+p,{method:body?'POST':'GET',headers:{'Content-Type':'application/json'},...(body?{body:JSON.stringify(body)}:{})}).then(async r=>{const j=await r.json();if(!r.ok)throw Error(j.error);return j});const d=await call('plan/'+id);const g=d.guests.find(g=>g.name===name);return (await call(`plan/${id}/guests/${g.id}/invite`,{})).link},{id,name});
 exports.approve=async(h,id,name)=>h.evaluate(async({id,name})=>{const d=await (await fetch('/api/plan/'+id)).json();const g=d.guests.find(g=>g.name===name);if(!g)throw Error('Missing guest '+name);const r=await fetch(`/api/plan/${id}/guests/${g.id}/access`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({approved:true})});if(!r.ok)throw Error('Approval failed')},{id,name});
+
+exports.chooseLayout=async(p,name)=>{const options=p.locator('.plan-layout');if(await options.getAttribute('open')===null)await options.locator('summary').click();await p.getByRole('button',{name,exact:true}).click()};

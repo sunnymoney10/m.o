@@ -1,4 +1,7 @@
 'use client';
+import {themeError} from '@/lib/invite-theme';
+import {InviteArt} from '@/components/mo/invite-art';
+import {InviteStyle} from '@/components/mo/invite-style';
 import {whenRange,endFor} from '@/lib/when';
 import {PlaceSearch} from '@/components/mo/place-search';
 import {HostLink} from '@/components/mo/host-link';
@@ -35,7 +38,7 @@ const DEMOS:Detail[]=[
 ];
 for(const d of DEMOS)d.guests=d.guests.map((g,i)=>({...g,id:`${d.plan.id}-guest-${i}`}));
 const DEMO_COPY=[['THE FRIENDSGIVING','Who’s bringing dessert?','A potluck where nobody has to ask twice.'],['THE WEEKEND AWAY','Which weekend? Where are we staying?','Eight people, two votes, one link.'],['THE REPLAY','We made it out.','Shout-outs and photos after the night.']];
-const initial={doorCode:'',title:'',kind:'gathering',date:'',place:'',budget:'',note:'',details:'',inviteUrl:'',bookingUrl:'',endDate:'',name:'',items:''};
+const initial={theme:'company',accent:'butter',emoji:'',doorCode:'',title:'',kind:'gathering',date:'',place:'',budget:'',note:'',details:'',inviteUrl:'',bookingUrl:'',endDate:'',name:'',items:''};
 function local(iso?:string){if(!iso)return '';const d=new Date(iso);return Number.isNaN(+d)?'':new Date(+d-d.getTimezoneOffset()*60000).toISOString().slice(0,16)}
 function pretty(date:string){if(!date)return 'Date to decide';const d=new Date(date);return Number.isNaN(+d)?'Date to decide':d.toLocaleDateString('en-US',{month:'short',day:'numeric',weekday:'short'})}
 function time(date:string){if(!date)return '';return new Date(date).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}
@@ -81,7 +84,7 @@ export default function Home(){
  // Switching between Home, Plans and You replaces the address instead of piling up history, and does nothing if you're already there.
  const go=(path:string)=>{const here=location.pathname+location.search;if(here===path)return;const top=!detail&&['/','/?view=plans','/?view=me'].includes(here);top?window.history.replaceState({},'',path):window.history.pushState({},'',path)};
  function home(){if(!detail&&view==='home'){window.scrollTo(0,0);return}setDetail(null);setView('home');setError('');go('/');list();window.scrollTo(0,0)}
- function openEdit(){const p=detail!.plan;setShowEnd(false);setForm({...initial,title:p.title,kind:p.kind,place:p.place,budget:p.budget,note:p.note,details:detail!.details||'',doorCode:detail!.doorCode||'',date:local(p.date),name,inviteUrl:p.invite_url||'',bookingUrl:p.booking_url||'',endDate:local(p.end_date)});setModal('edit')}
+ function openEdit(){const p=detail!.plan;setShowEnd(false);setForm({...initial,theme:p.theme||'company',accent:p.accent||'butter',emoji:p.emoji||'',title:p.title,kind:p.kind,place:p.place,budget:p.budget,note:p.note,details:detail!.details||'',doorCode:detail!.doorCode||'',date:local(p.date),name,inviteUrl:p.invite_url||'',bookingUrl:p.booking_url||'',endDate:local(p.end_date)});setModal('edit')}
  // Opens the reply form for a guest and brings it into view (the tabs stay above it).
  function startReply(mode:'new'|'other'|null){setReplyMode(mode);setPtab('people');setTimeout(()=>document.querySelector('.rsvp-form,.pick-card,.other-phone')?.scrollIntoView({behavior:'smooth',block:'start'}),120)}
  async function pickName(g:Guest){const ok=await act(`guests/${g.id}/pick`,'POST',{token:inviteSecret.current},d=>{for(const x of d.guests)x.isMe=x.id===g.id},`Hi ${g.name}.`);if(ok)startReply(null)}
@@ -96,7 +99,7 @@ export default function Home(){
  function plansView(){if(!detail&&view==='plans'){window.scrollTo(0,0);return}setDetail(null);setView('plans');setError('');go('/?view=plans');list();window.scrollTo(0,0)}
  function profile(){if(!detail&&view==='me'){window.scrollTo(0,0);return}setDetail(null);setView('me');setError('');go('/?view=me');loadMe();window.scrollTo(0,0)}
  function create(kind='gathering'){setShowEnd(false);setForm({...initial,kind,name:me?.profile?.name||localStorage.getItem('mo-name')||'',items:''});setAskName(!(me?.profile?.name||localStorage.getItem('mo-name')));setModal('create')}
- async function submit(e:React.FormEvent){e.preventDefault();setBusy(true);setError('');try{if(modal==='edit'&&detail){if(demo)setDetail({...detail,details:form.details,plan:{...detail.plan,kind:form.kind,title:form.title,place:form.place,booking_url:form.bookingUrl||null,end_date:form.date&&form.endDate?new Date(form.endDate).toISOString():'',budget:form.budget,note:form.note,date:form.date?new Date(form.date).toISOString():''}});else{await api('plan/'+detail.plan.id,'PATCH',{kind:form.kind,title:form.title,place:form.place,budget:form.budget,note:form.note,details:form.details,doorCode:form.doorCode,inviteUrl:form.inviteUrl,bookingUrl:form.bookingUrl,endDate:form.date&&form.endDate?new Date(form.endDate).toISOString():'',date:form.date?new Date(form.date).toISOString():''});for(const title of form.items.split('\n').map(t=>t.trim()).filter(Boolean).slice(0,30))await api(`plan/${detail.plan.id}/tasks`,'POST',{title,category:form.kind==='trip'?'todo':'bring'});await open(detail.plan.id,false)}}else{const d=await api('plans','POST',{...form,date:form.date?new Date(form.date).toISOString():'',endDate:form.date&&form.endDate?new Date(form.endDate).toISOString():'',tasks:form.items.split('\n').filter(t=>t.trim()).map(title=>({title,category:form.kind==='trip'?'todo':'bring'}))});localStorage.setItem('mo-name',form.name);await open(d.id);list()}setModal(null);notify(modal==='edit'?'Saved. Everyone with the link sees the change.':'Plan created. Now invite people.')}catch(e:any){setError(e.message)}finally{setBusy(false)}}
+ async function submit(e:React.FormEvent){e.preventDefault();setBusy(true);setError('');try{if(modal==='edit'&&detail){if(demo)setDetail({...detail,details:form.details,plan:{...detail.plan,kind:form.kind,title:form.title,place:form.place,booking_url:form.bookingUrl||null,end_date:form.date&&form.endDate?new Date(form.endDate).toISOString():'',budget:form.budget,note:form.note,date:form.date?new Date(form.date).toISOString():''}});else{await api('plan/'+detail.plan.id,'PATCH',{kind:form.kind,title:form.title,place:form.place,budget:form.budget,note:form.note,details:form.details,doorCode:form.doorCode,theme:form.theme,accent:form.accent,emoji:form.emoji,inviteUrl:form.inviteUrl,bookingUrl:form.bookingUrl,endDate:form.date&&form.endDate?new Date(form.endDate).toISOString():'',date:form.date?new Date(form.date).toISOString():''});for(const title of form.items.split('\n').map(t=>t.trim()).filter(Boolean).slice(0,30))await api(`plan/${detail.plan.id}/tasks`,'POST',{title,category:form.kind==='trip'?'todo':'bring'});await open(detail.plan.id,false)}}else{const d=await api('plans','POST',{...form,date:form.date?new Date(form.date).toISOString():'',endDate:form.date&&form.endDate?new Date(form.endDate).toISOString():'',tasks:form.items.split('\n').filter(t=>t.trim()).map(title=>({title,category:form.kind==='trip'?'todo':'bring'}))});localStorage.setItem('mo-name',form.name);await open(d.id);list()}setModal(null);notify(modal==='edit'?'Saved. Everyone with the link sees the change.':'Plan created. Now invite people.')}catch(e:any){setError(e.message)}finally{setBusy(false)}}
  async function taskAction(t:Task,action:string,extra:Record<string,string>={}){if(busy)return;setBusy(true);const person=detail!.guests.find(g=>g.id===extra.guestId);
   try{if(demo){setDetail({...detail!,tasks:detail!.tasks.map(x=>x.id!==t.id?x:action==='claim'?{...x,claimed_name:name||'You',isMine:true,claim_source:''}:action==='assign'?{...x,claimed_name:person?.name||'Someone',isMine:!!person?.isMe,claim_source:person?.isMe?'':'host'}:action==='confirm'?{...x,claim_source:''}:action==='release'?{...x,claimed_name:null,isMine:false,done:0,claim_source:''}:action==='rename'?{...x,title:extra.title}:{...x,done:x.done?0:1}).filter(x=>!(action==='remove'&&x.id===t.id))})}
   else{if(action==='remove')await api(`plan/${detail!.plan.id}/tasks/${t.id}`,'DELETE');else await api(`plan/${detail!.plan.id}/tasks/${t.id}`,'PATCH',{action,...extra});await open(detail!.plan.id,false)}
@@ -118,9 +121,9 @@ export default function Home(){
  const navItems=[['home','Home',House,home],['plans','Plans',CalendarDays,plansView],['me','You',UsersRound,profile]] as const;
  const navOn=(k:string)=>k==='plans'?where==='plans'||where==='plan':where===k;
 
- const planRow=(x:Plan)=><button className="row-link" key={x.id} onClick={()=>open(x.id)}><Scene className="row-thumb" kind={sceneFor(x.kind,x.made_it)} seed={x.id}/><span className="row-text"><strong>{x.title}</strong><span>{pretty(x.date)} · {x.going||0} going{x.made_it?' · made it out':''}</span></span><ChevronRight size={20}/></button>;
+ const planRow=(x:Plan)=><button className="row-link" key={x.id} onClick={()=>open(x.id)}><InviteArt className="row-thumb" plan={x}/><span className="row-text"><strong>{x.title}</strong><span>{pretty(x.date)} · {x.going||0} going{x.made_it?' · made it out':''}</span></span><ChevronRight size={20}/></button>;
  const demoCards=<section className="demos" aria-labelledby="demos-title">
-  <div className="section-title"><h2 id="demos-title">Take m.o for a spin</h2><span className="fine">Fictional people · nothing saved</span></div>
+  <div className="section-title"><h2 id="demos-title">Try an example plan</h2><span className="fine">Fictional people · nothing saved</span></div>
   <div className="demo-scroll">{DEMOS.map((d,i)=><button className="demo-card" key={d.plan.id} onClick={()=>open(d.plan.id)}><Scene kind={sceneFor(d.plan.kind,d.plan.made_it)} seed={d.plan.id}/><span className="eyebrow">{DEMO_COPY[i][0]}</span><strong>{DEMO_COPY[i][1]}</strong><span className="fine">{DEMO_COPY[i][2]}</span></button>)}</div>
  </section>;
 
@@ -149,17 +152,17 @@ export default function Home(){
    {where==='me'?<ProfileView me={me} loading={meLoading} save={saveProfile} openPlan={id=>open(id)} start={()=>create()} uploadPhoto={async url=>{try{await api('me/photo','PUT',{photo:url});await loadMe();notify('Photo saved. It shows next to your name in plans.');return true}catch(e:any){notify(e.message);return false}}} removePhoto={async()=>{try{await api('me/photo','DELETE');await loadMe();notify('Photo removed.');return true}catch(e:any){notify(e.message);return false}}}/>
 
    :where==='home'?<>
+    <button className="primary block" onClick={()=>create()}>Start your own plan</button>
     <section className="greeting"><h1>{hello}{myName?', '+myName:''}.</h1><p>{featured?'Here’s what’s coming up.':plans.length?'All your plans have happened. Start a new one?':'Make it out the groupchat.'}</p></section>
     {loading?<div className="loading"><LoaderCircle className="spin"/>Getting your plans…</div>
     :featured?<article className="feature-card">
-     <button className="feature-open" onClick={()=>open(featured.id)} aria-label={'Open '+featured.title}><Scene kind={sceneFor(featured.kind,featured.made_it)} seed={featured.id}/></button>
+     <button className="feature-open" onClick={()=>open(featured.id)} aria-label={'Open '+featured.title}><InviteArt plan={featured}/></button>
      <div className="feature-body"><h2>{featured.title}</h2><p className="meta">{when(featured.date)}</p><p className="meta">{featured.going||0} going{featured.maybe?` · ${featured.maybe} still checking`:''}</p></div>
      {(()=>{const s=sortOut(featured);return s?<div className="sort-out"><Box size={22} strokeWidth={1.7}/><div><strong>{s[0]}</strong><span>{s[1]}</span></div><button onClick={async()=>{await open(featured.id);if(featured.open_items)setPtab('list')}}>Review plan</button></div>
       :<div className="sort-out settled"><CheckCircle2 size={22} strokeWidth={1.7}/><div><strong>Everything has a person</strong><span>Date, place and every item are covered</span></div><button onClick={()=>open(featured.id)}>View plan</button></div>})()}
     </article>
-    :<article className="feature-card empty"><Scene kind="table" seed="welcome"/><div className="feature-body"><h2>Start your first plan.</h2><p className="meta">Make a plan, send one link, and see who’s coming and what they’re bringing.</p></div><span className="note-card">Saved you a seat.</span></article>}
+    :<article className="feature-card empty"><Scene kind="table" seed="welcome"/><div className="feature-body"><h2>Make a plan that’s yours.</h2><p className="meta">Skating, a concert, a walk, a birthday—give your plan any name, then invite your people.</p></div><span className="note-card">Saved you a seat.</span></article>}
     {others.length>0&&<section className="row-list"><h2>Also on your list</h2>{others.slice(0,4).map(planRow)}{others.length>4&&<button className="text-button" onClick={plansView}>See all plans <ArrowUpRight size={15}/></button>}</section>}
-    <button className="primary block" onClick={()=>create()}>Start a plan</button>
     {demoCards}
    </>
 
@@ -167,14 +170,14 @@ export default function Home(){
     <section className="greeting"><h1>Plans</h1><p>Plans you’re hosting or going to.</p></section>
     {plans.length>0&&<div className="seg" role="group" aria-label="Filter plans">{[['all','All'],['gathering','Get-togethers'],['trip','Trips']].map(([key,label])=><button className={tab===key?'on':''} aria-pressed={tab===key} key={key} onClick={()=>setTab(key)}>{label}</button>)}</div>}
     {loading?<div className="loading"><LoaderCircle className="spin"/>Getting your plans…</div>
-    :filtered.length?<div className="card-grid">{filtered.map(x=><button className="plan-card" key={x.id} onClick={()=>open(x.id)}><Scene kind={sceneFor(x.kind,x.made_it)} seed={x.id}/><span className="card-body"><strong>{x.title}</strong><span className="meta">{when(x.date,x.end_date)}</span><span className="meta">{x.place||'Place to decide'}</span><span className="card-foot"><span>{x.going||0} going</span>{x.made_it?<span className="chip-made">Made it out</span>:(x.open_items||0)>0?<span className="chip-open">{x.open_items} open</span>:null}</span></span></button>)}</div>
+    :filtered.length?<div className="card-grid">{filtered.map(x=><button className="plan-card" key={x.id} onClick={()=>open(x.id)}><InviteArt plan={x}/><span className="card-body"><strong>{x.title}</strong><span className="meta">{when(x.date,x.end_date)}</span><span className="meta">{x.place||'Place to decide'}</span><span className="card-foot"><span>{x.going||0} going</span>{x.made_it?<span className="chip-made">Made it out</span>:(x.open_items||0)>0?<span className="chip-open">{x.open_items} open</span>:null}</span></span></button>)}</div>
     :<div className="empty-state"><h3>{plans.length?'Nothing here yet.':'No plans yet.'}</h3><p>Start one and paste the link in your group chat. Friends don’t need the app.</p></div>}
-    <button className="primary block" onClick={()=>create()}>Start a plan</button>
+    <button className="primary block" onClick={()=>create()}>Start your own plan</button>
     {demoCards}
    </>
 
    :<>
-    <div className={'plan-photo'+(!answered&&!detail!.host&&!demo?' compact':'')}><Scene kind={sceneFor(p!.kind,p!.made_it)} seed={p!.id}/>{demo?<span className="demo-badge">Demo · changes aren’t saved</span>:p!.made_it?<span className="demo-badge made">Made it out</span>:null}</div>
+    <div className={'plan-photo'+(!answered&&!detail!.host&&!demo?' compact':'')}><InviteArt plan={p!}/>{demo?<span className="demo-badge">Demo · changes aren’t saved</span>:p!.made_it?<span className="demo-badge made">Made it out</span>:null}</div>
     <section className="plan-head">
      <h1>{p!.title}</h1>
      <p className="host-line"><Face className="mini-avatar" seed={hostName||'?'} avatar={hostGuest?.avatar} photo={hostGuest?.photo}/>Hosted by {hostIsMe?'you':hostName||'the organizer'}</p>
@@ -269,12 +272,14 @@ export default function Home(){
    {modal==='help'?<><span className="say-it">say it: em-oh</span><h2 id="modal-title">Plan it in one place.<br/>Skip the endless group chat.</h2><p>One link holds the date, the address, who’s coming and who’s bringing what.</p>
     <ol className="help-steps"><li><b>Start with the idea.</b><span>A dinner, a trip, anything.</span></li><li><b>Bring your people.</b><span>Paste the link in your group chat. People say if they’re coming.</span></li><li><b>Vote on what’s undecided.</b><span>Vote on a date or place. The host picks the final choice.</span></li><li><b>Split up the list.</b><span>Everyone picks what they’ll bring or do.</span></li><li><b>Afterwards, share memories.</b><span>Post photos and thank-yous.</span></li></ol>
     <div className="help-note">m.o is free. Your plans are saved; demos are not. m.o never sends messages for you: you copy them and send them yourself. It doesn’t send reminders, take payments or make bookings. Anyone with a plan’s link can open it, so only share it with people you invited.</div>
-    <button className="primary block" onClick={()=>create()}>Start a plan</button></>
-   :<><span className="eyebrow">{modal==='edit'?'EDIT':'NEW PLAN'}</span><h2 id="modal-title">{modal==='edit'?'Edit plan':'What are we doing?'}</h2><p className="muted">{modal==='edit'?'Changes show up for everyone with the link.':'Just the basics to send the invite. Add the rest now or later.'}</p>
-    <form onSubmit={submit} className="plan-form">{<div className="type-selector"><button type="button" className={form.kind==='gathering'?'chosen':''} onClick={()=>setForm({...form,kind:'gathering'})}><Soup size={18}/>Get-together</button><button type="button" className={form.kind==='trip'?'chosen':''} onClick={()=>setForm({...form,kind:'trip'})}><MapPin size={18}/>Trip</button></div>}
-     <label>Give it a name<input autoComplete="off" required maxLength={100} value={form.title} onChange={e=>setForm({...form,title:e.target.value})} placeholder="Friendsgiving, Atlanta weekend, you name it…"/></label>
+    <button className="primary block" onClick={()=>create()}>Start your own plan</button></>
+   :<><span className="eyebrow">{modal==='edit'?'EDIT':'NEW PLAN'}</span><h2 id="modal-title">{modal==='edit'?'Edit plan':'What are we doing?'}</h2><p className="muted">{modal==='edit'?'Changes show up for everyone with the link.':'Your plan can be anything. Give it a name, choose a look if you want, and add details now or later.'}</p>
+    <form onSubmit={submit} className="plan-form">
+     <label>Give it a name<input autoComplete="off" required maxLength={100} value={form.title} onChange={e=>setForm({...form,title:e.target.value})} placeholder="Skating with friends, Sunday walk, my birthday…"/></label>
      {modal==='create'&&(askName?<label>Your name<input required maxLength={60} autoComplete="given-name" value={form.name} onChange={e=>setForm({...form,name:e.target.value})} placeholder="So guests know who’s hosting"/></label>
       :<p className="hosting-as">Hosting as <strong>{form.name}</strong><button type="button" className="text-button small" onClick={()=>setAskName(true)}>Change</button></p>)}
+     <details className="invite-customization"><summary>Customize your invite (optional)</summary><InviteStyle value={form} onChange={style=>setForm(f=>({...f,...style}))}/></details>
+     <details className="plan-layout"><summary>Layout options (optional)</summary><p className="fine">These change the checklist wording. Your plan can be any activity.</p><div className="type-selector"><button type="button" className={form.kind==='gathering'?'chosen':''} onClick={()=>setForm({...form,kind:'gathering'})}><Soup size={18}/>Get-together</button><button type="button" className={form.kind==='trip'?'chosen':''} onClick={()=>setForm({...form,kind:'trip'})}><MapPin size={18}/>Trip</button></div></details>
      <PlaceSearch value={form.place} onChange={v=>setForm(f=>({...f,place:v}))} onBookingLink={u=>{setForm(f=>({...f,bookingUrl:u}));notify('Saved as your booking link. Add the address when you have it.')}} onEvent={e=>{setForm(f=>({...f,title:f.title||e.name.slice(0,100),date:e.date?(/Z$|[+-]\d\d:\d\d$/.test(e.date)?local(e.date):e.date.slice(0,16)):f.date}));notify(e.date?'Added the venue and the event’s date and time. Change them if you’re going another day.':'Added the venue.')}}/>
      <div className="form-row"><label>{form.endDate||showEnd?'Starts':'When'} <small>(optional)</small><input type="datetime-local" value={form.date} onChange={e=>setForm({...form,date:e.target.value})}/></label>
       {form.endDate||showEnd?<label>Ends <small>{form.kind==='trip'?'(the last day)':'(same day or a later day)'}</small><input type="datetime-local" min={form.date||undefined} value={form.endDate} onChange={e=>setForm({...form,endDate:e.target.value})}/></label>:null}</div>
@@ -293,7 +298,7 @@ export default function Home(){
      </div></details>
      {error&&<p className="form-error" role="alert">{error}</p>}
      {modal==='edit'&&<div className="danger-zone"><button type="button" className="text-button danger" disabled={busy} onClick={deletePlan}><Trash2 size={15}/>Delete this plan</button><small>Removes the plan and everyone’s answers for good.</small></div>}
-     <div className="form-bottom"><span>Free to use.</span><button className="primary" disabled={busy}>{busy?<LoaderCircle className="spin" size={18}/>:<ArrowUpRight size={18}/>} {modal==='edit'?'Save changes':'Create plan'}</button></div>
+     <div className="form-bottom"><span>Free to use.</span><button className="primary" disabled={busy||!!themeError(form)}>{busy?<LoaderCircle className="spin" size={18}/>:<ArrowUpRight size={18}/>} {modal==='edit'?'Save changes':'Create plan'}</button></div>
     </form></>}
   </section></div>}
  </div>

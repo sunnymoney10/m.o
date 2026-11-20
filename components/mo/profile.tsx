@@ -25,7 +25,7 @@ export function ProfileView({me,loading,save,openPlan,start,uploadPhoto,removePh
    <p className={'mo-line'+(shown?.mo?'':' empty')}>{shown?.mo||'Add a line about what you’re down for.'}</p>
    {!!shown?.interests.length&&<div className="chips">{shown.interests.map(t=><span className="chip" key={t}>{t}</span>)}</div>}
    {style&&(p||editing)&&<span className="style-tag">{style[1]} · {style[2]}</span>}
-   {!editing&&<div className="profile-actions"><button className="primary plum" onClick={edit}><Pencil size={16}/>{p?'Edit my m.o':'Make my m.o'}</button><button className="outline-button" onClick={start}><Plus size={16}/>Start a plan</button></div>}
+   {!editing&&<div className="profile-actions"><button className="primary plum" onClick={edit}><Pencil size={16}/>{p?'Edit my m.o':'Make my m.o'}</button><button className="outline-button" onClick={start}><Plus size={16}/>Start your own plan</button></div>}
   </section>
 
   {editing&&<form className="panel profile-form" onSubmit={submit}>
@@ -46,7 +46,7 @@ export function ProfileView({me,loading,save,openPlan,start,uploadPhoto,removePh
    {me?.history.length?<div className="history-grid">{me.history.map(h=><button key={h.id} className="history-card" onClick={()=>openPlan(h.id)}>
     <Scene kind="night" seed={h.id}/>
     <strong>{h.title}</strong><small>{h.date?new Date(h.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):''}{h.place?' · '+h.place:''}</small></button>)}</div>
-   :<div className="empty-state"><div><h3>No past plans yet.</h3><p>Plans you went to show up here once the host marks them done.</p></div><button className="outline-button" onClick={start}>Start a plan <ArrowUpRight size={15}/></button></div>}
+   :<div className="empty-state"><div><h3>No past plans yet.</h3><p>Plans you went to show up here once the host marks them done.</p></div><button className="outline-button" onClick={start}>Start your own plan <ArrowUpRight size={15}/></button></div>}
    <p className="shared-note"><UsersRound size={18} strokeWidth={1.8}/>Shared with people in your plans</p>
   </section>
 

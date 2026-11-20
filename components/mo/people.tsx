@@ -78,7 +78,7 @@ export function PeopleTab({detail,act,busy,notify,startAdding=false,startMode=nu
  async function saveNote(e:React.FormEvent,g:Guest){e.preventDefault();if(!nf.status){notify('Choose what they told you.');return}
   const off=nf.status==='out'||nf.status==='invited',extra=off?0:nf.extra,body={status:nf.status,extraCount:extra,extraNames:extra?nf.extraNames:'',dietary:nf.dietary,staying:!off&&nf.staying,note:nf.note};
   const ok=await act(`guests/${g.id}/response`,'POST',body,d=>{const x=d.guests.find(y=>y.id===g.id);if(!x)return;Object.assign(x,{status:nf.status,extra_count:extra,extra_names:body.extraNames,extra_status:extra?'approved':'',dietary:nf.dietary,staying:body.staying,note:nf.note,source:nf.status==='invited'?'':'host',updated:new Date().toISOString()});if(nf.status==='out')d.tasks=d.tasks.map(t=>t.claimed_name===g.name?{...t,claimed_name:null,isMine:false,done:0,claim_source:''}:t)},nf.status==='invited'?`${g.name} is back to no reply yet.`:`Noted: ${g.name} ${nf.status==='in'?'is going':nf.status==='maybe'?'is still checking':'can’t make it'}${extra?` (+${extra}${body.extraNames?' '+body.extraNames:''})`:''}.`);
-  if(ok)setNoting(null)}
+  if(ok)setNoting(current=>current===g.id?null:current)}
  async function copyCheckIn(g:Guest){const text=checkInMessage(detail,g);try{await navigator.clipboard.writeText(text);notify(`Check-in for ${g.name} copied. Send it however you usually reach them.`)}catch{notify(text)}}
  // iPhone: Safari's AutoFill Contact fills these two boxes from any contact. Each one is added as a line below.
  function addOne(){const name=cleanName(one.name);if(!name){notify('Add a name first.');return}setAdding(a=>(a.trim()?a.trim()+'\n':'')+name+(one.tel.trim()?' '+one.tel.trim():''));setOne({name:'',tel:''});notify(`${name} is on the list below. Add the next one, or tap Add.`)}
@@ -137,7 +137,7 @@ export function PeopleTab({detail,act,busy,notify,startAdding=false,startMode=nu
     {g.note&&<small>{g.note}</small>}
     {!g.isHost&&g.source==='host'&&<small className="noted-tag">Noted by {host?'you':detail.organizer||'the host'}{g.updated?' · '+ago(g.updated):''} · not confirmed</small>}
     {!g.isHost&&host&&g.source==='guest'&&g.updated&&<small className="confirmed-tag"><Check size={12}/>Confirmed by {g.name.split(' ')[0]} · {ago(g.updated)}</small>}
-    {host&&!g.isHost&&<span className="row-tools"><button className="text-button small" onClick={()=>noting===g.id?setNoting(null):startNote(g)}><Pencil size={13}/>Update answer</button><button className="text-button small" onClick={()=>copyCheckIn(g)}><Copy size={13}/>Copy check-in</button></span>}
+    {host&&!g.isHost&&<span className="row-tools"><button className="text-button small" disabled={busy} onClick={()=>noting===g.id?setNoting(null):startNote(g)}><Pencil size={13}/>Update answer</button><button className="text-button small" onClick={()=>copyCheckIn(g)}><Copy size={13}/>Copy check-in</button></span>}
    </div>
    <span className={'status '+g.status+(g.source==='host'&&!g.isHost?' noted':'')}>{STATUS[g.status]||g.status}</span>
    {host&&!g.isHost&&<button className="icon-button" aria-label={'Remove '+g.name} disabled={busy} onClick={()=>remove(g)}><Trash2 size={15}/></button>}
