@@ -3,6 +3,7 @@ import {themeError} from '../../../lib/invite-theme';
 import {verifiedIdentity} from '../../../lib/request-identity';
 import {INVITE_SECRET,newInviteSecret,inviteHash,inviteExpiry} from '../../../lib/guest-access';
 import {cleanName} from '../../../lib/names';
+import {orderPlans} from '../../../lib/plan-order';
 import {newHostKey,hashHostKey,hostLink,HOST_KEY} from '../../../lib/host-key';
 import {placeResults,eventResults,eventTries,readQuery,withHouseNumber,censusResults} from '../../../lib/places';
 import {cleanAvatar,parseAvatar,parsePhoto} from '../../../lib/avatar';
@@ -121,7 +122,7 @@ async function handler(req:Request){
      (SELECT t.title FROM tasks t WHERE t.plan_id=p.id AND t.claimed_by IS NULL ORDER BY t.rowid LIMIT 1) AS open_item,
      (SELECT count(*) FROM polls v WHERE v.plan_id=p.id AND v.decided_option IS NULL) AS open_votes,
      CASE WHEN p.owner=?1 OR EXISTS(SELECT 1 FROM host_access h WHERE h.plan_id=p.id AND h.visitor=?1 AND h.key_hash=p.host_key_hash AND h.key_hash<>'') THEN (SELECT count(*) FROM guests g WHERE g.plan_id=p.id AND g.status='requested') ELSE 0 END AS requests
-     FROM plans p WHERE p.owner=?1 OR EXISTS(SELECT 1 FROM host_access h WHERE h.plan_id=p.id AND h.visitor=?1 AND h.key_hash=p.host_key_hash AND h.key_hash<>'') OR p.id IN (SELECT g.plan_id FROM guests g WHERE (g.actor=?1 AND g.invite_required=0) OR g.id IN (SELECT a.guest_id FROM guest_access a WHERE a.visitor=?1 AND a.invite_hash=g.invite_hash AND g.invite_expires>strftime('%Y-%m-%dT%H:%M:%fZ','now'))) ORDER BY p.created DESC`).bind(actor).all();return json({plans:results});}
+     FROM plans p WHERE p.owner=?1 OR EXISTS(SELECT 1 FROM host_access h WHERE h.plan_id=p.id AND h.visitor=?1 AND h.key_hash=p.host_key_hash AND h.key_hash<>'') OR p.id IN (SELECT g.plan_id FROM guests g WHERE (g.actor=?1 AND g.invite_required=0) OR g.id IN (SELECT a.guest_id FROM guest_access a WHERE a.visitor=?1 AND a.invite_hash=g.invite_hash AND g.invite_expires>strftime('%Y-%m-%dT%H:%M:%fZ','now'))) ORDER BY p.created DESC`).bind(actor).all();return json({plans:orderPlans(results as any[])});}
 
    if(req.method==='POST'){
     const b=await body();const title=str(b.title,100),name=str(b.name,60);if(!title||!name)return json({error:'Give the plan a title and tell us your name.'},400);
