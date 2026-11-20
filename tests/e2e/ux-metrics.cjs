@@ -9,7 +9,7 @@ const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173';
  const m={};let taps=0;const tap=async l=>{taps++;await l.click()};
  // Host: create a plan through the form
  const h=await phone();await h.goto(B);await h.waitForTimeout(1500);
- await h.getByRole('button',{name:'Start a plan'}).first().click();await h.waitForTimeout(300);
+ await h.getByRole('button',{name:'Start your own plan'}).first().click();await h.waitForTimeout(300);
  m.createFieldsShown=await h.locator('[role="dialog"] input:visible, [role="dialog"] textarea:visible').count();
  await h.getByLabel('Give it a name').fill('Friendsgiving');
  const nameField=h.getByLabel('Your name');if(await nameField.count()&&await nameField.isVisible())await nameField.fill('Ari');

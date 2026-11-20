@@ -23,8 +23,8 @@ const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173',O=process.argv[2]||requ
  check(await t.getByRole('tab').count()===3,'changing to “I can make it” brings the plan back');
  await t.getByRole('tab',{name:'Overview'}).click();await t.waitForTimeout(400);
  check(await t.getByRole('heading',{name:'Planning something yourself?'}).count()===1,'going guest sees the invitation on the overview');
- await t.getByRole('button',{name:'Start a plan'}).last().click();await t.waitForTimeout(500);
- check(await t.getByRole('heading',{name:'What are we doing?'}).count()===1,'Start a plan opens the new-plan form');
+ await t.getByRole('button',{name:'Start your own plan'}).last().click();await t.waitForTimeout(500);
+ check(await t.getByRole('heading',{name:'What are we doing?'}).count()===1,'Start your own plan opens the new-plan form');
  await t.keyboard.press('Escape');await t.waitForTimeout(300);
  await t.getByRole('button',{name:'Not now'}).click();await t.waitForTimeout(300);
  check(await t.getByRole('heading',{name:'Planning something yourself?'}).count()===0,'Not now hides it');

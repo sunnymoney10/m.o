@@ -15,7 +15,7 @@ const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173',O=process.argv[2]||requ
  const h=await phone();await h.goto(B);await h.waitForTimeout(2500);
  // ---------- Host ----------
  await task('Host','Create a plan (name, where, when)',async()=>{
-  await tap(h.getByRole('button',{name:'Start a plan'}).first());
+  await tap(h.getByRole('button',{name:'Start your own plan'}).first());
   await type(h.getByLabel('Give it a name'),'Friendsgiving');const yn=h.getByLabel('Your name');if(await yn.count()&&await yn.isVisible())await type(yn,'Ari');
   await type(h.getByRole('combobox'),'oak hall');await h.waitForTimeout(900);await tap(h.getByRole('option').first());
   await type(h.getByLabel(/^When/),'2026-11-26T18:00');
