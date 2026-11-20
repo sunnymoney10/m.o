@@ -30,10 +30,10 @@
     "journeys:answers": "node tests/e2e/answers.cjs",
     "journeys:items": "node tests/e2e/item-edit.cjs",
     "journeys:plusones": "node tests/e2e/plus-ones.cjs",
+    "journeys:genmoji": "node tests/e2e/genmoji.cjs",
     "journeys:access": "node tests/e2e/guest-access.cjs",
     "journeys:recovery": "node tests/e2e/recovery.cjs",
     "journeys:themes": "node tests/e2e/invite-theme.cjs"
-
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

@@ -694,6 +694,18 @@ html,body{overflow-x:clip}
 .plus-one-told{display:grid;gap:8px;border:2px solid #2f6b3a}
 .plus-one-told p{margin:0}
 .plus-one-told .plus-one-approve{text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+/* Picture from a Genmoji or emoji: a box to tap and pick from the emoji keyboard, then a round preview. */
+.genmoji-box{min-height:88px;padding:16px;border:2px dashed var(--line);border-radius:14px;background:var(--paper);font-size:34px;line-height:1.2;cursor:text;outline:none}
+.genmoji-box:focus{border-color:var(--brick);border-style:solid}
+.genmoji-box:empty::before{content:"Tap here";font-size:17px;color:var(--muted)}
+.genmoji-box img{max-height:56px}
+.genmoji-preview{width:128px;height:128px;border-radius:50%;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.genmoji-preview img{width:72%;height:72%;object-fit:contain}
+.genmoji-preview span{font-size:76px;line-height:1}
+.genmoji-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px}
+.genmoji-use{min-height:44px;width:auto;padding:0 18px}
+.avatar-picker .avatar-preview .seg.small{flex:1 1 100%}
+.avatar-picker .avatar-preview .seg.small button{flex:1;min-width:0;padding:0 6px}
 
 
 .invite-cover{display:block;width:100%;object-fit:cover;aspect-ratio:2/1}.invite-cover-upload input{min-height:44px;max-width:100%;padding:8px 0}.invite-cover-upload input::file-selector-button{min-height:44px;padding:8px 14px;border:1px solid #b8a9aa;border-radius:14px;color:#3a1a2b;background:#fffaf3;font:inherit;cursor:pointer}
