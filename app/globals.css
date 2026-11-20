@@ -731,7 +731,7 @@ html,body{overflow-x:clip}
 .legal-page h1{font-size:34px;line-height:1.1;color:#3a1a2b;margin:8px 0 0;font-weight:900;letter-spacing:-.02em}
 .legal-page h2{font-size:22px;color:#3a1a2b;margin:8px 0 8px;font-weight:800}
 .legal-page p,.legal-page li{font-size:17px;line-height:1.5;margin:0}
-.legal-page ul{margin:0;padding-left:22px;display:grid;gap:8px}
+.legal-page ul{margin:0;padding-left:22px;display:grid;gap:8px;list-style:disc}.legal-page li::marker{color:#b23b28}
 .legal-date{font-size:15px!important;color:#6f6066}
 .legal-intro{font-weight:600}
 .legal-page a{color:#b23b28;font-weight:600}
