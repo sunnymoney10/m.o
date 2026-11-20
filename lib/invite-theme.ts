@@ -11,3 +11,13 @@ export function themeError(v:{theme?:unknown;accent?:unknown;emoji?:unknown}){
  return '';
 }
 export function suggestedTheme(title:string){const t=title.toLowerCase();return /skat|roller/.test(t)?'skating':/concert|music|karaoke|band/.test(t)?'music':/hike|picnic|park|beach|walk/.test(t)?'outdoors':/birthday|party|celebrat/.test(t)?'celebration':/dinner|potluck|friendsgiving|brunch/.test(t)?'dinner':/trip|travel|weekend away/.test(t)?'travel':/game|board/.test(t)?'games':null}
+
+// One emoji is enough: familiar activities get a matching preset; other emoji get a stable color.
+export function styleFromEmoji(emoji:string){
+ const e=emoji.trim();if(!e||themeError({emoji:e}))return null;
+ const groups=[['skating','sky','🛼 🛹 ⛸️'],['music','plum','🎵 🎶 🎧 🎤 🎸 🎹 🥁 🎺 🎻'],['outdoors','sage','🌿 🌳 🌲 🌻 🌸 🌼 🌺 🏕️ 🏖️ 🥾 🏔️ 🌊 ☀️'],['dinner','blush','🍽️ 🍴 🍕 🍔 🌮 🍣 🍝 🥘 🥗 🍜 🥞 🧁 🍷 ☕'],['celebration','butter','🎉 🎊 🎂 🎈 🥳 🎁 🪩 💃 🕺'],['travel','sky','🧳 ✈️ 🚗 🚆 🚢 🗺️ 🌍 🏝️'],['games','butter','🎲 🎮 🃏 ♟️ 🏀 ⚽ 🏈 🎳']] as const;
+ const plain=e.replace(/\uFE0F/g,'');
+ const match=groups.find(([, ,list])=>list.split(' ').some(x=>x.replace(/\uFE0F/g,'')===plain));
+ const colors=Object.keys(INVITE_COLORS);const hash=Array.from(e).reduce((n,c)=>n+c.codePointAt(0)!,0);
+ return {emoji:e,theme:match?.[0]||'company',accent:match?.[1]||colors[hash%colors.length]};
+}

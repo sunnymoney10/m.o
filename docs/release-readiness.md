@@ -1,6 +1,6 @@
 # m.o release readiness (Friendsgiving)
 
-Updated 2026-11-19. Each claim names its evidence level:
+Updated 2026-11-20. Historical live evidence is retained; PR #27 changes below remain unshipped. Each claim names its evidence level:
 1 = design exists, 2 = code reviewed, 3 = automated tests pass, 4 = real people completed it on the live site.
 First level 4 evidence (2026-11-19): a real host (Queen Valesha) sent a real guest (Kofi) a personal invite to a UniverSoul Circus trip. Found: the page needed zooming out on his iPhone, guests could copy the invite link, and the trip said "bring". Also found: new trips came with vague placeholder jobs ("Agree the accommodation budget", "Choose the accommodation", "Organize the ride") that guests can't sensibly take. Trips now start with no jobs, show specific examples, and point decisions to votes. All fixed (level 3) and waiting for a second real try.
 
@@ -8,6 +8,7 @@ First level 4 evidence (2026-11-19): a real host (Queen Valesha) sent a real gue
 
 | Area | Status | Evidence | Gap |
 | --- | --- | --- | --- |
+| Custom invites | Implemented, unshipped | 3. Emoji-only style selection, browser-resized covers, host-only save/remove and host/guest phone checks pass. | Public preview unavailable; no physical-device or live-user check of these additions yet. |
 | Core journeys: create, invite, RSVP, update, cancel | Works | 3. Local phone journeys (host and guest) pass. Live check 2026-11-19: create, address search, add guests, personal invite text, guest RSVP, claim item, host sees it; test plan then deleted. | Update and cancel were tested locally, not live. No real users yet. |
 | Data persists | Works | 3. Live: a guest's answer from a second browser showed on the host's page after reload (real database). | None found. |
 | Permissions and privacy | Mostly | 3. API tests: host-only edits, address and booking link hidden until RSVP, phone numbers never reach the server, host links (host-only, hashed, replaceable, tries capped). Live: a stranger did not see the address. | This branch blocks answered-spot takeover by name, adds expiring/revocable personal secrets and requires host approval for arrival access. Local API and independent-device browser checks pass. Forwarded links still authorize their intended guest; door codes stay host-only. Not deployed or tested by real users yet. Host recovery is level 3 until tried live. |
@@ -108,3 +109,12 @@ API tests cover title freedom, empty task lists, palette/emoji validation, persi
 Theme evidence level 3: a custom skating title and empty task list are created through the UI; theme suggestion is explicitly selected; invalid emoji is explained before submission; the compact live preview is inspected; a tall host phone and small signed-out guest phone see the saved header; a later host restyle preserves the guest RSVP. SVG header colors/emoji are validated on the server. No live rollout, real SMS delivery or full accessibility certification is claimed. Core tap counts remain guest RSVP 1, claim 1 more, first host invite 5 and each next 3; optional theme choices add their own interactions.
 
 A final identity-domain regression also passes: signed gateway actors cannot alias browser bearer UUIDs, and a browser cookie cannot adopt a namespaced gateway owner. UUID-based gateway IDs must be prefixed as documented.
+
+
+### Emoji-only styling and uploaded covers (unshipped PR #27 follow-up)
+
+Source verified again before editing: main advanced to `4a25fdf` (#26 plus-one requests/approval). Merged it, retaining host approval, guest-passed links, privacy and four-person caps. All existing SQL migration contents remain unchanged. Reconciled the two differently named 0015 migrations in the unshipped journal/snapshots; generated `0018_swift_clea.sql` for cover image/time. Fresh-schema API tests execute every SQL migration and verify both plus-ones and host grants.
+
+One emoji now selects a theme and color without requiring a preset selection. Unknown emoji get a stable palette and remain the header artwork; manual theme/color adjustments are available. Alternatively, the host can upload an image. The browser center-crops/redraws it to 1000×500 JPEG under 96 KB before saving (20 MB source limit); browser decoding may require HEIC/AVIF users to choose JPEG/PNG instead. Redrawing strips original metadata. Images live in D1, use a separate no-store image response, are omitted from plan JSON and list payloads, and can be replaced/removed only by a host. Anyone with the plan link can view the cover; the UI explains this. Arrival details and door codes retain their separate protections. No provider/API key or R2 setup is needed.
+
+Evidence level 3: unit/API tests pass for emoji mapping/fallback, cover creation/update/removal, host-only writes, rejected remote URLs/SVG/oversize/malformed inputs, omitted image bytes in plan JSON, no-store responses, and preserving covers on unrelated edits. Tall-host/small-guest browser checks pass for emoji-only choices, bad upload recovery, image resize/display, retained image on reopen/save, removal back to emoji, and unchanged RSVP. `npm test`, `npm run check` and `npm run build` pass. All 18 merged browser suite commands passed: journeys, quiet, invites (including three-phone layout), places, dates, host, guest, answers, tabs, items, plusones, profile with a synthetic photo, access, recovery, themes, a11y, ux:metrics and ux:taps. Core interaction counts remain unchanged; optional emoji/upload choices add their own interactions. Public preview remains unavailable: this environment exposes no HTTP preview portal and temporary tunnel requests were blocked. No live deployment, audience change or real plan/RSVP mutation was made.

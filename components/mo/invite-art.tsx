@@ -5,6 +5,7 @@ import type {Plan} from '@/lib/types';
 
 // Invite styling is a small, deterministic header. Titles and details stay in normal app text.
 export function InviteArt({plan,className=''}:{plan:Plan;className?:string}){
+ if(plan.cover_url)return <img className={'scene invite-cover '+className} src={plan.cover_url} alt="Custom invite cover"/>;
  const theme=INVITE_THEMES.find(t=>t[0]===plan.theme)||INVITE_THEMES[0];
  if(theme[0]==='company'&&!plan.emoji&&(!plan.accent||plan.accent==='butter'))return <Scene className={className} kind={sceneFor(plan.kind,plan.made_it)} seed={plan.id}/>;
  const color=INVITE_COLORS[plan.accent as keyof typeof INVITE_COLORS]||INVITE_COLORS.butter,emoji=plan.emoji||theme[2];

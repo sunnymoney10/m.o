@@ -27,10 +27,10 @@ export function avatarColors(a:Avatar){return {skin:color(AVATAR.tones,a.tone),h
 // Profile photos are small images resized on the phone before upload, so they fit the free database tier.
 export const PHOTO_MAX_BYTES=48000;
 const PHOTO=/^data:image\/(jpeg|webp|png);base64,([A-Za-z0-9+/]+={0,2})$/;
-export function parsePhoto(v:unknown):{type:string;bytes:Uint8Array}|null{
- if(typeof v!=='string'||v.length>PHOTO_MAX_BYTES*1.4)return null;const m=PHOTO.exec(v);if(!m)return null;
+export function parsePhoto(v:unknown,maxBytes=PHOTO_MAX_BYTES):{type:string;bytes:Uint8Array}|null{
+ if(typeof v!=='string'||v.length>maxBytes*1.4)return null;const m=PHOTO.exec(v);if(!m)return null;
  let bin:string;try{bin=atob(m[2])}catch{return null}
- if(!bin.length||bin.length>PHOTO_MAX_BYTES)return null;
+ if(!bin.length||bin.length>maxBytes)return null;
  const bytes=Uint8Array.from(bin,c=>c.charCodeAt(0));
  // Check the file really is the image type it claims to be.
  const ok=m[1]==='jpeg'?bytes[0]===0xff&&bytes[1]===0xd8:m[1]==='png'?bytes[0]===0x89&&bytes[1]===0x50:String.fromCharCode(...bytes.slice(8,12))==='WEBP';

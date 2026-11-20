@@ -35,7 +35,7 @@ async function handler(req:Request){
   const url=new URL(req.url); const seg=url.pathname.split('/').filter(Boolean).slice(1);const db=env.DB;
   if(req.method!=='GET' && req.headers.get('origin')!==url.origin)return json({error:'Please submit from this site.'},403);
   if(!db)return json({error:'The shared database is not connected yet.'},503);
-  const maxBody=seg.join('/')==='me/photo'?72000:16000;
+  const maxBody=seg.join('/')==='me/photo'?72000:((seg[0]==='plans'&&seg.length===1&&req.method==='POST')||(seg[0]==='plan'&&seg.length===2&&req.method==='PATCH'))?160000:16000;
   if(req.headers.get('content-length') && Number(req.headers.get('content-length'))>maxBody)return json({error:'That request is too large.'},413);
   const body=async()=>{if(req.method==='GET'||req.method==='DELETE')return {} as any;try{return await req.json() as any}catch{return {} as any}};
 
@@ -113,7 +113,7 @@ async function handler(req:Request){
   if(seg[0]==='plans'&&seg.length===1){
    if(req.method==='GET'){
     // Address is shared only with the organizer and people who said in or maybe.
-    const {results}=await db.prepare(`SELECT p.id,p.title,p.kind,p.date,p.end_date,CASE WHEN p.owner=?1 OR EXISTS(SELECT 1 FROM host_access h WHERE h.plan_id=p.id AND h.visitor=?1 AND h.key_hash=p.host_key_hash AND h.key_hash<>'') OR EXISTS(SELECT 1 FROM guests m WHERE m.plan_id=p.id AND (m.actor=?1 OR m.id IN (SELECT a.guest_id FROM guest_access a WHERE a.visitor=?1 AND a.invite_hash=m.invite_hash AND m.invite_expires>strftime('%Y-%m-%dT%H:%M:%fZ','now'))) AND m.status IN ('in','maybe') AND m.details_approved=1) THEN p.place ELSE '' END AS place,p.budget,p.note,p.invite_url,p.created,p.made_it,p.theme,p.accent,p.emoji,
+    const {results}=await db.prepare(`SELECT p.id,p.title,p.kind,p.date,p.end_date,CASE WHEN p.owner=?1 OR EXISTS(SELECT 1 FROM host_access h WHERE h.plan_id=p.id AND h.visitor=?1 AND h.key_hash=p.host_key_hash AND h.key_hash<>'') OR EXISTS(SELECT 1 FROM guests m WHERE m.plan_id=p.id AND (m.actor=?1 OR m.id IN (SELECT a.guest_id FROM guest_access a WHERE a.visitor=?1 AND a.invite_hash=m.invite_hash AND m.invite_expires>strftime('%Y-%m-%dT%H:%M:%fZ','now'))) AND m.status IN ('in','maybe') AND m.details_approved=1) THEN p.place ELSE '' END AS place,p.budget,p.note,p.invite_url,p.created,p.made_it,p.theme,p.accent,p.emoji,CASE WHEN p.cover_updated<>'' THEN '/api/plan/'||p.id||'/cover?v='||p.cover_updated ELSE '' END AS cover_url,
      (SELECT coalesce(sum(1+CASE WHEN g.extra_status='approved' THEN g.extra_count ELSE 0 END),0) FROM guests g WHERE g.plan_id=p.id AND g.status='in') AS going,
      (SELECT count(*) FROM guests g WHERE g.plan_id=p.id AND g.status='maybe') AS maybe,
      (SELECT count(*) FROM guests g WHERE g.plan_id=p.id AND g.status='invited') AS invited,
@@ -126,6 +126,7 @@ async function handler(req:Request){
    if(req.method==='POST'){
     const b=await body();const title=str(b.title,100),name=str(b.name,60);if(!title||!name)return json({error:'Give the plan a title and tell us your name.'},400);
     {const e=themeError(b);if(e)return json({error:e},400)}
+    if(b.coverImage!==undefined&&b.coverImage!==''&&!parsePhoto(b.coverImage,96000))return json({error:'Choose a JPEG, PNG or WebP cover. m.o shrinks it before upload.'},400);
     if(b.date&&Number.isNaN(Date.parse(b.date)))return json({error:'Choose a valid date.'},400);
     {const e=endError(str(b.date,40),str(b.endDate,40));if(e)return json({error:e},400)}
     if(b.inviteUrl&&!invitation(b.inviteUrl))return json({error:'Use a valid HTTPS invitation link.'},400);
@@ -134,7 +135,7 @@ async function handler(req:Request){
     const today=await db.prepare('SELECT count(*) AS n FROM plans WHERE created>?').bind(new Date(Date.now()-86400000).toISOString()).first<any>();if((today?.n||0)>=dailyNewPlans())return json({error:'m.o has reached today’s limit for new plans. Please try again tomorrow.'},429);
     const recent=await db.prepare('SELECT count(*) AS n FROM plans WHERE owner=? AND created>?').bind(actor,new Date(Date.now()-86400000).toISOString()).first<any>();if((recent?.n||0)>=20)return json({error:'You’ve started a lot of plans today. Try again tomorrow.'},429);
     const id=crypto.randomUUID();const kind=b.kind==='trip'?'trip':'gathering';const taskList=Array.isArray(b.tasks)?b.tasks.slice(0,30):[];
-    const statements=[db.prepare('INSERT INTO plans (id,owner,title,kind,date,place,budget,note,invite_url,created,details,booking_url,end_date,door_code,theme,accent,emoji) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)').bind(id,actor,title,kind,str(b.date,40),str(b.place,160),str(b.budget,60),str(b.note,2000),invitation(b.inviteUrl),new Date().toISOString(),str(b.details,1000),https(b.bookingUrl),str(b.endDate,40),str(b.doorCode,200),b.theme||'company',b.accent||'butter',str(b.emoji,32)),db.prepare('INSERT INTO guests (plan_id,actor,name,status,note,id,invite_required) VALUES (?,?,?,?,?,?,1)').bind(id,actor,name,'in','',crypto.randomUUID())];
+    const statements=[db.prepare('INSERT INTO plans (id,owner,title,kind,date,place,budget,note,invite_url,created,details,booking_url,end_date,door_code,theme,accent,emoji,cover_image,cover_updated) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)').bind(id,actor,title,kind,str(b.date,40),str(b.place,160),str(b.budget,60),str(b.note,2000),invitation(b.inviteUrl),new Date().toISOString(),str(b.details,1000),https(b.bookingUrl),str(b.endDate,40),str(b.doorCode,200),b.theme||'company',b.accent||'butter',str(b.emoji,32),b.coverImage||'',b.coverImage?new Date().toISOString():''),db.prepare('INSERT INTO guests (plan_id,actor,name,status,note,id,invite_required) VALUES (?,?,?,?,?,?,1)').bind(id,actor,name,'in','',crypto.randomUUID())];
     for(const t of taskList){if(str(t?.title,160))statements.push(db.prepare('INSERT INTO tasks (id,plan_id,title,category,done) VALUES (?,?,?,?,0)').bind(crypto.randomUUID(),id,str(t.title,160),t.category==='bring'?'bring':'todo'));}
     await db.batch(statements);return json({id},201);
    }
@@ -147,6 +148,7 @@ async function handler(req:Request){
     if(grant)actor=grant.actor;
     else{const existing=await db.prepare('SELECT invite_required FROM guests WHERE plan_id=? AND (actor=? OR id IN (SELECT guest_id FROM guest_access WHERE visitor=?))').bind(id,visitor,visitor).first<any>();if(existing?.invite_required){actor='unverified:'+visitor;if(req.method!=='GET'&&seg[4]!=='pick')return json({error:'Your access has expired or was revoked. Ask your host for a new personal link.'},403)}}
    }
+   if(seg[2]==='cover'&&seg.length===3&&req.method==='GET'){const photo=parsePhoto(plan.cover_image,96000);return photo?new Response(photo.bytes.buffer as ArrayBuffer,{headers:{'Content-Type':photo.type,'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Content-Security-Policy':"default-src 'none'"}}):new Response('Not found',{status:404})}
    const guest=async()=>await db.prepare("SELECT name,status FROM guests WHERE plan_id=? AND actor=? AND status<>'invited'").bind(id,actor).first<any>();
    // Host-only activity log: what changed, and whether the host noted it or the person confirmed it. Keeps the newest 200.
    const now=new Date().toISOString();
@@ -162,7 +164,8 @@ async function handler(req:Request){
     const ss=await db.prepare("SELECT id,at,title,detail,url FROM stops WHERE plan_id=? ORDER BY CASE WHEN at='' THEN 1 ELSE 0 END,at,rowid").bind(id).all<any>();
     const acts=host?(await db.prepare('SELECT at,text,by_host FROM activity WHERE plan_id=? ORDER BY at DESC LIMIT 30').bind(id).all<any>()).results.map((a:any)=>({at:a.at,text:a.text,byHost:!!a.by_host})):[];
     const ms=await db.prepare('SELECT id,actor,name,kind,body,photo_url,created FROM memories WHERE plan_id=? ORDER BY created DESC').bind(id).all<any>();
-    const {owner,details,door_code,host_key_hash,open_plus_ones,...safe}=plan;
+    const {owner,details,door_code,host_key_hash,open_plus_ones,cover_image,cover_updated,...safe}=plan;
+    safe.cover_url=cover_updated?`/api/plan/${id}/cover?v=${cover_updated}`:'';
     // Plus-ones: someone a guest asked to bring. Pending or declined ones stay off the guest list; only the host
     // and the guest who asked see them. Approved ones are regular guests shown "with <name>".
     const all=gs.results,nameOf=new Map(all.map((g:any)=>[g.id,g.name])),me0=all.find((g:any)=>g.actor===actor);
@@ -206,14 +209,15 @@ async function handler(req:Request){
     if(!host)return json({error:'Only the organizer can change the plan details.'},403);
     const m={...plan,inviteUrl:plan.invite_url,bookingUrl:plan.booking_url,endDate:plan.end_date,madeIt:!!plan.made_it,...b};if(typeof m.details!=='string')m.details=plan.details;
     {const e=themeError(b);if(e)return json({error:e},400)}
+    if(b.coverImage!==undefined&&b.coverImage!==''&&!parsePhoto(b.coverImage,96000))return json({error:'Choose a JPEG, PNG or WebP cover. m.o shrinks it before upload.'},400);
     if(m.date&&Number.isNaN(Date.parse(m.date)))return json({error:'Choose a valid date.'},400);
     {const e=endError(str(m.date,40),str(m.endDate,40));if(e)return json({error:e},400)}
     if(m.inviteUrl&&!invitation(m.inviteUrl))return json({error:'Use a valid HTTPS invitation link.'},400);
     if(m.bookingUrl&&!https(m.bookingUrl))return json({error:'Use a valid HTTPS booking link.'},400);
     const title=str(m.title,100);if(!title)return json({error:'The plan needs a title.'},400);
-    const next={open_plus_ones:(b.openPlusOnes===undefined?!!plan.open_plus_ones:b.openPlusOnes===true)?1:0,theme:m.theme,accent:m.accent,emoji:str(m.emoji,32),kind:m.kind==='trip'?'trip':'gathering',booking_url:https(m.bookingUrl)||'',end_date:str(m.endDate,40),title,date:str(m.date,40),place:str(m.place,160),budget:str(m.budget,60),note:str(m.note,2000),details:str(m.details,1000)};
-    const changed=([['open_plus_ones','who can bring someone'],['kind','plan type'],['theme','invite theme'],['accent','background color'],['emoji','invite emoji'],['end_date','end date'],['booking_url','booking link'],['title','name'],['date','date and time'],['place','address'],['details','arrival notes'],['note','description'],['budget','budget']] as const).filter(([k])=>(plan[k]||'')!==(next[k]||'')).map(([,l])=>l);
-    await db.batch([db.prepare('UPDATE plans SET open_plus_ones=?,kind=?,end_date=?,booking_url=?,title=?,date=?,place=?,budget=?,note=?,invite_url=?,made_it=?,details=?,door_code=?,theme=?,accent=?,emoji=? WHERE id=?').bind(next.open_plus_ones,next.kind,next.end_date,next.booking_url||null,title,next.date,next.place,next.budget,next.note,invitation(m.inviteUrl),m.madeIt===true?1:0,next.details,b.doorCode===undefined?plan.door_code:str(b.doorCode,200),m.theme,m.accent,str(m.emoji,32),id),
+    const next={cover_image:b.coverImage===undefined?plan.cover_image:b.coverImage,open_plus_ones:(b.openPlusOnes===undefined?!!plan.open_plus_ones:b.openPlusOnes===true)?1:0,theme:m.theme,accent:m.accent,emoji:str(m.emoji,32),kind:m.kind==='trip'?'trip':'gathering',booking_url:https(m.bookingUrl)||'',end_date:str(m.endDate,40),title,date:str(m.date,40),place:str(m.place,160),budget:str(m.budget,60),note:str(m.note,2000),details:str(m.details,1000)};
+    const changed=([['cover_image','invite image'],['open_plus_ones','who can bring someone'],['kind','plan type'],['theme','invite theme'],['accent','background color'],['emoji','invite emoji'],['end_date','end date'],['booking_url','booking link'],['title','name'],['date','date and time'],['place','address'],['details','arrival notes'],['note','description'],['budget','budget']] as const).filter(([k])=>(plan[k]||'')!==(next[k]||'')).map(([,l])=>l);
+    await db.batch([db.prepare('UPDATE plans SET open_plus_ones=?,kind=?,end_date=?,booking_url=?,title=?,date=?,place=?,budget=?,note=?,invite_url=?,made_it=?,details=?,door_code=?,theme=?,accent=?,emoji=?,cover_image=?,cover_updated=? WHERE id=?').bind(next.open_plus_ones,next.kind,next.end_date,next.booking_url||null,title,next.date,next.place,next.budget,next.note,invitation(m.inviteUrl),m.madeIt===true?1:0,next.details,b.doorCode===undefined?plan.door_code:str(b.doorCode,200),m.theme,m.accent,str(m.emoji,32),next.cover_image,b.coverImage===undefined?plan.cover_updated:next.cover_image?now:'',id),
 
      ...(changed.length?log('You changed the '+changed.join(', ')):[]),...(m.madeIt===true&&!plan.made_it?log('You marked the plan as made it out'):[])]);return json({ok:true});
    }

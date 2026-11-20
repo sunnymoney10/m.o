@@ -695,3 +695,5 @@ html,body{overflow-x:clip}
 .plus-one-told p{margin:0}
 .plus-one-told .plus-one-approve{text-decoration:none;display:inline-flex;align-items:center;gap:6px}
 
+
+.invite-cover{display:block;width:100%;object-fit:cover;aspect-ratio:2/1}.invite-cover-upload input{min-height:44px;max-width:100%;padding:8px 0}.invite-cover-upload input::file-selector-button{min-height:44px;padding:8px 14px;border:1px solid #b8a9aa;border-radius:14px;color:#3a1a2b;background:#fffaf3;font:inherit;cursor:pointer}
