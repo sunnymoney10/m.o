@@ -26,3 +26,8 @@ for(const coverImage of ['https://example.com/private.jpg','data:image/svg+xml;b
 const other=await req(host,'plans','POST',{title:'An image from the start',name:'Host',coverImage:photo});assert.equal(other.status,201);assert.ok((await req(guest,'plan/'+other.body.id)).body.plan.cover_url);
 await req(host,'plan/'+id,'PATCH',{coverImage:''});assert.equal((await req(guest,'plan/'+id)).body.plan.cover_url,'');assert.equal((await fetch(B+'/api/plan/'+id+'/cover')).status,404,'removed images stop being served');
 console.log('PASS: emoji-only styling and fallback; host-only cover create/update/remove, raster validation and byte caps; separate cover URLs, no cached removed covers, unrelated edits preserve photos.');
+
+for(const emoji of ['1️⃣','#️⃣','*️⃣','🇯🇲','👩🏽‍🚀','👨‍👩‍👧‍👦']){assert.equal(themeError({emoji}),'');assert.equal(styleFromEmoji(emoji).emoji,emoji);}
+for(const emoji of ['1','#','*','\u20E3','1️⃣2️⃣'])assert.ok(themeError({emoji}));
+assert.equal((await req(host,'plan/'+other.body.id,'PATCH',{emoji:'1️⃣'})).status,200);assert.equal((await req(guest,'plan/'+other.body.id)).body.plan.emoji,'1️⃣');
+console.log('PASS: keycap, flag, skin-tone and joined emoji accepted; plain digits and multiple keycaps rejected; keycap saved through the API.');
