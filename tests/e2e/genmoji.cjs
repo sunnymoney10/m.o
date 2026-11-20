@@ -13,7 +13,7 @@ const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173',O=process.argv[2]||requ
  await a.getByRole('button',{name:/Edit my m.o/}).click();const picker=a.locator('.avatar-picker');
  await picker.getByRole('button',{name:'Genmoji'}).click();
  const box=picker.getByRole('textbox',{name:/pick a Genmoji or emoji/});check(await box.count()===1,'Genmoji box is there');
- check(/emoji key/.test(await picker.innerText()),'it explains: tap the box, then the emoji key');
+ check(/smiley-face key/.test(await picker.innerText()),'it explains: tap the box, then the smiley-face key');
  // A Genmoji arrives the way Safari inserts it: a see-through picture inside the box.
  await box.click();await a.evaluate(()=>{const c=document.createElement('canvas');c.width=c.height=160;const x=c.getContext('2d');x.fillStyle='#b23b28';x.beginPath();x.arc(80,80,60,0,7);x.fill();
   const box=document.querySelector('.genmoji-box');const img=document.createElement('img');img.src=c.toDataURL('image/png');img.alt='skating cat';box.appendChild(img);box.dispatchEvent(new Event('input',{bubbles:true}))});
