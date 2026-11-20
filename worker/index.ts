@@ -13,14 +13,22 @@ async function withInvitePreview(request: Request, env: Cloudflare.Env, pending:
   const response = await pending;
   const url = new URL(request.url);
   const id = url.searchParams.get("plan") || "";
-  if (request.method !== "GET" || url.pathname !== "/" || !PLAN_ID.test(id) || !(response.headers.get("content-type") || "").includes("text/html")) return response;
+  if (request.method !== "GET" || url.pathname !== "/" || !(response.headers.get("content-type") || "").includes("text/html")) return response;
+  // A preview picture for every shared link: the plan's own cover (a photo or Genmoji the host chose), otherwise an
+  // m.o illustration (public/og, made by scripts/og-images.cjs). Never the address or anyone's details.
+  const image = (src: string, w: number, h: number, alt: string) => `<meta property="og:image" content="${src}"><meta property="og:image:width" content="${w}"><meta property="og:image:height" content="${h}"><meta property="og:image:alt" content="${esc(alt)}"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="${src}">`;
+  if (!PLAN_ID.test(id)) {
+    if (url.search) return response;
+    const home = `<meta property="og:title" content="m.o: Make it out the groupchat"><meta property="og:description" content="One link for the plan, who’s coming, and who’s bringing what. Free."><meta property="og:type" content="website"><meta property="og:site_name" content="m.o"><meta property="og:url" content="${url.origin}/">${image(`${url.origin}/og/home.png`, 1200, 630, "Friends around a table, drawn in m.o’s style")}`;
+    return new HTMLRewriter().on("head", { element(el) { el.append(home, { html: true }); } }).transform(response);
+  }
   try {
     const db = (env as unknown as { DB?: D1Database }).DB;
-    const row = db && (await db.prepare("SELECT p.title, p.kind, g.name AS host FROM plans p LEFT JOIN guests g ON g.plan_id = p.id AND g.actor = p.owner WHERE p.id = ?").bind(id).first<{ title: string; kind: string; host: string | null }>());
+    const row = db && (await db.prepare("SELECT p.title, p.kind, p.cover_updated, length(p.cover_image) > 0 AS has_cover, g.name AS host FROM plans p LEFT JOIN guests g ON g.plan_id = p.id AND g.actor = p.owner WHERE p.id = ?").bind(id).first<{ title: string; kind: string; cover_updated: string | null; has_cover: number; host: string | null }>());
     if (!row) return response;
     const title = esc(row.host ? `${row.host} invited you: ${row.title}` : `You're invited: ${row.title}`);
     const description = esc(row.kind === "trip" ? "Tap to see the plan, say if you're in, and see what still needs doing." : "Tap to see the plan, say if you're coming, and pick something to bring.");
-    const tags = `<meta property="og:title" content="${title}"><meta property="og:description" content="${description}"><meta property="og:type" content="website"><meta property="og:site_name" content="m.o"><meta name="twitter:card" content="summary"><meta name="twitter:title" content="${title}"><meta name="description" content="${description}">`;
+    const tags = `<meta property="og:title" content="${title}"><meta property="og:description" content="${description}"><meta property="og:type" content="website"><meta property="og:site_name" content="m.o"><meta name="twitter:title" content="${title}"><meta name="description" content="${description}">${row.has_cover ? image(`${url.origin}/api/plan/${id}/cover?v=${encodeURIComponent(row.cover_updated || "")}`, 1000, 500, "The plan’s invite picture") : image(`${url.origin}/og/${row.kind === "trip" ? "trip" : "gathering"}.png`, 1200, 630, row.kind === "trip" ? "A road trip, drawn in m.o’s style" : "Friends around a table, drawn in m.o’s style")}`;
     return new HTMLRewriter()
       .on("title", { element(el) { el.setInnerContent(title, { html: true }); } })
       .on('meta[name="description"]', { element(el) { el.remove(); } })
@@ -54,10 +62,24 @@ async function shortLink(request: Request, env: Cloudflare.Env): Promise<Respons
   return row ? home(`?plan=${row.plan_id}&g=${id}`) : home("");
 }
 
+// Browser protections on every response. The page itself gets a content policy: scripts only from m.o (the app
+// inlines its own start-up data, so inline scripts stay allowed), fonts from Google Fonts, nothing may frame m.o,
+// and the page may only talk to m.o. Address and event searches run on the server, so no other host is needed.
+const CSP=["default-src 'self'",`script-src 'self' 'unsafe-inline'${import.meta.env.DEV?" 'unsafe-eval'":''}`,"style-src 'self' 'unsafe-inline' https://fonts.googleapis.com","font-src 'self' https://fonts.gstatic.com","img-src 'self' data: blob:",`connect-src 'self'${import.meta.env.DEV?' ws: wss:':''}`,"frame-ancestors 'none'","base-uri 'self'","form-action 'self'","object-src 'none'"].join('; ');
+function secure(r:Response,html:boolean):Response{
+  if(r.status===101)return r;
+  const headers=new Headers(r.headers);
+  headers.set('X-Content-Type-Options','nosniff');
+  headers.set('Strict-Transport-Security','max-age=31536000; includeSubDomains');
+  headers.set('Permissions-Policy','camera=(), microphone=(), geolocation=(self), payment=(), usb=(), interest-cohort=()');
+  if(html){headers.set('Content-Security-Policy',CSP);headers.set('X-Frame-Options','DENY')}
+  return new Response(r.body,{status:r.status,statusText:r.statusText,headers});
+}
+
 const worker = {
   async fetch(request: Request, env: Cloudflare.Env, ctx: ExecutionContext<{ CONNECTORS?: ConnectorBinding }>) {
     const short = await shortLink(request, env);
-    if (short) return short;
+    if (short) return secure(short,false);
     let binding = ctx.props?.CONNECTORS;
     // Local preview emulates the same request-scoped capability. This branch and
     // the auxiliary service binding are absent from production builds.
@@ -85,9 +107,9 @@ const worker = {
       const headers=new Headers(rendered.headers);headers.set('Referrer-Policy','no-referrer');headers.set('Cache-Control','no-store');
       if(!/(?:^|; )mo_session=[a-f0-9-]{36}(?:;|$)/.test(request.headers.get('cookie')||''))headers.append('Set-Cookie',`mo_session=${crypto.randomUUID()}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=31536000`);
       headers.set('Cache-Control','private, no-store');
-      return new Response(rendered.body,{status:rendered.status,statusText:rendered.statusText,headers});
+      return secure(new Response(rendered.body,{status:rendered.status,statusText:rendered.statusText,headers}),true);
     }
-    return rendered;
+    return secure(rendered,false);
   },
 };
 

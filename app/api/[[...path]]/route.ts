@@ -21,12 +21,17 @@ function interestsOf(v:unknown){return Array.isArray(v)?[...new Set(v.map(x=>str
 function parseInterests(s:string){try{const v=JSON.parse(s);return Array.isArray(v)?v:[]}catch{return []}}
 const placeHits=new Map<string,number[]>(),hostTries=new Map<string,number[]>();
 // Writes down that a request failed, and where (method and route shape only, never IDs or what was sent).
-async function recordError(req:Request){try{const db=env.DB;if(!db)return;const seg=new URL(req.url).pathname.split('/').filter(Boolean).slice(1);
+function areaOf(req:Request){const seg=new URL(req.url).pathname.split('/').filter(Boolean).slice(1);
  const shape=seg[0]==='plan'?['plan',...seg.slice(2).filter((_,i)=>i%2===0)]:seg.slice(0,2);
- const area=(req.method+' '+shape.map(x=>/^[a-z-]{1,20}$/.test(x)?x:'?').join('/')).slice(0,60);
+ return (req.method+' '+shape.map(x=>/^[a-z-]{1,20}$/.test(x)?x:'?').join('/')).slice(0,60)}
+async function recordError(req:Request){try{const db=env.DB;if(!db)return;const area=areaOf(req);
  await db.batch([db.prepare('INSERT INTO errors (id,at,area) VALUES (?,?,?)').bind(crypto.randomUUID(),new Date().toISOString(),area),db.prepare('DELETE FROM errors WHERE id NOT IN (SELECT id FROM errors ORDER BY at DESC LIMIT 500)')]);
 }catch{}}
-async function handler(req:Request){
+// Adds one to today's count for this kind of action (method and route shape only, e.g. "POST plan/rsvp").
+async function countUse(req:Request){try{const db=env.DB;if(!db)return;
+ await db.prepare('INSERT INTO usage_counts (day,area,n) VALUES (?,?,1) ON CONFLICT(day,area) DO UPDATE SET n=n+1').bind(new Date().toISOString().slice(0,10),areaOf(req)).run()}catch{}}
+async function handler(req:Request){const res=await answer(req);if(req.method!=='GET'&&res.status<400)await countUse(req);return res}
+async function answer(req:Request){
  const cookies=req.headers.get('cookie')||''; let session=cookies.match(/(?:^|; )mo_session=([a-f0-9-]{36})(?:;|$)/)?.[1]; const fresh=!session;session ||=crypto.randomUUID();
  const visitor=await verifiedIdentity(req,(env as {MO_IDENTITY_SECRET?:string}).MO_IDENTITY_SECRET)||session;let actor=visitor;
  const json=(obj:unknown,status=200)=>new Response(JSON.stringify(obj),{status,headers:{'Content-Type':'application/json','Cache-Control':'no-store','Referrer-Policy':'no-referrer',...(fresh?{'Set-Cookie':`mo_session=${session}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=31536000`}:{})}});
@@ -295,7 +300,8 @@ async function handler(req:Request){
     if(!names.length)return json({error:'Add at least one name.'},400);
     const {results:existing}=await db.prepare('SELECT lower(name) AS n FROM guests WHERE plan_id=?').bind(id).all<any>();const have=new Set(existing.map((x:any)=>x.n));
     const fresh=names.filter(n=>{const k=n.toLowerCase();if(have.has(k))return false;have.add(k);return true});if(existing.length+fresh.length>150)return json({error:'A plan can have up to 150 people.'},400);
-    if(fresh.length)await db.batch(fresh.map(n=>db.prepare('INSERT INTO guests (plan_id,actor,name,status,note,id,invite_required) VALUES (?,?,?,?,?,?,1)').bind(id,'invite:'+crypto.randomUUID(),n,'invited','',crypto.randomUUID())));
+    // People the host adds by name are trusted with the address once they answer (the host can still hide it).
+    if(fresh.length)await db.batch(fresh.map(n=>db.prepare('INSERT INTO guests (plan_id,actor,name,status,note,id,invite_required,details_approved) VALUES (?,?,?,?,?,?,1,1)').bind(id,'invite:'+crypto.randomUUID(),n,'invited','',crypto.randomUUID())));
     return json({ok:true,added:fresh.length,skipped:names.length-fresh.length});
    }
    if(seg[2]==='guests'&&seg[3]){
@@ -321,8 +327,10 @@ async function handler(req:Request){
      if(row.actor===plan.owner)return json({error:'Only the host can manage a guest’s personal link.'},403);
      if(b.revoke){await db.batch([db.prepare("UPDATE guests SET invite_hash='',invite_expires='',invite_required=1,details_approved=0 WHERE plan_id=? AND id=?").bind(id,row.id),...log(`You revoked ${row.name}’s personal link`)]);return json({ok:true})}
      const secret=newInviteSecret(),hash=await inviteHash(secret),expires=inviteExpiry();
-     const keep=!!row.with_guest&&!row.invite_hash;// a plus-one's first link keeps the approval they came with
-     await db.batch([db.prepare('UPDATE guests SET invite_hash=?,invite_expires=?,invite_required=1,details_approved=? WHERE plan_id=? AND id=?').bind(hash,expires,keep?row.details_approved:0,id,row.id),...log(host?`You made a new personal link for ${row.name}`:`Personal link made for ${row.name}`,host)]);
+     // A replaced link keeps the host's choice about arrival details. A first link (or one after a revoke) for someone
+     // the host added by name shares them once they answer; a plus-one keeps the approval they came with.
+     const approved=row.invite_hash||row.with_guest?row.details_approved:1;
+     await db.batch([db.prepare('UPDATE guests SET invite_hash=?,invite_expires=?,invite_required=1,details_approved=? WHERE plan_id=? AND id=?').bind(hash,expires,approved,id,row.id),...log(host?`You made a new personal link for ${row.name}`:`Personal link made for ${row.name}`,host)]);
      return json({link:`${url.origin}/i/${secret}`,expires});
     }
     if(seg[4]==='access'&&req.method==='POST'){

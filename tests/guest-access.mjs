@@ -15,7 +15,8 @@ assert.ok(!JSON.stringify((await req(stranger,base)).body).includes(token),'secr
 assert.equal((await req(a,`${base}/guests/${ga.id}/pick`,'POST',{token})).status,200);
 assert.equal((await req(a,`${base}/rsvp`,'POST',{name:'A',status:'in',dietary:'PRIVATE DIET',note:'PRIVATE NOTE'})).status,200);
 await req(a,`${base}/tasks/${task.id}`,'PATCH',{action:'claim'});
-d=(await req(a,base)).body;assert.equal(d.plan.place,'','RSVP does not grant arrival access');assert.equal(d.guests.find(g=>g.isMe).note,'PRIVATE NOTE');
+d=(await req(a,base)).body;assert.equal(d.plan.place,'PRIVATE ADDRESS','a guest the host invited by name sees the address after answering');
+await req(host,`${base}/guests/${ga.id}/access`,'POST',{approved:false});d=(await req(a,base)).body;assert.equal(d.plan.place,'','the host can hide it again');assert.equal(d.guests.find(g=>g.isMe).note,'PRIVATE NOTE');
 assert.ok(!JSON.stringify((await req(stranger,base)).body).includes('PRIVATE'),'notes and arrival details not public');
 assert.equal((await req(stranger,`${base}/guests/${ga.id}/access`,'POST',{approved:true})).status,403);
 await req(host,`${base}/guests/${ga.id}/access`,'POST',{approved:true});
@@ -30,7 +31,7 @@ const replaced=(await req(host,`${base}/guests/${ga.id}/invite`,'POST',{})).body
 for(const device of [a,b]){d=(await req(device,base)).body;assert.equal(d.plan.place,'');assert.ok(!d.guests.some(g=>g.isMe));assert.ok(!(await req(device,'me')).body.history.some(p=>p.id===id),'revoked access cannot leak an address through profile history');assert.equal((await req(device,`${base}/rsvp`,'POST',{name:'A',status:'out'})).status,403)}
 assert.equal((await req(stranger,`${base}/guests/${ga.id}/pick`,'POST',{token})).status,403,'replaced token cannot restore access');
 assert.equal((await req(a,`${base}/guests/${ga.id}/pick`,'POST',{token:replaced})).status,200);
-assert.equal((await req(a,base)).body.plan.place,'','replacement resets arrival approval');
+assert.equal((await req(a,base)).body.plan.place,'PRIVATE ADDRESS','a replaced link keeps the host’s choice (here: shared)');
 await req(host,`${base}/guests/${ga.id}/invite`,'POST',{revoke:true});
 assert.equal((await req(a,`${base}/tasks/${task.id}`,'PATCH',{action:'done'})).status,403,'revocation stops contribution writes');
 assert.equal((await req(stranger,`${base}/guests/${ga.id}/pick`,'POST',{token:replaced})).status,403);

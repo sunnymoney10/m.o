@@ -30,9 +30,10 @@
     "journeys:answers": "node tests/e2e/answers.cjs",
     "journeys:items": "node tests/e2e/item-edit.cjs",
     "journeys:plusones": "node tests/e2e/plus-ones.cjs",
+    "journeys:previews": "node tests/e2e/link-preview.cjs && node tests/e2e/site-basics.cjs",
     "journeys:order": "node tests/e2e/plan-order.cjs",
     "journeys:genmoji": "node tests/e2e/genmoji.cjs && node tests/e2e/genmoji-invite.cjs",
-    "journeys:access": "node tests/e2e/guest-access.cjs",
+    "journeys:access": "node tests/e2e/guest-access.cjs && node tests/e2e/address-by-name.cjs",
     "journeys:recovery": "node tests/e2e/recovery.cjs",
     "journeys:themes": "node tests/e2e/invite-theme.cjs"
   },

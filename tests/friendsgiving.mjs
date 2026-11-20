@@ -18,13 +18,22 @@ assert.ok(!leaks(r.body,'1420 Elm','Buzz 3B',ari,tess,'invite:'),'no private det
 const tessRow=r.body.guests.find(g=>g.name==='Tess');assert.equal(tessRow.status,'invited');
 r=await request(stranger,'plans');assert.ok(!r.body.plans.some(p=>p.id===id),'opening a link does not add the plan to your list');
 
-const issued=(await request(ari,`plan/${id}/guests/${tessRow.id}/invite`,'POST',{})).body.link;const token=issued.split('/').at(-1);
+const issued=(await request(ari,`plan/${id}/guests/${tessRow.id}/invite`,'POST',{})).body.link;let token=issued.split('/').at(-1);
 // Tess picks her name, RSVPs with a plus-one, dietary needs and a sleepover request.
 r=await request(tess,`plan/${id}/guests/${tessRow.id}/pick`,'POST',{token});assert.equal(r.status,200);
 r=await request(tess,'plan/'+id);assert.equal(r.body.plan.place,'','picking a name alone does not reveal the address');
 r=await request(tess,`plan/${id}/rsvp`,'POST',{name:'Tess',status:'in',note:'',extraCount:1,extraNames:'Ben',dietary:'Vegetarian',staying:true});assert.equal(r.status,200);
-assert.equal((await request(tess,'plan/'+id)).body.plan.place,'','RSVP alone does not approve arrival access');
+// Tess was invited by name, so answering shows her the address (no extra approval step).
+assert.equal((await request(tess,'plan/'+id)).body.plan.place,'1420 Elm St, Apt 3B','a guest invited by name sees the address once she answers');
+// Ari can still hide it from her, and a replaced link keeps that choice; sharing again brings it back.
+await request(ari,`plan/${id}/guests/${tessRow.id}/access`,'POST',{approved:false});
+assert.equal((await request(tess,'plan/'+id)).body.plan.place,'','the host can hide arrival details from a named guest');
+{token=(await request(ari,`plan/${id}/guests/${tessRow.id}/invite`,'POST',{})).body.link.split('/').at(-1);assert.equal((await request(tess,`plan/${id}/guests/${tessRow.id}/pick`,'POST',{token})).status,200);
+ assert.equal((await request(tess,'plan/'+id)).body.plan.place,'','a replaced link keeps the host’s choice to hide it');}
 await request(ari,`plan/${id}/guests/${tessRow.id}/access`,'POST',{approved:true});
+// A stranger from the group link who answers still needs Ari's OK.
+{const walkIn=crypto.randomUUID();await request(walkIn,`plan/${id}/rsvp`,'POST',{name:'Walk In',status:'in'});assert.equal((await request(walkIn,'plan/'+id)).body.plan.place,'','a stranger from the group link who answers still needs the host’s approval');
+ const w=(await request(ari,'plan/'+id)).body.guests.find(g=>g.name==='Walk In');assert.equal((await request(ari,`plan/${id}/guests/${w.id}`,'DELETE')).status,200);}
 r=await request(tess,'plan/'+id);assert.equal(r.body.plan.place,'1420 Elm St, Apt 3B');assert.equal(r.body.details,'Park on Elm. Buzz 3B.');
 let me=r.body.guests.find(g=>g.isMe);assert.equal(me.extra_status,'requested');assert.equal(me.dietary,'Vegetarian');assert.equal(me.staying,true);
 assert.equal(r.body.guests.filter(g=>g.name==='Tess').length,1,'picked spot, not a duplicate');
