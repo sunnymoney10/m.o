@@ -1,13 +1,15 @@
-export type Plan={theme?:string;accent?:string;emoji?:string;id:string;title:string;kind:string;date:string;place:string;budget:string;note:string;going?:number;maybe?:number;open_items?:number;open_item?:string|null;open_votes?:number;invited?:number;invite_url?:string|null;booking_url?:string|null;end_date?:string;made_it?:number};
+export type Plan={theme?:string;accent?:string;emoji?:string;id:string;title:string;kind:string;date:string;place:string;budget:string;note:string;going?:number;maybe?:number;open_items?:number;open_item?:string|null;open_votes?:number;requests?:number;invited?:number;invite_url?:string|null;booking_url?:string|null;end_date?:string;made_it?:number};
+
 export type Task={id:string;title:string;category:string;claimed_name:string|null;done:number;isMine:boolean;claim_source?:string};
 import type {Avatar} from './avatar';
-export type Guest={needsPersonalLink?:boolean;inviteRequired?:boolean;detailsApproved?:boolean;avatar?:Avatar|null;photo?:string|null;id?:string;name:string;status:string;note:string;isMe:boolean;isHost?:boolean;extra_count?:number;extra_names?:string;extra_status?:string;dietary?:string;staying?:boolean;check_back?:string;source?:string;updated?:string;handle?:string|null;mo?:string|null;interests?:string[]};
+export type Guest={withName?:string|null;hasLink?:boolean;needsPersonalLink?:boolean;inviteRequired?:boolean;detailsApproved?:boolean;avatar?:Avatar|null;photo?:string|null;id?:string;name:string;status:string;note:string;isMe:boolean;isHost?:boolean;extra_count?:number;extra_names?:string;extra_status?:string;dietary?:string;staying?:boolean;check_back?:string;source?:string;updated?:string;handle?:string|null;mo?:string|null;interests?:string[]};
 export type PollOption={id:string;label:string;votes:number;voters:string[];mine:boolean};
 export type Poll={id:string;question:string;kind:'date'|'place'|'choice';decided_option:string|null;options:PollOption[]};
 export type Stop={id:string;at:string;title:string;detail:string;url:string|null};
 export type Memory={id:string;name:string;kind:'memory'|'shoutout';body:string;photo_url:string|null;created:string;isMine:boolean};
 export type Activity={at:string;text:string;byHost:boolean};
-export type Detail={doorCode?:string;plan:Plan;host:boolean;hasHostKey?:boolean;activity?:Activity[];organizer?:string|null;details?:string;hidden?:boolean;guests:Guest[];tasks:Task[];polls:Poll[];stops:Stop[];memories:Memory[]};
+export type PlusOne={id:string;name:string;status:string;hasLink:boolean};
+export type Detail={openPlusOnes?:boolean;plusOneRequests?:{id:string;name:string;withName:string}[];myPlusOnes?:PlusOne[];plusOnesLeft?:number;doorCode?:string;plan:Plan;host:boolean;hasHostKey?:boolean;activity?:Activity[];organizer?:string|null;details?:string;hidden?:boolean;guests:Guest[];tasks:Task[];polls:Poll[];stops:Stop[];memories:Memory[]};
 export type Act=(path:string,method:string,body:unknown,demo:(d:Detail)=>void,message?:string)=>Promise<boolean>;
 export type Profile={name:string;handle:string;mo:string;interests:string[];style:string;avatar?:Avatar|null;photo?:string|null};
 export type Me={recoveredPlans?:number;profile:Profile|null;history:{id:string;title:string;kind:string;date:string;place:string}[];cities:string[];contributed:number;hosted:number};

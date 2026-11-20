@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "c6df5c33-bed3-478f-ab68-0a2c15322733",
+  "id": "84bece90-fb34-40c2-abb2-047ca5ffe96c",
   "prevId": "65ae4fc0-4041-4e5c-b7a2-a96f46c6dc68",
   "tables": {
     "activity": {
@@ -299,6 +299,14 @@
           "notNull": true,
           "autoincrement": false,
           "default": 0
+        },
+        "with_guest": {
+          "name": "with_guest",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "''"
         }
       },
       "indexes": {
@@ -346,53 +354,6 @@
             "actor"
           ],
           "name": "guests_plan_id_actor_pk"
-        }
-      },
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "host_access": {
-      "name": "host_access",
-      "columns": {
-        "plan_id": {
-          "name": "plan_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "visitor": {
-          "name": "visitor",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "key_hash": {
-          "name": "key_hash",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        }
-      },
-      "indexes": {
-        "host_access_visitor_idx": {
-          "name": "host_access_visitor_idx",
-          "columns": [
-            "visitor"
-          ],
-          "isUnique": false
-        }
-      },
-      "foreignKeys": {},
-      "compositePrimaryKeys": {
-        "host_access_plan_id_visitor_pk": {
-          "columns": [
-            "plan_id",
-            "visitor"
-          ],
-          "name": "host_access_plan_id_visitor_pk"
         }
       },
       "uniqueConstraints": {},
@@ -605,6 +566,14 @@
           "notNull": true,
           "autoincrement": false,
           "default": "''"
+        },
+        "open_plus_ones": {
+          "name": "open_plus_ones",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
         }
       },
       "indexes": {

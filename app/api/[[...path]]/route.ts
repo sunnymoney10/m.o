@@ -119,8 +119,10 @@ async function handler(req:Request){
      (SELECT count(*) FROM guests g WHERE g.plan_id=p.id AND g.status='invited') AS invited,
      (SELECT count(*) FROM tasks t WHERE t.plan_id=p.id AND t.claimed_by IS NULL) AS open_items,
      (SELECT t.title FROM tasks t WHERE t.plan_id=p.id AND t.claimed_by IS NULL ORDER BY t.rowid LIMIT 1) AS open_item,
-     (SELECT count(*) FROM polls v WHERE v.plan_id=p.id AND v.decided_option IS NULL) AS open_votes
+     (SELECT count(*) FROM polls v WHERE v.plan_id=p.id AND v.decided_option IS NULL) AS open_votes,
+     CASE WHEN p.owner=?1 OR EXISTS(SELECT 1 FROM host_access h WHERE h.plan_id=p.id AND h.visitor=?1 AND h.key_hash=p.host_key_hash AND h.key_hash<>'') THEN (SELECT count(*) FROM guests g WHERE g.plan_id=p.id AND g.status='requested') ELSE 0 END AS requests
      FROM plans p WHERE p.owner=?1 OR EXISTS(SELECT 1 FROM host_access h WHERE h.plan_id=p.id AND h.visitor=?1 AND h.key_hash=p.host_key_hash AND h.key_hash<>'') OR p.id IN (SELECT g.plan_id FROM guests g WHERE (g.actor=?1 AND g.invite_required=0) OR g.id IN (SELECT a.guest_id FROM guest_access a WHERE a.visitor=?1 AND a.invite_hash=g.invite_hash AND g.invite_expires>strftime('%Y-%m-%dT%H:%M:%fZ','now'))) ORDER BY p.created DESC`).bind(actor).all();return json({plans:results});}
+
    if(req.method==='POST'){
     const b=await body();const title=str(b.title,100),name=str(b.name,60);if(!title||!name)return json({error:'Give the plan a title and tell us your name.'},400);
     {const e=themeError(b);if(e)return json({error:e},400)}
@@ -152,7 +154,7 @@ async function handler(req:Request){
    const answer=(status:string,count:number,names:string)=>(status==='in'?'going':status==='maybe'?'still checking':status==='out'?'can’t make it':'no reply yet')+(count?` (+${count}${names?' '+names:''})`:'');
 
    if(seg.length===2 && req.method==='GET'){
-    const gs=await db.prepare('SELECT g.id,g.name,g.status,g.note,g.actor,g.extra_count,g.extra_names,g.extra_status,g.dietary,g.staying,g.source,g.updated,g.check_back,g.invite_required,g.details_approved,pr.handle,pr.mo,pr.interests,pr.avatar,pr.photo_updated FROM guests g LEFT JOIN profiles pr ON pr.actor=g.actor WHERE g.plan_id=? ORDER BY g.rowid').bind(id).all<any>();
+    const gs=await db.prepare('SELECT g.id,g.name,g.status,g.note,g.actor,g.extra_count,g.extra_names,g.extra_status,g.dietary,g.staying,g.source,g.updated,g.check_back,g.invite_required,g.details_approved,g.with_guest,length(g.invite_hash)>0 AS has_link,pr.handle,pr.mo,pr.interests,pr.avatar,pr.photo_updated FROM guests g LEFT JOIN profiles pr ON pr.actor=g.actor WHERE g.plan_id=? ORDER BY g.rowid').bind(id).all<any>();
     const ts=await db.prepare('SELECT * FROM tasks WHERE plan_id=? ORDER BY rowid').bind(id).all<any>();
     const ps=await db.prepare('SELECT * FROM polls WHERE plan_id=? ORDER BY created').bind(id).all<any>();
     const os=await db.prepare('SELECT o.id,o.poll_id,o.label FROM poll_options o JOIN polls p ON p.id=o.poll_id WHERE p.plan_id=? ORDER BY o.rowid').bind(id).all<any>();
@@ -160,7 +162,14 @@ async function handler(req:Request){
     const ss=await db.prepare("SELECT id,at,title,detail,url FROM stops WHERE plan_id=? ORDER BY CASE WHEN at='' THEN 1 ELSE 0 END,at,rowid").bind(id).all<any>();
     const acts=host?(await db.prepare('SELECT at,text,by_host FROM activity WHERE plan_id=? ORDER BY at DESC LIMIT 30').bind(id).all<any>()).results.map((a:any)=>({at:a.at,text:a.text,byHost:!!a.by_host})):[];
     const ms=await db.prepare('SELECT id,actor,name,kind,body,photo_url,created FROM memories WHERE plan_id=? ORDER BY created DESC').bind(id).all<any>();
-    const {owner,details,door_code,host_key_hash,...safe}=plan;
+    const {owner,details,door_code,host_key_hash,open_plus_ones,...safe}=plan;
+    // Plus-ones: someone a guest asked to bring. Pending or declined ones stay off the guest list; only the host
+    // and the guest who asked see them. Approved ones are regular guests shown "with <name>".
+    const all=gs.results,nameOf=new Map(all.map((g:any)=>[g.id,g.name])),me0=all.find((g:any)=>g.actor===actor);
+    const listed=all.filter((g:any)=>g.status!=='requested'&&g.status!=='declined');
+    const plusOneRequests=host?all.filter((g:any)=>g.status==='requested').map((g:any)=>({id:g.id,name:g.name,withName:nameOf.get(g.with_guest)||'A guest'})):[];
+    const myPlusOnes=me0&&!host?all.filter((g:any)=>g.with_guest&&g.with_guest===me0.id).map((g:any)=>({id:g.id,name:g.name,status:g.status,hasLink:!!g.has_link})):[];
+    const plusOnesLeft=me0&&!host?Math.max(0,4-(me0.extra_count||0)-myPlusOnes.filter((x:any)=>x.status!=='declined').length):0;
     // Private details (address, arrival notes, itinerary) reach the organizer and people who said in or maybe.
     const mine=gs.results.find((g:any)=>g.actor===actor),insider=host||(!!mine&&['in','maybe'].includes(mine.status)&&!!mine.details_approved);
     const hidden=!insider&&!!(safe.place||safe.booking_url||details||ss.results.length);if(!insider){safe.place='';safe.booking_url=null}
@@ -168,7 +177,8 @@ async function handler(req:Request){
     return json({plan:safe,host,hasHostKey:host&&!!host_key_hash,activity:acts,organizer:gs.results.find((g:any)=>g.actor===owner)?.name||null,
      details:insider?details:'',...(host?{doorCode:door_code}:{}),hidden,
      // Dietary needs, sleepover requests and pending plus-ones are visible only to the organizer and the guest.
-     guests:gs.results.map(({actor:a,interests,dietary,staying,check_back,extra_count,extra_names,extra_status,avatar,photo_updated,invite_required,details_approved,...g}:any)=>{const own=a===actor,see=host||own,extra=see||extra_status==='approved';return {...g,needsPersonalLink:!!invite_required,...(host?{inviteRequired:!!invite_required,detailsApproved:!!details_approved}:{}),note:see?g.note:'',avatar:parseAvatar(avatar),photo:photo_updated?`/api/plan/${id}/guests/${g.id}/photo?v=${encodeURIComponent(photo_updated)}`:null,isHost:a===owner,interests:interests?parseInterests(interests):[],isMe:own,extra_count:extra?extra_count:0,extra_names:extra?extra_names:'',extra_status:extra?extra_status:'',...(see?{dietary,staying:!!staying,check_back:check_back||''}:{})}}),
+     openPlusOnes:!!open_plus_ones,plusOneRequests,myPlusOnes,plusOnesLeft,
+     guests:listed.map(({actor:a,interests,dietary,staying,check_back,extra_count,extra_names,extra_status,avatar,photo_updated,invite_required,details_approved,with_guest,has_link,...g}:any)=>{const own=a===actor,see=host||own,extra=see||extra_status==='approved';return {...g,withName:with_guest?nameOf.get(with_guest)||null:null,needsPersonalLink:!!invite_required,...(host?{inviteRequired:!!invite_required,detailsApproved:!!details_approved,hasLink:!!has_link}:{}),note:see?g.note:'',avatar:parseAvatar(avatar),photo:photo_updated?`/api/plan/${id}/guests/${g.id}/photo?v=${encodeURIComponent(photo_updated)}`:null,isHost:a===owner,interests:interests?parseInterests(interests):[],isMe:own,extra_count:extra?extra_count:0,extra_names:extra?extra_names:'',extra_status:extra?extra_status:'',...(see?{dietary,staying:!!staying,check_back:check_back||''}:{})}}),
      tasks:ts.results.map(({claimed_by,...t}:any)=>({...t,isMine:claimed_by===actor})),
      polls,stops:insider?ss.results:[],
      memories:ms.results.map(({actor:a,...m}:any)=>({...m,isMine:a===actor}))});
@@ -201,9 +211,10 @@ async function handler(req:Request){
     if(m.inviteUrl&&!invitation(m.inviteUrl))return json({error:'Use a valid HTTPS invitation link.'},400);
     if(m.bookingUrl&&!https(m.bookingUrl))return json({error:'Use a valid HTTPS booking link.'},400);
     const title=str(m.title,100);if(!title)return json({error:'The plan needs a title.'},400);
-    const next={theme:m.theme,accent:m.accent,emoji:str(m.emoji,32),kind:m.kind==='trip'?'trip':'gathering',booking_url:https(m.bookingUrl)||'',end_date:str(m.endDate,40),title,date:str(m.date,40),place:str(m.place,160),budget:str(m.budget,60),note:str(m.note,2000),details:str(m.details,1000)};
-    const changed=([['kind','plan type'],['theme','invite theme'],['accent','background color'],['emoji','invite emoji'],['end_date','end date'],['booking_url','booking link'],['title','name'],['date','date and time'],['place','address'],['details','arrival notes'],['note','description'],['budget','budget']] as const).filter(([k])=>(plan[k]||'')!==next[k]).map(([,l])=>l);
-    await db.batch([db.prepare('UPDATE plans SET kind=?,end_date=?,booking_url=?,title=?,date=?,place=?,budget=?,note=?,invite_url=?,made_it=?,details=?,door_code=?,theme=?,accent=?,emoji=? WHERE id=?').bind(next.kind,next.end_date,next.booking_url||null,title,next.date,next.place,next.budget,next.note,invitation(m.inviteUrl),m.madeIt===true?1:0,next.details,b.doorCode===undefined?plan.door_code:str(b.doorCode,200),m.theme,m.accent,str(m.emoji,32),id),
+    const next={open_plus_ones:(b.openPlusOnes===undefined?!!plan.open_plus_ones:b.openPlusOnes===true)?1:0,theme:m.theme,accent:m.accent,emoji:str(m.emoji,32),kind:m.kind==='trip'?'trip':'gathering',booking_url:https(m.bookingUrl)||'',end_date:str(m.endDate,40),title,date:str(m.date,40),place:str(m.place,160),budget:str(m.budget,60),note:str(m.note,2000),details:str(m.details,1000)};
+    const changed=([['open_plus_ones','who can bring someone'],['kind','plan type'],['theme','invite theme'],['accent','background color'],['emoji','invite emoji'],['end_date','end date'],['booking_url','booking link'],['title','name'],['date','date and time'],['place','address'],['details','arrival notes'],['note','description'],['budget','budget']] as const).filter(([k])=>(plan[k]||'')!==(next[k]||'')).map(([,l])=>l);
+    await db.batch([db.prepare('UPDATE plans SET open_plus_ones=?,kind=?,end_date=?,booking_url=?,title=?,date=?,place=?,budget=?,note=?,invite_url=?,made_it=?,details=?,door_code=?,theme=?,accent=?,emoji=? WHERE id=?').bind(next.open_plus_ones,next.kind,next.end_date,next.booking_url||null,title,next.date,next.place,next.budget,next.note,invitation(m.inviteUrl),m.madeIt===true?1:0,next.details,b.doorCode===undefined?plan.door_code:str(b.doorCode,200),m.theme,m.accent,str(m.emoji,32),id),
+
      ...(changed.length?log('You changed the '+changed.join(', ')):[]),...(m.madeIt===true&&!plan.made_it?log('You marked the plan as made it out'):[])]);return json({ok:true});
    }
    // "Still checking": the guest says when to check back. Saved on their answer; the host sees it. m.o never messages anyone.
@@ -223,7 +234,9 @@ async function handler(req:Request){
     // A status-only reply preserves private fields. Explicit fields in the full form may clear them.
     const saved={...prev,...b};
     const out=b.status==='out';const freed=out?(await db.prepare('SELECT title FROM tasks WHERE plan_id=? AND claimed_by=?').bind(id,actor).all<any>()).results.map((t:any)=>t.title):[];
-    const count=out?0:Math.max(0,Math.min(4,Math.floor(Number(b.extraCount===undefined?prev?.extra_count:b.extraCount)||0))),names=count?str(b.extraNames===undefined?prev?.extra_names:b.extraNames,120):'';
+    const brought=prev?(await db.prepare("SELECT count(*) AS n FROM guests WHERE plan_id=? AND with_guest=(SELECT id FROM guests WHERE plan_id=? AND actor=?) AND status<>'declined'").bind(id,id,actor).first<any>())?.n||0:0;
+    const count=out?0:Math.max(0,Math.min(4-brought,Math.floor(Number(b.extraCount===undefined?prev?.extra_count:b.extraCount)||0))),names=count?str(b.extraNames===undefined?prev?.extra_names:b.extraNames,120):'';
+
     // Extra guests are a request until the organizer approves; changing the request asks again.
     const same=prev&&prev.extra_count===count&&prev.extra_names===names;
     const extraStatus=!count?'':host?'approved':same&&prev.extra_status?prev.extra_status:'requested';
@@ -246,6 +259,30 @@ async function handler(req:Request){
    }
 
    // ---- Guest list: the organizer's invitees, picking your name, plus-one decisions, removal ----
+   // ---- Plus-ones: a guest who answered asks to bring someone (counts toward their 4 extra spots). ----
+   if(seg[2]==='plus-ones'){
+    const me=await db.prepare("SELECT id,name,status,extra_count FROM guests WHERE plan_id=? AND actor=? AND status IN ('in','maybe')").bind(id,actor).first<any>();
+    if(host)return json({error:'You’re the host: add them to your guest list instead.'},400);
+    if(!me)return json({error:'Answer that you’re coming or checking first.'},403);
+    if(seg.length===3&&req.method==='POST'){
+     const name=cleanName(str(b.name,80));if(!name||!/\p{L}/u.test(name))return json({error:'Type their name.'},400);
+     const mine=await db.prepare("SELECT count(*) AS n FROM guests WHERE plan_id=? AND with_guest=? AND status<>'declined'").bind(id,me.id).first<any>();
+     if((me.extra_count||0)+(mine?.n||0)>=4)return json({error:'You can bring up to 4 people.'},400);
+     const total=await db.prepare('SELECT count(*) AS n FROM guests WHERE plan_id=?').bind(id).first<any>();if((total?.n||0)>=150)return json({error:'This plan is full. Ask the host.'},400);
+     if(await db.prepare('SELECT 1 FROM guests WHERE plan_id=? AND lower(name)=lower(?)').bind(id,name).first())return json({error:`${name} is already on the list. Use a last name or initial to tell them apart.`},409);
+     const open=!!plan.open_plus_ones,gid=crypto.randomUUID();
+     await db.batch([db.prepare("INSERT INTO guests (plan_id,actor,name,status,note,id,invite_required,details_approved,with_guest) VALUES (?,?,?,?,'',?,1,?,?)").bind(id,'invite:'+crypto.randomUUID(),name,open?'invited':'requested',gid,open?1:0,me.id),
+      ...log(open?`${me.name} added ${name} (bringing them)`:`${me.name} asked to bring ${name}`,false)]);
+     return json({ok:true,id:gid,status:open?'invited':'requested'},201);
+    }
+    if(seg.length===4&&req.method==='DELETE'){
+     const row=await db.prepare("SELECT name,status FROM guests WHERE plan_id=? AND id=? AND with_guest=?").bind(id,str(seg[3],40),me.id).first<any>();
+     if(!row)return json({error:'That request is no longer there.'},404);
+     if(row.status!=='requested'&&row.status!=='declined')return json({error:'They’re already on the guest list. Ask the host to remove them.'},400);
+     await db.batch([db.prepare('DELETE FROM guests WHERE plan_id=? AND id=?').bind(id,str(seg[3],40)),...(row.status==='requested'?log(`${me.name} withdrew the request to bring ${row.name}`,false):[])]);return json({ok:true});
+    }
+    return json({error:'Not found.'},404);
+   }
    if(seg[2]==='guests'&&seg.length===3&&req.method==='POST'){
     if(!host)return json({error:'Only the organizer can add to the guest list.'},403);
     // Names only: phone numbers, emails and emoji are stripped before anything is stored.
@@ -262,11 +299,25 @@ async function handler(req:Request){
      // Anyone with the plan link can see guests' profile photos, like their names.
      const r=await db.prepare('SELECT photo FROM profiles WHERE actor=?').bind(row.actor).first<any>();return image(r?.photo);
     }
+    if(seg[4]==='plus-one'&&req.method==='POST'){
+     if(!host)return json({error:'Only the host can approve who comes.'},403);
+     if(row.status!=='requested')return json({error:'That request was already answered.'},400);
+     const ok=b.decision==='approved';if(!ok&&b.decision!=='declined')return json({error:'Approve or decline the request.'},400);
+     const by=await db.prepare('SELECT name FROM guests WHERE plan_id=? AND id=?').bind(id,row.with_guest).first<any>();
+     // Approving also shares arrival details with them once they say they're coming (the owner's choice).
+     await db.batch([db.prepare('UPDATE guests SET status=?,details_approved=? WHERE plan_id=? AND id=?').bind(ok?'invited':'declined',ok?1:0,id,row.id),...log(`You ${ok?'approved':'declined'} ${by?.name||'a guest'} bringing ${row.name}`)]);
+     return json({ok:true});
+    }
     if(seg[4]==='invite'&&req.method==='POST'){
-     if(!host||row.actor===plan.owner)return json({error:'Only the host can manage a guest’s personal link.'},403);
+     // The guest who brought them may make their first personal link (never replace or revoke it: that stays with the host).
+     const bringer=!host&&!!row.with_guest&&!b.revoke&&!row.invite_hash&&row.status==='invited'&&!!await db.prepare("SELECT 1 FROM guests WHERE plan_id=? AND id=? AND actor=? AND status IN ('in','maybe')").bind(id,row.with_guest,actor).first();
+     if(row.status==='requested'||row.status==='declined')return json({error:'Approve the request first.'},400);
+     if(!host&&!bringer)return json({error:row.with_guest&&row.invite_hash?'Their link is already made. Ask the host to send it again.':'Only the host can manage a guest’s personal link.'},403);
+     if(row.actor===plan.owner)return json({error:'Only the host can manage a guest’s personal link.'},403);
      if(b.revoke){await db.batch([db.prepare("UPDATE guests SET invite_hash='',invite_expires='',invite_required=1,details_approved=0 WHERE plan_id=? AND id=?").bind(id,row.id),...log(`You revoked ${row.name}’s personal link`)]);return json({ok:true})}
      const secret=newInviteSecret(),hash=await inviteHash(secret),expires=inviteExpiry();
-     await db.batch([db.prepare('UPDATE guests SET invite_hash=?,invite_expires=?,invite_required=1,details_approved=0 WHERE plan_id=? AND id=?').bind(hash,expires,id,row.id),...log(`You made a new personal link for ${row.name}`)]);
+     const keep=!!row.with_guest&&!row.invite_hash;// a plus-one's first link keeps the approval they came with
+     await db.batch([db.prepare('UPDATE guests SET invite_hash=?,invite_expires=?,invite_required=1,details_approved=? WHERE plan_id=? AND id=?').bind(hash,expires,keep?row.details_approved:0,id,row.id),...log(host?`You made a new personal link for ${row.name}`:`Personal link made for ${row.name}`,host)]);
      return json({link:`${url.origin}/i/${secret}`,expires});
     }
     if(seg[4]==='access'&&req.method==='POST'){

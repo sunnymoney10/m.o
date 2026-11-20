@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "df5e45e5-264f-496d-a7a0-ca0584c68a35",
-  "prevId": "c6df5c33-bed3-478f-ab68-0a2c15322733",
+  "id": "c6df5c33-bed3-478f-ab68-0a2c15322733",
+  "prevId": "84bece90-fb34-40c2-abb2-047ca5ffe96c",
   "tables": {
     "activity": {
       "name": "activity",
@@ -299,6 +299,14 @@
           "notNull": true,
           "autoincrement": false,
           "default": 0
+        },
+        "with_guest": {
+          "name": "with_guest",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "''"
         }
       },
       "indexes": {
@@ -606,29 +614,13 @@
           "autoincrement": false,
           "default": "''"
         },
-        "theme": {
-          "name": "theme",
-          "type": "text",
+        "open_plus_ones": {
+          "name": "open_plus_ones",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'company'"
-        },
-        "accent": {
-          "name": "accent",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "'butter'"
-        },
-        "emoji": {
-          "name": "emoji",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "''"
+          "default": 0
         }
       },
       "indexes": {

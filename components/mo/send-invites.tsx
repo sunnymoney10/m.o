@@ -22,7 +22,9 @@ export function SendInvites({detail,notify,onClose,onSent}:{detail:Detail;notify
  const linkFor=(g:Guest)=>{const v=store.links?.[g.id!];return v&&v.expires>new Date().toISOString()?v.url:''};
  async function prepare(g:Guest,revoke=false){if(demo){const links={...store.links};if(revoke)delete links[g.id!];else links[g.id!]={url:location.origin+'/?plan='+id,expires:new Date(Date.now()+30*86400000).toISOString()};update({...store,links});notify(revoke?'Demo personal link revoked. Nothing was saved.':'Demo personal link prepared. Nothing will be sent.');return}setPreparing(true);try{const r=await fetch(`/api/plan/${id}/guests/${g.id}/invite`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({revoke})});const j=await r.json() as {error?:string;link:string;expires:string};if(!r.ok)throw Error(j.error);const links={...store.links};if(revoke)delete links[g.id!];else links[g.id!]={url:j.link,expires:j.expires};update({...store,links});notify(revoke?'Personal link revoked. Existing access is stopped.':'Personal link ready. Older links for this person no longer work.')}catch(e){notify(e instanceof Error?e.message:'Could not prepare the link.')}finally{setPreparing(false)}}
  const message=(g:Guest)=>fillMessage(template,{first:g.name.split(' ')[0],plan:detail.plan.title,when:whenText(detail.plan.date,detail.plan.end_date),link:linkFor(g)});
- const queue=guests.filter(g=>!store.sent[nameKey(g.name)]&&g.status==='invited');
+ const madeByGuest=(g:Guest)=>!!g.withName&&!!g.hasLink&&!linkFor(g);
+ const queue=guests.filter(g=>!store.sent[nameKey(g.name)]&&g.status==='invited'&&!madeByGuest(g));
+ const viaText=(g:Guest,url:string)=>`Hi ${g.withName!.split(' ')[0]}! Here’s ${g.name.split(' ')[0]}’s invite to ${detail.plan.title}. Can you send it to them? ${url}`;
  const next=queue[0];
  function markSent(g:Guest){update({...store,sent:{...store.sent,[nameKey(g.name)]:new Date().toISOString()}});onSent();notify(`${demo?'Demo preview for':'Opening Messages for'} ${g.name}. ${demo?'Nothing was sent or saved.':'Tap Send there, then come back.'}`)}
 
@@ -34,10 +36,12 @@ export function SendInvites({detail,notify,onClose,onSent}:{detail:Detail;notify
     :next?<button className="primary block" disabled={preparing} onClick={()=>prepare(next)}>{preparing?'Preparing…':`Prepare invite for ${next.name}`}</button>:<p className="all-sent"><Check size={16}/>Messages has been opened for everyone, or they have already answered. Check that you sent each text.</p>}
    <ul className="invite-rows">{guests.map(g=>{const k=nameKey(g.name),sent=store.sent[k],answered=g.status!=='invited';return <li key={g.id}>
     <Face className="mini-avatar" seed={g.handle||g.name} avatar={g.avatar} photo={g.photo}/>
-    <div className="invite-who"><strong>{g.name}</strong>
+    <div className="invite-who"><strong>{g.name}{g.withName&&<span className="with-guest"> · with {g.withName}</span>}</strong>
      <input type="tel" inputMode="tel" autoComplete="off" aria-label={`${g.name}’s phone number (optional)`} placeholder="Phone (optional)" maxLength={24} value={store.phones[k]||''} onChange={e=>update({...store,phones:{...store.phones,[k]:e.target.value}})}/>
-     <small>{answered?'Already answered':sent?`Messages opened ${ago(sent)}`:'Not sent yet'}</small></div>
+     <small>{answered?'Already answered':sent?`Messages opened ${ago(sent)}`:madeByGuest(g)?`${g.withName} already has their link`:'Not sent yet'}</small></div>
     {linkFor(g)&&(demo?<button className="outline-button" onClick={()=>markSent(g)}>Preview</button>:<a className={sent||answered?'outline-button':'outline-button brick'} href={smsHref(store.phones[k]||'',message(g))} onClick={()=>markSent(g)}><Send size={15}/>{sent?'Again':'Send'}</a>)}
+    {!demo&&g.withName&&linkFor(g)&&!answered&&<a className="text-button small via-guest-link" href={smsHref(store.phones[nameKey(g.withName)]||'',viaText(g,linkFor(g)))}><Send size={14}/>Send it to {g.withName} to pass on</a>}
+
     <div className="invite-access-actions"><button className="text-button small" disabled={preparing} onClick={()=>prepare(g)}>{linkFor(g)?'Replace personal link':'Prepare personal link'}</button><button className="text-button small quiet" disabled={preparing} onClick={()=>prepare(g,true)}>Revoke personal link</button></div>
    </li>})}</ul>
    {editing?<label className="template">Your message <small>{'{first}'} becomes their first name; {'{link}'} their personal link.</small><textarea rows={4} maxLength={600} value={template} onChange={e=>update({...store,template:e.target.value})}/><span className="row-gap"><button className="text-button" onClick={()=>setEditing(false)}>Done</button><button className="text-button quiet" onClick={()=>update({...store,template:undefined})}>Reset to default</button></span></label>

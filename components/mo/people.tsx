@@ -12,6 +12,7 @@ import {Face} from './art';
 import {splitNames,cleanName} from '@/lib/names';
 import {loadInvites,saveInvites,phonesFromText} from '@/lib/invite';
 import {SendInvites} from './send-invites';
+import {BringSomeone} from './plus-ones';
 
 // The browser contact picker (Chrome on Android). Not available in Safari on iPhone by default, so the button only
 // appears where it works. Names go to m.o; phone numbers stay on this phone (see lib/invite.ts). Emails are never asked for.
@@ -108,6 +109,7 @@ export function PeopleTab({detail,act,busy,notify,startAdding=false,startMode=nu
     {me!.source==='host'&&<span className="noted-tag">Noted by {detail.organizer||'the host'} · not confirmed by you yet</span>}{me!.dietary&&<span>Dietary: {me!.dietary}</span>}{me!.staying&&<span>Asked to stay over</span>}</div>
    <button className="outline-button" onClick={()=>{setF({name:me!.name,status:me!.status,extra:me!.extra_count||0,extraNames:me!.extra_names||'',dietary:me!.dietary||'',staying:!!me!.staying,note:me!.note||''});setEditing(true)}}>Change</button>
   </div>}
+  {answered&&!editing&&!host&&(me!.status==='in'||me!.status==='maybe')&&<BringSomeone detail={detail} act={act} busy={busy} notify={notify}/>}
   {host&&(sending?<SendInvites detail={detail} notify={notify} onClose={()=>setSending(false)} onSent={()=>onInviteSent?.()}/>:guests.some(g=>!g.isHost)&&<button className="primary block" onClick={()=>setSending(true)}><Send size={17}/>Send invites</button>)}
   {host&&!editing&&<button className="text-button" onClick={()=>{setF(x=>({...x,name:me?.name||x.name,status:me?.status||'in',extra:me?.extra_count||0,extraNames:me?.extra_names||''}));setEditing(true)}}>Update my own RSVP</button>}
 
@@ -126,7 +128,7 @@ export function PeopleTab({detail,act,busy,notify,startAdding=false,startMode=nu
 
   <div className="guest-list">{sorted.map(g=><div className="guest-block" key={g.id||g.name}><div className="guest">
    <Face className="avatar" seed={g.handle||g.name} avatar={g.avatar} photo={g.photo}/>
-   <div className="guest-info"><strong>{g.name}{g.isMe&&g.name!=='You'?' (you)':''}{g.isHost?<em> · host</em>:null}</strong>
+   <div className="guest-info"><strong>{g.name}{g.isMe&&g.name!=='You'?' (you)':''}{g.isHost?<em> · host</em>:null}</strong>{g.withName&&<span className="with-guest">with {g.withName}</span>}
     {g.extra_status==='approved'&&!!g.extra_count&&<small>{plusLine(g)}</small>}
     {host&&g.extra_status==='requested'&&<span className="request">Asks to bring {plusLine(g)}<span><button className="text-button small" disabled={busy} onClick={()=>decide(g,'approved')}>Approve</button><button className="text-button small quiet" disabled={busy} onClick={()=>decide(g,'declined')}>Decline</button></span></span>}
     {host&&g.extra_status==='declined'&&<small>Extra guest declined</small>}
