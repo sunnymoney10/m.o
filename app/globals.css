@@ -569,8 +569,8 @@ legend{font-weight:600;font-size:14px;margin-bottom:8px;color:var(--ink)}
 .invite-who input{padding:8px 12px;font-size:15px;min-height:44px}
 .invite-who small{color:var(--muted)}
 .invite-rows .outline-button{text-decoration:none;padding-inline:14px}
-.preview{display:grid;gap:6px;padding:14px;border-radius:14px;background:var(--cream)}
-.preview p{white-space:pre-wrap;font-size:15px}
+.preview{display:grid;grid-template-columns:minmax(0,1fr);gap:6px;padding:14px;border-radius:14px;background:var(--cream)}
+.preview p{white-space:pre-wrap;font-size:15px;margin:0;overflow-wrap:anywhere;word-break:break-word}
 .preview .text-button{justify-self:start}
 .template{display:grid;gap:6px}
 
@@ -631,4 +631,6 @@ html,body{overflow-x:clip}
 .try-mo .eyebrow{color:var(--sky-ink)}
 .try-mo .text-button{justify-self:start}
 
-.invite-rows li{flex-wrap:wrap}.invite-access-actions{display:flex;flex:1 1 100%;gap:12px;flex-wrap:wrap;padding-left:48px}.invite-access-actions button{min-height:44px}.invite-access-actions button:active{transform:translateY(1px)}
+/* Link actions get their own full-width line under the row (in the grid's first column they stretched the avatar column and squeezed the name). */
+@media (max-width:380px){.invite-rows .outline-button{grid-column:2;justify-self:start}}
+.invite-access-actions{grid-column:1/-1;display:flex;gap:4px 16px;flex-wrap:wrap;padding-left:48px}.invite-access-actions button{min-height:44px}.invite-access-actions button:active{transform:translateY(1px)}

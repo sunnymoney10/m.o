@@ -21,6 +21,7 @@ const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173',O=process.argv[2]||requ
   await type(h.getByLabel(/^When/),'2026-11-26T18:00');
   await tap(h.getByRole('button',{name:/Create plan/}));await h.waitForTimeout(1500)});
  const url=h.url(),id=new URL(url).searchParams.get('plan');
+ await h.evaluate(async id=>{for(const title of ['The main dish','Something sweet','Drinks & ice'])await fetch(`/api/plan/${id}/tasks`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title,category:'bring'})})},id);// new plans start with no items; the host's list
  await task('Host','Add 3 guests (pasted list)',async()=>{
   await tap(h.getByRole('tab',{name:'People'}));await tap(h.getByRole('button',{name:/Add names to the guest list/}));
   await type(h.getByLabel(/Your list|Who did you invite/),'Tess 215-555-0134\nJordan 267-555-0199\nSam');

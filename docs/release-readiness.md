@@ -50,6 +50,10 @@ Fixed 2026-11-19 (found by the owner on a real iPhone): the schedule only made t
 
 From the same real use (2026-11-19): fast taps between Home, Plans and You got stuck (31 Back steps from 30 taps, and double-tap zoom). Fixed and tested (level 3). Owner asked for a thank-you screen after "Can't make it" and a check-back day for "Still checking": built (level 3).
 
+Found by the owner on a real iPhone (2026-11-20), fixed (level 3):
+- A skate day plan came with Thanksgiving items ("The main dish, Something sweet, Drinks & ice") already filled in. Whatever is in that box becomes the real bring list, so guests would have seen it. Get-togethers now start with an empty list, like trips. Examples show only as grey hints, and switching plan type keeps what the host typed (`journeys:guest`).
+- Send invites rows were squeezed: the Replace/Revoke link buttons landed in the picture column and stretched it. They now sit on their own line, and on small phones Send/Again moves under the phone box. The message preview also ran off the right edge; it now wraps. `journeys:invites` checks it on three iPhone sizes, including the 14 Pro Max.
+
 Found on a real iPhone (2026-11-19): a vote made Final ran off the screen. Cause: the vote card and the "Address shared after you RSVP" line shared the class name `locked`, so the vote took the line's side-by-side layout. Renamed to `locked-note`; `journeys:guest` now makes a vote final and checks it fits for host and guest (level 3).
 
 Lesson: tests on short test phones hid the plan picture, so they never saw it widen the page. `journeys:guest` now uses a tall iPhone too, and forces the picture to its drawn width like Safari does.

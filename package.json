@@ -21,7 +21,7 @@
     "journeys:profile": "node tests/e2e/profile-picture.cjs",
     "a11y": "node tests/e2e/a11y.cjs",
     "deploy": "node scripts/deploy-cloudflare.mjs",
-    "journeys:invites": "node tests/e2e/personal-invites.cjs",
+    "journeys:invites": "node tests/e2e/personal-invites.cjs && node tests/e2e/send-invites-layout.cjs",
     "journeys:places": "node tests/e2e/places.cjs",
     "journeys:dates": "node tests/e2e/multi-day.cjs",
     "journeys:host": "node tests/e2e/host-link.cjs",
