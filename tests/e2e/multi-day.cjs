@@ -48,5 +48,30 @@ const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173',O=process.argv[2]||requ
  await h.getByRole('button',{name:'Edit plan details'}).click();await h.getByRole('button',{name:'It’s just one day'}).click();
  await h.getByRole('button',{name:/Save/}).first().click();await h.waitForTimeout(1500);
  await g.reload();await g.waitForTimeout(2000);const after=await meta(g);check(!after.includes('–')&&/Dec 4/.test(after),'after the host’s change the guest sees one day: '+after);
+ // One day with an end time (a skate day, 4–7 PM), host and guest on a tall iPhone.
+ {const tall=async()=>{const c=await b.newContext({...devices['iPhone 14 Pro Max'],timezoneId:'America/New_York',acceptDownloads:true});const p=await c.newPage();p.on('pageerror',e=>{fails++;console.log('PAGEERROR',e.message)});p.on('dialog',d=>d.accept());return p};
+  const h2=await tall();await h2.goto(B);await h2.waitForTimeout(2500);
+  await h2.getByRole('button',{name:'Start a plan'}).first().click();
+  await h2.getByLabel('Give it a name').fill('Skate day');const yn2=h2.getByLabel('Your name');if(await yn2.count()&&await yn2.isVisible())await yn2.fill('Ari');
+  await h2.getByLabel(/^When/).fill('2026-11-29T16:00');
+  check(await h2.getByRole('button',{name:/More than one day/}).count()===0,'get-together offers an end time, not trip wording');
+  await h2.getByRole('button',{name:'Add an end time'}).click();
+  check(await h2.getByLabel(/^Ends/).inputValue()==='2026-11-29T19:00','end time appears, filled 3 hours later');
+  check(/same day or a later day/.test(await h2.locator('label',{has:h2.getByLabel(/^Ends/)}).innerText().catch(()=>'')||await h2.locator('form').innerText()),'the end box says it can be the same day');
+  check(await h2.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth)<=1,'start and end boxes fit the tall phone');
+  await h2.screenshot({path:O+'/et1-form.png'});
+  await h2.getByRole('button',{name:/Create plan/}).click();await h2.waitForURL(/plan=/);const url2=h2.url();
+  const hw=await meta(h2);check(/Sun, Nov 29.*4:00 PM – 7:00 PM/.test(hw),'host sees start and end time: '+hw);
+  const g2=await tall();await g2.goto(url2);await g2.waitForTimeout(2000);
+  const gw=await meta(g2);check(/Sun, Nov 29.*4:00 PM – 7:00 PM/.test(gw),'stranger guest sees start and end time: '+gw);
+  await g2.screenshot({path:O+'/et2-guest.png'});
+  await g2.getByRole('button',{name:'Reply',exact:true}).first().click();await g2.waitForTimeout(800);
+  const n2=g2.getByLabel(/Your name/).first();if(await n2.count())await n2.fill('Tess');
+  await g2.getByRole('button',{name:'I’m in'}).first().click();const s2=g2.getByRole('button',{name:'Send RSVP'});if(await s2.count())await s2.click();await g2.waitForTimeout(1500);
+  await g2.getByRole('tab',{name:'Overview'}).click().catch(()=>{});await g2.waitForTimeout(400);
+  const [d2]=await Promise.all([g2.waitForEvent('download'),g2.getByRole('button',{name:'Add to calendar'}).first().click()]);
+  const ics2=require('node:fs').readFileSync(await d2.path(),'utf8');
+  check(/DTSTART:20261129T210000Z/.test(ics2)&&/DTEND:20261130T000000Z/.test(ics2),'after answering, the guest’s calendar event runs 4–7 PM');
+  await h2.evaluate(async id=>fetch('/api/plan/'+id,{method:'DELETE'}),new URL(url2).searchParams.get('plan'));}
  await b.close();console.log(fails?`${fails} problem(s)`:'All multi-day checks passed');process.exit(fails?1:0);
 })();

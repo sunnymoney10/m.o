@@ -52,6 +52,7 @@ From the same real use (2026-11-19): fast taps between Home, Plans and You got s
 
 Found by the owner on a real iPhone (2026-11-20), fixed (level 3):
 - A skate day plan came with Thanksgiving items ("The main dish, Something sweet, Drinks & ice") already filled in. Whatever is in that box becomes the real bring list, so guests would have seen it. Get-togethers now start with an empty list, like trips. Examples show only as grey hints, and switching plan type keeps what the host typed (`journeys:guest`).
+- Owner asked for start and end times: get-togethers now have "Add an end time" (3 hours after the start by default). Plan page, invites and calendar show "4:00 PM – 7:00 PM" (`journeys:dates`: host and a stranger guest on an iPhone 14 Pro Max, and the guest's calendar after answering).
 - Send invites rows were squeezed: the Replace/Revoke link buttons landed in the picture column and stretched it. They now sit on their own line, and on small phones Send/Again moves under the phone box. The message preview also ran off the right edge; it now wraps. `journeys:invites` checks it on three iPhone sizes, including the 14 Pro Max.
 
 Found on a real iPhone (2026-11-19): a vote made Final ran off the screen. Cause: the vote card and the "Address shared after you RSVP" line shared the class name `locked`, so the vote took the line's side-by-side layout. Renamed to `locked-note`; `journeys:guest` now makes a vote final and checks it fits for host and guest (level 3).

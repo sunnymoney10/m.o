@@ -8,7 +8,7 @@ export const dynamic='force-dynamic';
 function https(v:unknown){const s=str(v,1000);if(!s)return null;try{const u=new URL(s);return u.protocol==='https:'?u.href:null}catch{return null}}
 const invitation=https;
 // An end date is optional; when given it needs a start, must come after it, and the plan can't run past 60 days.
-function endError(start:string,end:string){if(!end)return '';if(Number.isNaN(Date.parse(end)))return 'Choose a valid end date.';if(!start)return 'Add a start date before an end date.';const a=Date.parse(start),b=Date.parse(end);if(b<=a)return 'The end date needs to be after the start.';if(b-a>60*86400000)return 'Plans can last up to 60 days.';return ''}
+function endError(start:string,end:string){if(!end)return '';if(Number.isNaN(Date.parse(end)))return 'Choose a valid end date.';if(!start)return 'Add a start date before an end date.';const a=Date.parse(start),b=Date.parse(end);if(b<=a)return 'The end needs to be after the start.';if(b-a>60*86400000)return 'Plans can last up to 60 days.';return ''}
 function str(v:unknown,max=300){return typeof v==='string'?v.trim().slice(0,max):''}
 const STYLES=['setter','details','down','wildcard','snacks'];
 const HANDLE=/^[a-z0-9_]{2,24}$/;
