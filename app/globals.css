@@ -642,3 +642,41 @@ html,body{overflow-x:clip}
 .item-edit-field input{width:100%;min-height:44px}
 .item-edit-actions{display:flex;align-items:center;gap:8px}
 .item-save-button{min-height:44px;padding:0 18px;width:auto}
+/* Plus-ones: a guest brings someone; the host approves. */
+.chip-request{font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px;background:var(--brick);color:#fff}
+.with-guest{display:block;font-size:13px;font-weight:500;color:var(--muted)}
+.invite-who .with-guest{display:inline}
+.bring-someone{display:grid;gap:12px}
+.bring-someone h3{display:flex;align-items:center;gap:8px;margin:0;font-size:17px;color:var(--ink)}
+.bring-someone .fine{margin:0}
+.bring-someone-form{display:flex;gap:8px;flex-wrap:wrap}
+.bring-someone-name{flex:1 1 160px;min-width:0}
+.bring-someone-name input{width:100%;min-height:44px}
+.bring-someone-ask{min-height:44px;width:auto;padding:0 18px}
+.bring-someone-nudge{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:12px;border-radius:14px;background:var(--cream)}
+.bring-someone-nudge p{flex:1 1 100%;margin:0;font-size:15px}
+.bring-someone-nudge .outline-button{text-decoration:none}
+.bring-someone-list{list-style:none;margin:0;padding:0;display:grid}
+.bring-someone-list li{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px;padding:12px 0;border-top:1.5px solid var(--line)}
+.bring-someone-list .outline-button{text-decoration:none}
+.bring-someone-who{display:grid;gap:2px;min-width:0}
+.bring-someone-status{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600}
+.bring-someone-status.waiting{color:#7a5600}
+.bring-someone-status.declined{color:var(--muted)}
+.bring-someone-status.yes{color:#2f6b3a}
+.plus-one-ask{display:grid;gap:8px;padding:12px 0;border-bottom:1.5px solid var(--line)}
+.plus-one-ask p{display:grid;gap:4px;margin:0}
+.plus-one-ask p span{font-size:13px;color:var(--muted)}
+.plus-one-ask-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px}
+.plus-one-approve{min-height:44px;width:auto;padding:0 18px}
+.plus-one-setting{display:flex;gap:12px;align-items:flex-start;padding:16px 0;border-top:1.5px solid var(--line)}
+.plus-one-setting input{width:24px;height:24px;margin-top:2px;flex:none;accent-color:var(--brick)}
+.plus-one-setting span{display:grid;gap:4px}
+.plus-one-setting small{color:var(--muted);font-weight:400}
+.invite-rows .via-guest-link{grid-column:1/-1;padding-left:48px;min-height:44px;display:inline-flex;align-items:center;gap:6px;text-decoration:none}
+.plus-one-asks{display:grid;gap:4px;border:2px solid var(--brick)}
+.plus-one-asks .plus-one-ask:last-child{border-bottom:0;padding-bottom:0}
+.you-set-bring{display:inline-flex;align-items:center;gap:6px;min-height:44px;justify-self:start;text-align:left}
+.plus-one-told{display:grid;gap:8px;border:2px solid #2f6b3a}
+.plus-one-told p{margin:0}
+.plus-one-told .plus-one-approve{text-decoration:none;display:inline-flex;align-items:center;gap:6px}

@@ -22,6 +22,7 @@ await import('./guest-access.mjs');
 await import('./health.mjs');
 await import('./restore-order.mjs');
 await import('./item-edit.mjs');
+await import('./plus-ones.mjs');
 console.log('Actual route handlers verified against SQLite with separate guest sessions.');
 
 const assert=(await import('node:assert/strict')).default;
