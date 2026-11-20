@@ -196,9 +196,9 @@ async function handler(req:Request){
     if(m.inviteUrl&&!invitation(m.inviteUrl))return json({error:'Use a valid HTTPS invitation link.'},400);
     if(m.bookingUrl&&!https(m.bookingUrl))return json({error:'Use a valid HTTPS booking link.'},400);
     const title=str(m.title,100);if(!title)return json({error:'The plan needs a title.'},400);
-    const next={booking_url:https(m.bookingUrl)||'',end_date:str(m.endDate,40),title,date:str(m.date,40),place:str(m.place,160),budget:str(m.budget,60),note:str(m.note,2000),details:str(m.details,1000)};
-    const changed=([['end_date','end date'],['booking_url','booking link'],['title','name'],['date','date and time'],['place','address'],['details','arrival notes'],['note','description'],['budget','budget']] as const).filter(([k])=>(plan[k]||'')!==next[k]).map(([,l])=>l);
-    await db.batch([db.prepare('UPDATE plans SET end_date=?,booking_url=?,title=?,date=?,place=?,budget=?,note=?,invite_url=?,made_it=?,details=?,door_code=? WHERE id=?').bind(next.end_date,next.booking_url||null,title,next.date,next.place,next.budget,next.note,invitation(m.inviteUrl),m.madeIt===true?1:0,next.details,b.doorCode===undefined?plan.door_code:str(b.doorCode,200),id),
+    const next={kind:m.kind==='trip'?'trip':'gathering',booking_url:https(m.bookingUrl)||'',end_date:str(m.endDate,40),title,date:str(m.date,40),place:str(m.place,160),budget:str(m.budget,60),note:str(m.note,2000),details:str(m.details,1000)};
+    const changed=([['kind','plan type'],['end_date','end date'],['booking_url','booking link'],['title','name'],['date','date and time'],['place','address'],['details','arrival notes'],['note','description'],['budget','budget']] as const).filter(([k])=>(plan[k]||'')!==next[k]).map(([,l])=>l);
+    await db.batch([db.prepare('UPDATE plans SET kind=?,end_date=?,booking_url=?,title=?,date=?,place=?,budget=?,note=?,invite_url=?,made_it=?,details=?,door_code=? WHERE id=?').bind(next.kind,next.end_date,next.booking_url||null,title,next.date,next.place,next.budget,next.note,invitation(m.inviteUrl),m.madeIt===true?1:0,next.details,b.doorCode===undefined?plan.door_code:str(b.doorCode,200),id),
      ...(changed.length?log('You changed the '+changed.join(', ')):[]),...(m.madeIt===true&&!plan.made_it?log('You marked the plan as made it out'):[])]);return json({ok:true});
    }
    // "Still checking": the guest says when to check back. Saved on their answer; the host sees it. m.o never messages anyone.

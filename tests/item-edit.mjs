@@ -22,4 +22,10 @@ r=await request(guest,'plan/'+id);assert.ok(!r.body.tasks.some(t=>t.id===grandma
 r=await request(host,`plan/${id}/tasks/${grandma.id}`,'DELETE');assert.equal(r.status,404);
 r=await request(host,`plan/${crypto.randomUUID()}/tasks/${snaks.id}`,'DELETE');assert.equal(r.status,404,'another plan’s items can’t be reached');
 r=await request(host,'plan/'+id);assert.ok(r.body.activity.some(a=>a.text==='You removed Grandma')&&r.body.activity.some(a=>a.text==='You changed Snaks to Snacks'),'both show in Recent updates');
-console.log('PASS: bring list: only the host renames or removes items; whoever is bringing a renamed item keeps it; removals are logged.');
+// Plans change: the host switches the type without deleting anything; guests can't.
+r=await request(guest,'plan/'+id,'PATCH',{kind:'trip'});assert.equal(r.status,403);
+r=await request(host,'plan/'+id,'PATCH',{kind:'trip'});assert.equal(r.status,200);r=await request(host,'plan/'+id);assert.equal(r.body.plan.kind,'trip');assert.ok(r.body.tasks.some(t=>t.title==='Snacks'&&t.isMine===false&&t.claimed_name==='Tess'),'items and who has them stay');
+assert.ok(r.body.activity.some(a=>/plan type/.test(a.text)),'type change logged');
+r=await request(host,'plan/'+id,'PATCH',{kind:'party'});r=await request(host,'plan/'+id);assert.equal(r.body.plan.kind,'gathering','unknown types become a get-together');
+r=await request(host,'plan/'+id,'PATCH',{title:'Skate day!'});r=await request(host,'plan/'+id);assert.equal(r.body.plan.kind,'gathering','other edits keep the type');
+console.log('PASS: bring list: only the host renames or removes items; whoever is bringing a renamed item keeps it; removals are logged; the host can switch Get-together ↔ Trip.');
