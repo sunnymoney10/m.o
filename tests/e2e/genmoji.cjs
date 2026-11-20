@@ -38,6 +38,14 @@ const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173',O=process.argv[2]||requ
   const pic=document.createElement('picture');const s=document.createElement('source');s.type='image/x-apple-adaptive-glyph';s.srcset=c.toDataURL('image/png');pic.append(s);document.querySelector('.genmoji-box').appendChild(pic)});
  await a.waitForTimeout(1200);check(await picker.locator('.genmoji-preview img').count()===1,'a Genmoji with only a source picture also previews');
  await picker.getByRole('button',{name:'Pick a different one'}).click();
+ // If the phone turns the Genmoji into a blank placeholder (U+FFFC), m.o says so and suggests pasting.
+ await box.click();await a.keyboard.insertText('\uFFFC');await a.waitForTimeout(600);check(/sent that Genmoji as a blank box/.test(await picker.innerText()),'a Genmoji that arrives as a blank box gets a clear “paste it instead” message');
+ // Pasting a copied Genmoji (rich text with a picture inside) works.
+ await box.click();await a.evaluate(()=>{const c=document.createElement('canvas');c.width=c.height=100;const x=c.getContext('2d');x.fillStyle='#b23b28';x.fillRect(10,10,80,80);
+  const dt=new DataTransfer();dt.setData('text/html','<span><img src="'+c.toDataURL('image/png')+'" alt="Genmoji"></span>');dt.setData('text/plain','\uFFFC');
+  document.querySelector('.genmoji-box').dispatchEvent(new ClipboardEvent('paste',{clipboardData:dt,bubbles:true,cancelable:true}))});
+ await a.waitForTimeout(1200);check(await picker.locator('.genmoji-preview img').count()===1,'pasting a copied Genmoji shows the preview');
+ await picker.getByRole('button',{name:'Pick a different one'}).click();
  // A picture we can't read never fails silently: it says so and describes what arrived, for a screenshot.
  await box.click();await a.evaluate(()=>{const img=document.createElement('img');img.src='x-apple-unknown://glyph';document.querySelector('.genmoji-box').appendChild(img)});
  await a.waitForTimeout(3500);{const t=await picker.innerText();check(/Couldn’t read that Genmoji/.test(t)&&/arrived as: img x-apple-unknown/.test(t),'an unreadable Genmoji shows a clear message to screenshot')}

@@ -42,6 +42,7 @@ async function pictureFile(el:HTMLImageElement){
 // A short description of what arrived in the box, shown only if we can't read it (to fix it from a screenshot).
 const describe=(box:HTMLElement)=>[...box.querySelectorAll('*')].slice(0,6).map(n=>{const src=n.getAttribute('src')||n.getAttribute('srcset')||'';return n.tagName.toLowerCase()+(n.getAttribute('type')?' '+n.getAttribute('type'):'')+(src?' '+src.split(':')[0]:'')}).join(', ')||'text only';
 
+const GENMOJI_AS_TEXT='Your iPhone sent that Genmoji as a blank box, not a picture. Try pasting it instead: in Notes or Messages, press and hold the Genmoji, tap Copy, then come back, press and hold this box and tap Paste.';
 function GenmojiPicker({upload,busy,setBusy,setError}:{upload:(dataUrl:string)=>Promise<boolean>;busy:boolean;setBusy:(b:boolean)=>void;setError:(e:string)=>void}){
  const [picked,setPicked]=useState<{image?:Blob;emoji?:string;preview:string}|null>(null),[bg,setBg]=useState<string>(AVATAR.backgrounds[0][1]),[hint,setHint]=useState('');
  const ref=useRef<HTMLDivElement>(null),reading=useRef(false);
@@ -54,11 +55,19 @@ function GenmojiPicker({upload,busy,setBusy,setError}:{upload:(dataUrl:string)=>
    catch{setHint(`Couldn’t read that Genmoji. Please take a screenshot of this message and send it to us. (It arrived as: ${what})`)}
    finally{box.innerHTML='';reading.current=false}return}
   const text=box.textContent||'';if(!text.trim())return;
+  // Some places turn a Genmoji into a blank placeholder (U+FFFC) instead of a picture: say so and offer pasting.
+  if(text.includes('\uFFFC')){box.textContent='';setHint(GENMOJI_AS_TEXT);return}
   const e=lastEmoji(text);if(e){setHint('');setPicked({emoji:e,preview:''});box.textContent='';return}
   setHint('Pick a Genmoji or emoji from the emoji keyboard. Letters don’t work here.');box.textContent=''}
  // Watch the box itself: Safari doesn't always send an "input" event when it puts a Genmoji in.
  useEffect(()=>{const box=ref.current;if(!box)return;let t=0;const obs=new MutationObserver(()=>{clearTimeout(t);t=window.setTimeout(read,60)});obs.observe(box,{childList:true,subtree:true,characterData:true});return()=>{obs.disconnect();clearTimeout(t)}},[]);
- async function pasted(e:React.ClipboardEvent<HTMLDivElement>){const f=[...e.clipboardData.files,...[...e.clipboardData.items].filter(i=>i.kind==='file').map(i=>i.getAsFile()).filter((x):x is File=>!!x)].find(f=>f.type.startsWith('image/'));if(f){e.preventDefault();setHint('');setPicked({image:f,preview:URL.createObjectURL(f)})}}
+ async function pasted(e:React.ClipboardEvent<HTMLDivElement>){const d=e.clipboardData;
+  const f=[...d.files,...[...d.items].filter(i=>i.kind==='file').map(i=>i.getAsFile()).filter((x):x is File=>!!x)].find(f=>f.type.startsWith('image/'));
+  if(f){e.preventDefault();setHint('');setPicked({image:f,preview:URL.createObjectURL(f)});return}
+  // Copied as rich text: the picture is inside the HTML. Put it in the box and let the watcher read it.
+  const html=d.getData('text/html');const src=html&&new DOMParser().parseFromString(html,'text/html').querySelector('img[src],source[srcset]');
+  if(src&&ref.current){e.preventDefault();const img=new Image();img.src=src.getAttribute('src')||(src.getAttribute('srcset')||'').split(/\s+/)[0];ref.current.replaceChildren(img);return}
+  if((d.getData('text/plain')||'').includes('\uFFFC')){e.preventDefault();setHint(GENMOJI_AS_TEXT)}}
  async function use(){if(!picked)return;setError('');setBusy(true);try{const url=await stickerPicture(picked,bg);if(await upload(url))setPicked(null)}catch(err:any){setError(err.message||'Couldn’t use that picture. Try another.')}finally{setBusy(false)}}
  return <>
   <div className="genmoji-box" role="textbox" aria-label="Tap here, then pick a Genmoji or emoji" contentEditable suppressContentEditableWarning spellCheck={false} ref={ref} onInput={()=>read()} onPaste={pasted}/>
