@@ -17,10 +17,12 @@ const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173',O=process.argv[2]||requ
  // Mom answers from her text, then asks to bring Cynthia.
  const m=await phone();await m.goto(momLink);await m.waitForTimeout(2500);
  await m.locator('.quick-answers').getByRole('button',{name:'I’m in'}).click();await m.waitForTimeout(2500);
- await m.getByRole('tab',{name:'People'}).click();await m.waitForTimeout(400);
+ await m.getByRole('tab',{name:'Overview'}).click();await m.waitForTimeout(400);
+ const entry=m.getByRole('button',{name:'Bringing someone? Ask Ari'});check(await entry.count()===1,'Mom’s “You’re set” card offers “Bringing someone? Ask Ari”');
+ await entry.click();await m.waitForTimeout(600);
  const card=m.locator('.bring-someone');check(await card.count()===1,'Mom sees “Bringing someone?”');
  check(/Ask Ari first/.test(await card.innerText())&&/bring 4 more/.test(await card.innerText()),'it says to ask Ari first and shows 4 spots');
- await card.getByPlaceholder('Their name').fill('Cynthia');await card.getByRole('button',{name:'Ask Ari'}).click();const said=await toast(m);await m.waitForTimeout(1200);
+ await card.getByPlaceholder('Their name').fill('Cynthia');await card.getByRole('button',{name:'Ask Ari'}).click();const said=await m.locator('.toast',{hasText:'Asked'}).first().innerText({timeout:5000}).catch(()=>'');await m.waitForTimeout(800);
  check(/Asked/.test(said),'Mom is told the request went to Ari: '+said);
  const nudge=await m.locator('.bring-someone-nudge a').getAttribute('href');check(/^sms:/.test(nudge)&&decodeURIComponent(nudge).includes('Can I bring Cynthia to Skate day?'),'Mom can text Ari about it (Messages opens with the note)');
  check((await m.locator('.bring-someone-list').innerText()).includes('Waiting for Ari'),'Mom sees “Waiting for Ari”');
@@ -36,10 +38,13 @@ const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173',O=process.argv[2]||requ
  const ask=h.locator('.plus-one-ask');check((await ask.innerText()).includes('Mom asks to bring Cynthia'),'Ari sees “Mom asks to bring Cynthia”');
  await fits(h,'Ari’s request card');await h.screenshot({path:O+'/po2-host-request.png'});
  await ask.getByRole('button',{name:'Yes, Cynthia can come'}).click();await h.waitForTimeout(1500);
+ {const tell=h.locator('.plus-one-told a');check(await tell.count()===1&&decodeURIComponent(await tell.getAttribute('href')).includes('Yes, Cynthia can come to Skate day! Open it to send Cynthia the invite'),'after saying yes, Ari can tell Mom in one tap');
+  await fits(h,'Ari after saying yes');await h.screenshot({path:O+'/po2b-tell-mom.png'});await h.getByRole('button',{name:'Done'}).click();}
  await h.getByRole('tab',{name:'People'}).click();await h.waitForTimeout(400);
  check((await h.locator('.guest-block',{hasText:'Cynthia'}).innerText()).includes('with Mom'),'Cynthia is on Ari’s list “with Mom”');
  // Mom sends Cynthia her invite.
- await m.reload();await m.waitForTimeout(2500);await m.getByRole('tab',{name:'People'}).click();await m.waitForTimeout(400);
+ await m.reload();await m.waitForTimeout(2500);await m.getByRole('tab',{name:'Overview'}).click().catch(()=>{});await m.waitForTimeout(400);
+ {const yes=m.getByRole('button',{name:/Ari said yes to Cynthia/});check(await yes.count()===1,'Mom’s overview says Ari said yes to Cynthia');await yes.click();await m.waitForTimeout(600)}
  await noSms(m);const send=m.locator('.bring-someone-list').getByRole('button',{name:'Send Cynthia the invite'});check(await send.count()===1,'Mom sees “Send Cynthia the invite”');
  await send.click();await m.waitForTimeout(2000);
  const cynLink=await m.evaluate(()=>{const v=Object.values(JSON.parse(localStorage.getItem('mo-plus-links')||'{}'))[0];return v&&v.url});
