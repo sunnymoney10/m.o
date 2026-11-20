@@ -75,8 +75,8 @@ Launch audit fixes (2026-11-20, from the full audit; this branch, not deployed y
 - Browser protections: content policy, no framing, nosniff, HTTPS only, camera/microphone off on every response. Checked against a production build with no blocked content on the home page, plans, profile, covers, Genmoji and address search (level 3).
 - Page not found: an m.o page with a 404 status and two ways back, on a tall and a small iPhone (level 3).
 - Usage numbers: daily counts per kind of action only, no IDs or names, private to the owner in the Cloudflare dashboard (API test, level 3). Nobody has read them on the live site yet (level 2 there).
-- Privacy and Terms pages: written from what the code actually stores and sends (level 2). They need the owner's support email before going live, and a lawyer's read before real launch.
-- Still to decide (owner): show the address automatically to guests invited by name once they say they're in.
+- Privacy and Terms pages: written from what the code actually stores and sends (level 2). Contact: Supportdesk_m.o@proton.me (owner's support address). A lawyer should read them before a wide launch.
+- Owner decision: guests invited by name see the address as soon as they answer; strangers from the group link still need the host's OK, and the host can hide it from anyone. API tests and `journeys:access` (host, named guest and stranger on a tall iPhone), level 3. Guests already on live plans keep their current setting.
 
 Not this release: trip sections, event search (waiting on Ticketmaster key approval), reminder texts.
 

@@ -300,7 +300,8 @@ async function answer(req:Request){
     if(!names.length)return json({error:'Add at least one name.'},400);
     const {results:existing}=await db.prepare('SELECT lower(name) AS n FROM guests WHERE plan_id=?').bind(id).all<any>();const have=new Set(existing.map((x:any)=>x.n));
     const fresh=names.filter(n=>{const k=n.toLowerCase();if(have.has(k))return false;have.add(k);return true});if(existing.length+fresh.length>150)return json({error:'A plan can have up to 150 people.'},400);
-    if(fresh.length)await db.batch(fresh.map(n=>db.prepare('INSERT INTO guests (plan_id,actor,name,status,note,id,invite_required) VALUES (?,?,?,?,?,?,1)').bind(id,'invite:'+crypto.randomUUID(),n,'invited','',crypto.randomUUID())));
+    // People the host adds by name are trusted with the address once they answer (the host can still hide it).
+    if(fresh.length)await db.batch(fresh.map(n=>db.prepare('INSERT INTO guests (plan_id,actor,name,status,note,id,invite_required,details_approved) VALUES (?,?,?,?,?,?,1,1)').bind(id,'invite:'+crypto.randomUUID(),n,'invited','',crypto.randomUUID())));
     return json({ok:true,added:fresh.length,skipped:names.length-fresh.length});
    }
    if(seg[2]==='guests'&&seg[3]){
@@ -326,8 +327,10 @@ async function answer(req:Request){
      if(row.actor===plan.owner)return json({error:'Only the host can manage a guest’s personal link.'},403);
      if(b.revoke){await db.batch([db.prepare("UPDATE guests SET invite_hash='',invite_expires='',invite_required=1,details_approved=0 WHERE plan_id=? AND id=?").bind(id,row.id),...log(`You revoked ${row.name}’s personal link`)]);return json({ok:true})}
      const secret=newInviteSecret(),hash=await inviteHash(secret),expires=inviteExpiry();
-     const keep=!!row.with_guest&&!row.invite_hash;// a plus-one's first link keeps the approval they came with
-     await db.batch([db.prepare('UPDATE guests SET invite_hash=?,invite_expires=?,invite_required=1,details_approved=? WHERE plan_id=? AND id=?').bind(hash,expires,keep?row.details_approved:0,id,row.id),...log(host?`You made a new personal link for ${row.name}`:`Personal link made for ${row.name}`,host)]);
+     // A replaced link keeps the host's choice about arrival details. A first link (or one after a revoke) for someone
+     // the host added by name shares them once they answer; a plus-one keeps the approval they came with.
+     const approved=row.invite_hash||row.with_guest?row.details_approved:1;
+     await db.batch([db.prepare('UPDATE guests SET invite_hash=?,invite_expires=?,invite_required=1,details_approved=? WHERE plan_id=? AND id=?').bind(hash,expires,approved,id,row.id),...log(host?`You made a new personal link for ${row.name}`:`Personal link made for ${row.name}`,host)]);
      return json({link:`${url.origin}/i/${secret}`,expires});
     }
     if(seg[4]==='access'&&req.method==='POST'){

@@ -17,7 +17,7 @@ export default function Privacy(){
   </ul></section>
   <section><h2>Who can see what</h2><ul>
    <li>Anyone with a plan’s link can see its title, date, the host’s name, who’s invited, their answers and the bring list. Share the link only with people you’d invite.</li>
-   <li>The address and booking link show only to the host and to guests the host approved who said they’re coming or checking.</li>
+   <li>The address and booking link show only to the host, to guests the host invited by name once they say they’re coming or checking, and to other guests the host approves.</li>
    <li>A guest’s food needs and note show only to the host and that guest.</li>
    <li>Personal invite links work for one person. The host can turn one off at any time.</li>
   </ul></section>
