@@ -726,3 +726,16 @@ html,body{overflow-x:clip}
 .lost-page h1{font-size:34px;line-height:1.1;color:#3a1a2b;margin:8px 0 0;font-weight:900;letter-spacing:-.02em}
 .lost-page p{margin:0;font-size:17px;color:#6f6066;line-height:1.45}
 .lost-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.lost-actions a{text-decoration:none}
+/* ---------- privacy and terms ---------- */
+.legal-page{max-width:640px;margin:0 auto;padding:24px 16px 48px;display:grid;gap:16px;color:#2c1b24}
+.legal-page h1{font-size:34px;line-height:1.1;color:#3a1a2b;margin:8px 0 0;font-weight:900;letter-spacing:-.02em}
+.legal-page h2{font-size:22px;color:#3a1a2b;margin:8px 0 8px;font-weight:800}
+.legal-page p,.legal-page li{font-size:17px;line-height:1.5;margin:0}
+.legal-page ul{margin:0;padding-left:22px;display:grid;gap:8px}
+.legal-date{font-size:15px!important;color:#6f6066}
+.legal-intro{font-weight:600}
+.legal-page a{color:#b23b28;font-weight:600}
+.legal-page code{font-size:15px;background:#fffaf3;border-radius:6px;padding:1px 6px}
+.legal-links{display:flex;flex-wrap:wrap;gap:0 24px;border-top:1.5px solid var(--line);padding-top:16px;margin-top:8px}
+.legal-links a{display:inline-flex;align-items:center;min-height:44px}
+.foot-links{display:flex;gap:16px;width:100%;justify-content:flex-end}.foot-links a{display:inline-flex;align-items:center;min-height:44px;color:var(--muted);font-size:14px}

@@ -16,5 +16,10 @@ const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173';
   check(await p.getByRole('link',{name:'Go to my plans'}).count()===1&&await p.getByRole('link',{name:'Go to the home page'}).count()===1,'it offers two ways back');
   check(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),d+': fits the screen');
   await p.getByRole('link',{name:'Go to my plans'}).click();await p.waitForTimeout(1500);check(/view=plans/.test(p.url()),'“Go to my plans” opens the plans list');
-  await p.goto(B+'/');await p.waitForTimeout(2000);check(!bad.length,d+': no page errors or blocked content '+bad.join(' | '))}
+  for(const [path,h] of [['/privacy','Privacy'],['/terms','Terms']]){const r2=await p.goto(B+path);await p.waitForTimeout(800);
+   check(r2.status()===200&&(await p.locator('h1').innerText())===h,d+': '+path+' opens');check(await p.locator('a[href^="mailto:"]').count()===1,path+' shows a contact email');
+   check(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),d+': '+path+' fits the screen');if(d==='iPhone 14 Pro Max')await p.screenshot({path:require('node:os').tmpdir()+'/legal'+path.slice(1)+'.png',fullPage:true})}
+  await p.goto(B+'/');await p.waitForTimeout(2000);
+  check(await p.locator('.foot-links a[href="/privacy"]').count()===1&&await p.locator('.foot-links a[href="/terms"]').count()===1,d+': the home page footer links Privacy and Terms');
+  check(!bad.length,d+': no page errors or blocked content '+bad.join(' | '))}
  await b.close();console.log(fails?`${fails} problem(s)`:'All site basics checks passed');process.exitCode=fails?1:0})();

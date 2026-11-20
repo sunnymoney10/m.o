@@ -21,12 +21,17 @@ function interestsOf(v:unknown){return Array.isArray(v)?[...new Set(v.map(x=>str
 function parseInterests(s:string){try{const v=JSON.parse(s);return Array.isArray(v)?v:[]}catch{return []}}
 const placeHits=new Map<string,number[]>(),hostTries=new Map<string,number[]>();
 // Writes down that a request failed, and where (method and route shape only, never IDs or what was sent).
-async function recordError(req:Request){try{const db=env.DB;if(!db)return;const seg=new URL(req.url).pathname.split('/').filter(Boolean).slice(1);
+function areaOf(req:Request){const seg=new URL(req.url).pathname.split('/').filter(Boolean).slice(1);
  const shape=seg[0]==='plan'?['plan',...seg.slice(2).filter((_,i)=>i%2===0)]:seg.slice(0,2);
- const area=(req.method+' '+shape.map(x=>/^[a-z-]{1,20}$/.test(x)?x:'?').join('/')).slice(0,60);
+ return (req.method+' '+shape.map(x=>/^[a-z-]{1,20}$/.test(x)?x:'?').join('/')).slice(0,60)}
+async function recordError(req:Request){try{const db=env.DB;if(!db)return;const area=areaOf(req);
  await db.batch([db.prepare('INSERT INTO errors (id,at,area) VALUES (?,?,?)').bind(crypto.randomUUID(),new Date().toISOString(),area),db.prepare('DELETE FROM errors WHERE id NOT IN (SELECT id FROM errors ORDER BY at DESC LIMIT 500)')]);
 }catch{}}
-async function handler(req:Request){
+// Adds one to today's count for this kind of action (method and route shape only, e.g. "POST plan/rsvp").
+async function countUse(req:Request){try{const db=env.DB;if(!db)return;
+ await db.prepare('INSERT INTO usage_counts (day,area,n) VALUES (?,?,1) ON CONFLICT(day,area) DO UPDATE SET n=n+1').bind(new Date().toISOString().slice(0,10),areaOf(req)).run()}catch{}}
+async function handler(req:Request){const res=await answer(req);if(req.method!=='GET'&&res.status<400)await countUse(req);return res}
+async function answer(req:Request){
  const cookies=req.headers.get('cookie')||''; let session=cookies.match(/(?:^|; )mo_session=([a-f0-9-]{36})(?:;|$)/)?.[1]; const fresh=!session;session ||=crypto.randomUUID();
  const visitor=await verifiedIdentity(req,(env as {MO_IDENTITY_SECRET?:string}).MO_IDENTITY_SECRET)||session;let actor=visitor;
  const json=(obj:unknown,status=200)=>new Response(JSON.stringify(obj),{status,headers:{'Content-Type':'application/json','Cache-Control':'no-store','Referrer-Policy':'no-referrer',...(fresh?{'Set-Cookie':`mo_session=${session}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=31536000`}:{})}});

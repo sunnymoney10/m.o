@@ -22,3 +22,5 @@ export const guestAccess=sqliteTable('guest_access',{guestId:text('guest_id').no
 export const errors=sqliteTable('errors',{id:text('id').primaryKey(),at:text('at').notNull(),area:text('area').notNull()},t=>[index('errors_at_idx').on(t.at)]);
 // Recovering a host grants one plan only. Replacing the host key invalidates these grants.
 export const hostAccess=sqliteTable('host_access',{planId:text('plan_id').notNull(),visitor:text('visitor').notNull(),keyHash:text('key_hash').notNull()},t=>[primaryKey({columns:[t.planId,t.visitor]}),index('host_access_visitor_idx').on(t.visitor)]);
+// Usage counts for the owner: how many times each kind of action succeeded per day. No names, IDs or plan details.
+export const usageCounts=sqliteTable('usage_counts',{day:text('day').notNull(),area:text('area').notNull(),n:integer('n').notNull().default(0)},t=>[primaryKey({columns:[t.day,t.area]})]);
