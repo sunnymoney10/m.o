@@ -8,7 +8,7 @@ export const dynamic='force-dynamic';
 function https(v:unknown){const s=str(v,1000);if(!s)return null;try{const u=new URL(s);return u.protocol==='https:'?u.href:null}catch{return null}}
 const invitation=https;
 // An end date is optional; when given it needs a start, must come after it, and the plan can't run past 60 days.
-function endError(start:string,end:string){if(!end)return '';if(Number.isNaN(Date.parse(end)))return 'Choose a valid end date.';if(!start)return 'Add a start date before an end date.';const a=Date.parse(start),b=Date.parse(end);if(b<=a)return 'The end date needs to be after the start.';if(b-a>60*86400000)return 'Plans can last up to 60 days.';return ''}
+function endError(start:string,end:string){if(!end)return '';if(Number.isNaN(Date.parse(end)))return 'Choose a valid end date.';if(!start)return 'Add a start date before an end date.';const a=Date.parse(start),b=Date.parse(end);if(b<=a)return 'The end needs to be after the start.';if(b-a>60*86400000)return 'Plans can last up to 60 days.';return ''}
 function str(v:unknown,max=300){return typeof v==='string'?v.trim().slice(0,max):''}
 const STYLES=['setter','details','down','wildcard','snacks'];
 const HANDLE=/^[a-z0-9_]{2,24}$/;
@@ -196,9 +196,9 @@ async function handler(req:Request){
     if(m.inviteUrl&&!invitation(m.inviteUrl))return json({error:'Use a valid HTTPS invitation link.'},400);
     if(m.bookingUrl&&!https(m.bookingUrl))return json({error:'Use a valid HTTPS booking link.'},400);
     const title=str(m.title,100);if(!title)return json({error:'The plan needs a title.'},400);
-    const next={booking_url:https(m.bookingUrl)||'',end_date:str(m.endDate,40),title,date:str(m.date,40),place:str(m.place,160),budget:str(m.budget,60),note:str(m.note,2000),details:str(m.details,1000)};
-    const changed=([['end_date','end date'],['booking_url','booking link'],['title','name'],['date','date and time'],['place','address'],['details','arrival notes'],['note','description'],['budget','budget']] as const).filter(([k])=>(plan[k]||'')!==next[k]).map(([,l])=>l);
-    await db.batch([db.prepare('UPDATE plans SET end_date=?,booking_url=?,title=?,date=?,place=?,budget=?,note=?,invite_url=?,made_it=?,details=?,door_code=? WHERE id=?').bind(next.end_date,next.booking_url||null,title,next.date,next.place,next.budget,next.note,invitation(m.inviteUrl),m.madeIt===true?1:0,next.details,b.doorCode===undefined?plan.door_code:str(b.doorCode,200),id),
+    const next={kind:m.kind==='trip'?'trip':'gathering',booking_url:https(m.bookingUrl)||'',end_date:str(m.endDate,40),title,date:str(m.date,40),place:str(m.place,160),budget:str(m.budget,60),note:str(m.note,2000),details:str(m.details,1000)};
+    const changed=([['kind','plan type'],['end_date','end date'],['booking_url','booking link'],['title','name'],['date','date and time'],['place','address'],['details','arrival notes'],['note','description'],['budget','budget']] as const).filter(([k])=>(plan[k]||'')!==next[k]).map(([,l])=>l);
+    await db.batch([db.prepare('UPDATE plans SET kind=?,end_date=?,booking_url=?,title=?,date=?,place=?,budget=?,note=?,invite_url=?,made_it=?,details=?,door_code=? WHERE id=?').bind(next.kind,next.end_date,next.booking_url||null,title,next.date,next.place,next.budget,next.note,invitation(m.inviteUrl),m.madeIt===true?1:0,next.details,b.doorCode===undefined?plan.door_code:str(b.doorCode,200),id),
      ...(changed.length?log('You changed the '+changed.join(', ')):[]),...(m.madeIt===true&&!plan.made_it?log('You marked the plan as made it out'):[])]);return json({ok:true});
    }
    // "Still checking": the guest says when to check back. Saved on their answer; the host sees it. m.o never messages anyone.
@@ -318,6 +318,13 @@ async function handler(req:Request){
     const n=await db.prepare('SELECT count(*) AS n FROM tasks WHERE plan_id=?').bind(id).first<any>();if((n?.n||0)>=100)return json({error:'This plan has plenty to do already.'},400);
     await db.prepare('INSERT INTO tasks (id,plan_id,title,category,done) VALUES (?,?,?,?,0)').bind(crypto.randomUUID(),id,title,b.category==='bring'?'bring':'todo').run();return json({ok:true});
    }
+   if(seg[2]==='tasks'&&seg[3]&&seg.length===4&&req.method==='DELETE'){
+    // Only the host removes an item (added by mistake, or not needed any more).
+    if(!host)return json({error:'Only the organizer can remove items.'},403);
+    const task=await db.prepare('SELECT title,claimed_name FROM tasks WHERE id=? AND plan_id=?').bind(seg[3],id).first<any>();if(!task)return json({error:'That item no longer exists.'},404);
+    await db.batch([db.prepare('DELETE FROM tasks WHERE id=? AND plan_id=?').bind(seg[3],id),...log(`You removed ${task.title}${task.claimed_name?` (${task.claimed_name} had it)`:''}`)]);
+    return json({ok:true});
+   }
    if(seg[2]==='tasks'&&seg[3]&&req.method==='PATCH'){
     const task=await db.prepare('SELECT * FROM tasks WHERE id=? AND plan_id=?').bind(seg[3],id).first<any>();if(!task)return json({error:'That item no longer exists.'},404);
     const g=await guest(),who=g?.name||'Someone';
@@ -339,6 +346,11 @@ async function handler(req:Request){
     }else if(b.action==='release'){
      if(task.claimed_by!==actor&&!host)return json({error:'Only the person responsible or organizer can release this item.'},403);
      await db.batch([db.prepare("UPDATE tasks SET claimed_by=NULL,claimed_name=NULL,done=0,claim_source='' WHERE id=?").bind(task.id),...log(task.claimed_by===actor?`${host?'You':who} let go of ${task.title}`:`You released ${task.title} from ${task.claimed_name||'someone'}`,task.claimed_by!==actor||host)]);
+    }else if(b.action==='rename'){
+     // Only the host fixes an item's wording (a typo, or the wrong thing). Whoever is bringing it keeps it.
+     if(!host)return json({error:'Only the organizer can change items.'},403);
+     const title=str(b.title,160);if(!title)return json({error:'Type what the item should say.'},400);
+     if(title!==task.title)await db.batch([db.prepare('UPDATE tasks SET title=? WHERE id=?').bind(title,task.id),...log(`You changed ${task.title} to ${title}`)]);
     }else if(b.action==='done'){
      if(task.claimed_by!==actor&&!host)return json({error:'Only the person responsible or organizer can update this item.'},403);
      await db.batch([db.prepare('UPDATE tasks SET done=? WHERE id=?').bind(task.done?0:1,task.id),...log(`${task.title} marked ${task.done?'not done':'done'}${host?'':' by '+who}`)]);

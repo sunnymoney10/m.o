@@ -7,7 +7,9 @@ async function request(actor,path,method='GET',body){const r=await fetch(origin+
 const start='2026-12-04T23:00:00.000Z',end='2026-12-06T17:00:00.000Z';
 assert.ok(multiDay(start,end)&&!multiDay(start,'')&&!multiDay(start,'2026-12-04T23:30:00.000Z')&&!multiDay(end,start));
 assert.match(whenRange(start,end),/–/);assert.doesNotMatch(whenRange(start,''),/–/);
-assert.equal(+endFor(start,end),+new Date(end));assert.equal(+endFor(start,''),+new Date(start)+7200000);
+assert.equal(+endFor(start,end),+new Date(end));
+// Same day with an end time: "… · 4:00 PM – 7:00 PM"; calendars end at that time.
+{const s=new Date(2026,10,29,16,0).toISOString(),e=new Date(2026,10,29,19,0).toISOString();assert.ok(!multiDay(s,e));assert.equal(whenRange(s,e),'Sun, Nov 29 · 4:00 PM – 7:00 PM');assert.equal(whenRange(s,e,' at '),'Sun, Nov 29 at 4:00 PM – 7:00 PM');assert.equal(whenRange(s,new Date(2026,10,29,15,0).toISOString()),'Sun, Nov 29 · 4:00 PM','an end before the start is ignored');assert.equal(+endFor(s,e),+new Date(e))}assert.equal(+endFor(start,''),+new Date(start)+7200000);
 
 let r=await request(host,'plans','POST',{title:'Atlanta weekend',name:'Ari',kind:'trip',date:start,endDate:'2026-12-03T00:00:00.000Z'});assert.equal(r.status,400,'end before start');
 r=await request(host,'plans','POST',{title:'Atlanta weekend',name:'Ari',kind:'trip',endDate:end});assert.equal(r.status,400,'end without start');

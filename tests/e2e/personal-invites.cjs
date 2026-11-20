@@ -21,7 +21,7 @@ const log=(...a)=>console.log(...a);
  check((await h.locator('.name-preview').innerText()).includes('Tess Morgan, Jordan, Sam'),'preview shows names only');
  await h.getByRole('button',{name:/^Add \d+ people$/}).click();await h.waitForTimeout(1500);
  const server=await h.evaluate(async id=>JSON.stringify(await (await fetch('/api/plan/'+id)).json()),id);
- check(!/555|0134|0199/.test(server),'no phone numbers stored on the server');
+ check(!/555[-\s.)]*0134|555[-\s.)]*0199|2155550134|2675550199/.test(server),'no phone numbers stored on the server');
  // Checklist → Send invites
  await h.getByRole('tab',{name:'Overview'}).click();await h.waitForTimeout(300);
  await h.locator('.next-steps').getByRole('button',{name:/Send invites/}).click();await h.waitForTimeout(600);

@@ -16,6 +16,7 @@ const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173';
  await h.getByLabel(/When/).fill('2026-11-26T18:00');await h.getByLabel('Where').fill('12 Oak Ave');
  await h.locator('[role="dialog"] button.primary').click();await h.waitForTimeout(1800);
  const id=new URL(h.url()).searchParams.get('plan');
+ await h.evaluate(async id=>{for(const title of ['The main dish','Something sweet','Drinks & ice'])await fetch(`/api/plan/${id}/tasks`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title,category:'bring'})})},id);// new plans start with no items; the host's list
  await h.evaluate(async id=>{await fetch(`/api/plan/${id}/guests`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({names:['Tess','Jordan','Sam']})})},id);
  await h.reload();await h.waitForTimeout(1500);
  const ov=await h.evaluate(()=>{const s=document.querySelector('.stack');if(!s)return null;const kids=[...s.children].filter(e=>e.offsetHeight>0);return {sections:kids.length,height:Math.round(s.getBoundingClientRect().height)}});

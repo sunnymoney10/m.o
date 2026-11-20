@@ -18,6 +18,7 @@ const log=(...a)=>console.log(...a);
  await k.getByLabel(/When/).fill('2026-11-26T17:00');await k.getByLabel('Where').fill('1420 Elm St, Apt 3B, Philadelphia');
  await k.getByText('Add more details').click();await k.getByLabel(/Arrival and house notes/).fill('Park on Elm, not in the lot (they tow). Buzz 3B and take the stairs. Shoes off inside.');
  await k.getByLabel(/What’s the plan/).fill('Doors at 5, food at 6. Bring your appetite.');
+ await k.getByLabel(/Things to bring/).fill('The main dish\nSomething sweet\nDrinks & ice');// new plans start empty; Ari types her list
  await shot(k,'k1-form');
  await k.getByRole('button',{name:/Create plan/}).click();await k.waitForURL(/plan=/);const url=k.url();
  // Ari adds the guest list
