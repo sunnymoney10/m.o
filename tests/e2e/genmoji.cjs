@@ -10,7 +10,8 @@ const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173',O=process.argv[2]||requ
  const a=await phone();await a.goto(B+'/?view=me');await a.waitForTimeout(2000);
  await a.getByLabel('Name').fill('Ari');await a.getByLabel('Handle').fill('ari_'+Date.now().toString(36));
  await a.getByRole('button',{name:/Save my m.o/}).click();await a.waitForTimeout(1500);
- await a.getByRole('button',{name:/Edit my m.o/}).click();const picker=a.locator('.avatar-picker');
+ const openPicker=async()=>{const ed=a.getByRole('button',{name:/Edit my m.o/});if(await ed.count())await ed.click();const more=a.locator('details.profile-extras');if(await more.count()&&!(await more.evaluate(d=>d.open)))await more.locator('summary').click();await a.waitForTimeout(300)};
+ await openPicker();const picker=a.locator('.avatar-picker');
  await picker.getByRole('button',{name:'Genmoji'}).click();
  const box=picker.getByRole('textbox',{name:/pick a Genmoji or emoji/});check(await box.count()===1,'Genmoji box is there');
  check(/smiley-face key/.test(await picker.innerText()),'it explains: tap the box, then the smiley-face key');
@@ -27,7 +28,7 @@ const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173',O=process.argv[2]||requ
  check(near(px.corner,[0xc5,0xd4,0xf0]),'the see-through part became the sky background, not black: '+px.corner);
  check(near(px.center,[0xb2,0x3b,0x28]),'the Genmoji itself is in the middle: '+px.center);
  // An ordinary emoji works too (typed from the keyboard).
- const reopen=async()=>{if(!await box.isVisible().catch(()=>false)){const ed=a.getByRole('button',{name:/Edit my m.o/});if(await ed.count())await ed.click();await picker.getByRole('button',{name:'Genmoji'}).click();await a.waitForTimeout(300)}};
+ const reopen=async()=>{if(!await box.isVisible().catch(()=>false)){await openPicker();await picker.getByRole('button',{name:'Genmoji'}).click();await a.waitForTimeout(300)}};
  await reopen();check(/Remove picture/.test(await picker.innerText()),'the saved picture can be removed from here');
  await box.click();await a.keyboard.insertText('🛼');await a.waitForTimeout(600);
  check((await picker.locator('.genmoji-preview span').innerText())==='🛼','an emoji shows in the preview');
