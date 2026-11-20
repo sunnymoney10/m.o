@@ -19,3 +19,5 @@ export const activity=sqliteTable('activity',{id:text('id').primaryKey(),planId:
 export const guestAccess=sqliteTable('guest_access',{guestId:text('guest_id').notNull(),visitor:text('visitor').notNull(),inviteHash:text('invite_hash').notNull()},t=>[primaryKey({columns:[t.guestId,t.visitor]}),index('guest_access_visitor_idx').on(t.visitor)]);
 // Server errors, for the owner's alert. Only when and where (like "POST plan/rsvp"): no IDs, names or messages. Keeps the newest 500.
 export const errors=sqliteTable('errors',{id:text('id').primaryKey(),at:text('at').notNull(),area:text('area').notNull()},t=>[index('errors_at_idx').on(t.at)]);
+// Recovering a host grants one plan only. Replacing the host key invalidates these grants.
+export const hostAccess=sqliteTable('host_access',{planId:text('plan_id').notNull(),visitor:text('visitor').notNull(),keyHash:text('key_hash').notNull()},t=>[primaryKey({columns:[t.planId,t.visitor]}),index('host_access_visitor_idx').on(t.visitor)]);

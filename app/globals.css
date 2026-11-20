@@ -642,3 +642,9 @@ html,body{overflow-x:clip}
 .item-edit-field input{width:100%;min-height:44px}
 .item-edit-actions{display:flex;align-items:center;gap:8px}
 .item-save-button{min-height:44px;padding:0 18px;width:auto}
+
+/* Optional profile details remain easy to discover and comfortable to tap. */
+.profile-extras>summary{min-height:44px;padding:12px 0;cursor:pointer;font-weight:650;color:#b23b28}
+.profile-extras[open]>summary{margin-bottom:16px}
+.profile-extras>fieldset,.profile-extras>label{margin-top:16px}
+.place-hit[aria-selected="true"]{background:#e4ebf8;outline:2px solid #3a1a2b;outline-offset:-2px}

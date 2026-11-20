@@ -14,13 +14,15 @@ const eventWhen=(iso:string)=>{const d=new Date(iso);return Number.isNaN(+d)?'':
 const whereAmI=()=>new Promise<{lat:number;lon:number}|null>(ok=>{if(typeof navigator==='undefined'||!navigator.geolocation)return ok(null);navigator.geolocation.getCurrentPosition(p=>ok({lat:p.coords.latitude,lon:p.coords.longitude}),()=>ok(null),{maximumAge:600000,timeout:8000})});
 export function PlaceSearch({value,onChange,onBookingLink,onEvent}:{value:string;onChange:(v:string)=>void;onBookingLink:(url:string)=>void;onEvent?:(e:EventHit)=>void}){
  const [events,setEvents]=useState<EventHit[]>([]),[noLocation,setNoLocation]=useState(false),[hits,setHits]=useState<Hit[]>([]),[state,setState]=useState<'idle'|'loading'|'none'|'error'>('idle'),[open,setOpen]=useState(false),[q,setQ]=useState('');
+ const [active,setActive]=useState(-1);
  const list=useId(),box=useRef<HTMLDivElement>(null),timer=useRef<ReturnType<typeof setTimeout>|null>(null),seq=useRef(0);
  useEffect(()=>()=>{if(timer.current)clearTimeout(timer.current)},[]);
  function type(v:string){
+  const n=++seq.current;setActive(-1);
   if(isBookingLink(v)){onBookingLink(v.trim());onChange('');setOpen(false);return}
   onChange(v);setQ(v);if(timer.current)clearTimeout(timer.current);
   if(v.trim().length<3||/^https?:/i.test(v.trim())){setHits([]);setEvents([]);setOpen(false);setState('idle');return}
-  timer.current=setTimeout(async()=>{const n=++seq.current;setState('loading');setOpen(true);
+  timer.current=setTimeout(async()=>{setState('loading');setOpen(true);
    try{let at='';setNoLocation(false);if(readQuery(v).near){const p=await whereAmI();if(p)at=`&lat=${p.lat.toFixed(2)}&lon=${p.lon.toFixed(2)}`;else setNoLocation(true)}
     const r=await fetch('/api/places?q='+encodeURIComponent(v.trim())+at);const d:any=await r.json();if(n!==seq.current)return;
     if(!r.ok){setHits([]);setEvents([]);setState('error');return}setHits(d.results||[]);setEvents(d.events||[]);setState(d.results?.length||d.events?.length?'idle':'none')}
@@ -30,16 +32,16 @@ export function PlaceSearch({value,onChange,onBookingLink,onEvent}:{value:string
  function pickEvent(e:EventHit){onChange([e.venue,e.address].filter(Boolean).join(', ').slice(0,160));onEvent?.(e);setOpen(false);setHits([]);setEvents([])}
  useEffect(()=>{if(open)box.current?.scrollIntoView({block:'start',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})},[open]);
  return <div className="place-search" ref={box}>
-  <label>Where<span className="place-input"><Search size={17} aria-hidden="true"/><input role="combobox" aria-expanded={open} aria-controls={list} aria-autocomplete="list" autoComplete="off" maxLength={160} value={value}
-   onChange={e=>type(e.target.value)} onKeyDown={e=>{if(e.key==='Escape'&&open){e.preventDefault();e.stopPropagation();e.nativeEvent.stopImmediatePropagation();setOpen(false)}}} placeholder="Search an event, venue or address"/></span></label>
+  <label>Where<span className="place-input"><Search size={17} aria-hidden="true"/><input role="combobox" aria-expanded={open} aria-controls={list} aria-activedescendant={open&&active>=0?list+'-option-'+active:undefined} aria-autocomplete="list" autoComplete="off" maxLength={160} value={value}
+   onChange={e=>type(e.target.value)} onKeyDown={e=>{const count=events.length+hits.length;if(open&&count&&['ArrowDown','ArrowUp','Enter'].includes(e.key)){e.preventDefault();if(e.key==='Enter'){if(active>=0){if(active<events.length)pickEvent(events[active]);else pick(hits[active-events.length]);setActive(-1)}}else setActive(i=>e.key==='ArrowDown'?(i+1)%count:(i<=0?count:i)-1);return}if(e.key==='Escape'&&open){e.preventDefault();e.stopPropagation();e.nativeEvent.stopImmediatePropagation();setOpen(false)}}} placeholder="Search an event, venue or address"/></span></label>
   {open&&<div className="place-results" id={list} role="listbox" aria-label="Address suggestions">
    {state==='loading'&&!hits.length?<p className="fine" role="status">Searching…</p>
     :state==='error'?<p className="fine" role="status">Search isn’t working right now. Type the full address instead.</p>
     :state==='none'?<p className="fine" role="status">No match for “{q}”. Try the venue name and city, or type the full address.</p>
     :<>{noLocation&&<p className="fine" role="status">Couldn’t get your location. Add a city to the search instead.</p>}
-     {events.length>0&&<><span className="eyebrow">EVENTS</span>{events.map((e,i)=><button type="button" role="option" aria-selected={false} key={'e'+i} className="place-hit" onClick={()=>pickEvent(e)}><Ticket size={17}/><span><strong>{e.name}</strong><small>{[eventWhen(e.date),e.venue].filter(Boolean).join(' · ')}</small>{e.address&&<small>{e.address}</small>}</span></button>)}</>}
+     {events.length>0&&<><span className="eyebrow">EVENTS</span>{events.map((e,i)=><button type="button" role="option" id={list+'-option-'+i} aria-selected={active===i} key={'e'+i} className="place-hit" onClick={()=>pickEvent(e)}><Ticket size={17}/><span><strong>{e.name}</strong><small>{[eventWhen(e.date),e.venue].filter(Boolean).join(' · ')}</small>{e.address&&<small>{e.address}</small>}</span></button>)}</>}
      {events.length>0&&hits.length>0&&<span className="eyebrow">PLACES</span>}
-     {hits.map((h,i)=><button type="button" role="option" aria-selected={false} key={i} className="place-hit" onClick={()=>pick(h)}><MapPin size={17}/><span><strong>{h.name}</strong>{h.address&&<small>{h.address}</small>}</span></button>)}</>}
+     {hits.map((h,i)=><button type="button" role="option" id={list+'-option-'+(events.length+i)} aria-selected={active===events.length+i} key={i} className="place-hit" onClick={()=>pick(h)}><MapPin size={17}/><span><strong>{h.name}</strong>{h.address&&<small>{h.address}</small>}</span></button>)}</>}
    <button type="button" className="text-button small" onClick={()=>setOpen(false)}>Use what I typed</button>
   </div>}
  </div>

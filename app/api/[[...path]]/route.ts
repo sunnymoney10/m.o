@@ -1,4 +1,5 @@
 import {env} from 'cloudflare:workers';
+import {verifiedIdentity} from '../../../lib/request-identity';
 import {INVITE_SECRET,newInviteSecret,inviteHash,inviteExpiry} from '../../../lib/guest-access';
 import {cleanName} from '../../../lib/names';
 import {newHostKey,hashHostKey,hostLink,HOST_KEY} from '../../../lib/host-key';
@@ -25,7 +26,7 @@ async function recordError(req:Request){try{const db=env.DB;if(!db)return;const 
 }catch{}}
 async function handler(req:Request){
  const cookies=req.headers.get('cookie')||''; let session=cookies.match(/(?:^|; )mo_session=([a-f0-9-]{36})(?:;|$)/)?.[1]; const fresh=!session;session ||=crypto.randomUUID();
- const visitor=req.headers.get('oai-authenticated-user-id')||session;let actor=visitor;
+ const visitor=await verifiedIdentity(req,(env as {MO_IDENTITY_SECRET?:string}).MO_IDENTITY_SECRET)||session;let actor=visitor;
  const json=(obj:unknown,status=200)=>new Response(JSON.stringify(obj),{status,headers:{'Content-Type':'application/json','Cache-Control':'no-store','Referrer-Policy':'no-referrer',...(fresh?{'Set-Cookie':`mo_session=${session}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=31536000`}:{})}});
  // Serves a stored data-URL photo as an image. Cached by the browser; the URL changes when the photo changes.
  const image=(dataUrl:string|undefined)=>{const p=parsePhoto(dataUrl);if(!p)return new Response('Not found',{status:404,headers:{'Cache-Control':'no-store'}});return new Response(p.bytes.buffer as ArrayBuffer,{headers:{'Content-Type':p.type,'Cache-Control':'private, max-age=31536000, immutable','X-Content-Type-Options':'nosniff','Content-Security-Policy':"default-src 'none'"}})};
@@ -50,11 +51,11 @@ async function handler(req:Request){
    const t=Date.now(),tries=(hostTries.get(actor)||[]).filter(x=>x>t-600000);if(tries.length>=10)return json({error:'Too many tries. Wait a few minutes and try again.'},429);
    tries.push(t);hostTries.set(actor,tries);if(hostTries.size>5000)hostTries.clear();
    const b=await body();const key=typeof b.key==='string'?b.key:'';if(!HOST_KEY.test(key))return json({error:'That host link isn’t complete. Copy the whole link and try again.'},400);
-   const plan=await db.prepare("SELECT id,owner FROM plans WHERE host_key_hash=? AND host_key_hash<>''").bind(await hashHostKey(key)).first<any>();
+   const plan=await db.prepare("SELECT id,owner,host_key_hash FROM plans WHERE host_key_hash=? AND host_key_hash<>''").bind(await hashHostKey(key)).first<any>();
    if(!plan)return json({error:'This host link doesn’t work anymore. A newer one may have been made. Ask the host for the latest link.'},404);
-   if(!/^[a-f0-9-]{36}$/.test(plan.owner))return json({error:'This plan was made in ChatGPT. Open it there to manage it.'},409);
-   // This device becomes the host's session (same as the phone that made the plan). The ID itself is never shown.
-   return new Response(JSON.stringify({ok:true,plan:plan.id}),{headers:{'Content-Type':'application/json','Cache-Control':'no-store','Set-Cookie':`mo_session=${plan.owner}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=31536000`}});
+   // Keep this browser identity and grant only the requested plan. Rotation revokes grants.
+   if(plan.owner!==visitor)await db.prepare('INSERT INTO host_access (plan_id,visitor,key_hash) VALUES (?,?,?) ON CONFLICT(plan_id,visitor) DO UPDATE SET key_hash=excluded.key_hash').bind(plan.id,visitor,plan.host_key_hash).run();
+   return json({ok:true,plan:plan.id});
   }
   if(seg[0]==='places'&&seg.length===1&&req.method==='GET'){
    const {text,near}=readQuery(str(url.searchParams.get('q'),100));if(text.length<3)return json({results:[],events:[]});
@@ -88,11 +89,12 @@ async function handler(req:Request){
   if(seg[0]==='me'&&seg.length===1){
    if(req.method==='GET'){
     const p=await db.prepare('SELECT name,handle,mo,interests,style,avatar,photo_updated FROM profiles WHERE actor=?').bind(actor).first<any>();
-    const {results:history}=await db.prepare("SELECT p.id,p.title,p.kind,p.date,p.place FROM plans p JOIN guests g ON g.plan_id=p.id AND (g.actor=?1 OR g.id IN (SELECT a.guest_id FROM guest_access a WHERE a.visitor=?1 AND a.invite_hash=g.invite_hash AND g.invite_expires>strftime('%Y-%m-%dT%H:%M:%fZ','now'))) WHERE p.made_it=1 AND g.status='in' AND (p.owner=?1 OR (g.details_approved=1 AND (g.invite_required=0 OR EXISTS(SELECT 1 FROM guest_access a WHERE a.guest_id=g.id AND a.visitor=?1 AND a.invite_hash=g.invite_hash AND g.invite_expires>strftime('%Y-%m-%dT%H:%M:%fZ','now'))))) ORDER BY p.date DESC").bind(actor).all<any>();
-    const done=await db.prepare('SELECT count(*) AS n FROM tasks WHERE claimed_by=? AND done=1').bind(actor).first<any>();
-    const hosted=await db.prepare('SELECT count(*) AS n FROM plans WHERE owner=? AND made_it=1').bind(actor).first<any>();
+    const {results:history}=await db.prepare("SELECT p.id,p.title,p.kind,p.date,p.place FROM plans p WHERE p.made_it=1 AND (p.owner=?1 OR EXISTS(SELECT 1 FROM host_access h WHERE h.plan_id=p.id AND h.visitor=?1 AND h.key_hash=p.host_key_hash AND h.key_hash<>'') OR EXISTS(SELECT 1 FROM guests g WHERE g.plan_id=p.id AND g.status='in' AND g.details_approved=1 AND ((g.actor=?1 AND g.invite_required=0) OR EXISTS(SELECT 1 FROM guest_access a WHERE a.guest_id=g.id AND a.visitor=?1 AND a.invite_hash=g.invite_hash AND g.invite_expires>strftime('%Y-%m-%dT%H:%M:%fZ','now'))))) ORDER BY p.date DESC").bind(actor).all<any>();
+    const done=await db.prepare("SELECT count(*) AS n FROM tasks t JOIN plans p ON p.id=t.plan_id WHERE t.done=1 AND ((t.claimed_by=?1 AND (p.owner=?1 OR EXISTS(SELECT 1 FROM guests g WHERE g.plan_id=p.id AND g.actor=?1 AND g.invite_required=0))) OR (t.claimed_by=p.owner AND EXISTS(SELECT 1 FROM host_access h WHERE h.plan_id=p.id AND h.visitor=?1 AND h.key_hash=p.host_key_hash AND h.key_hash<>'')) OR EXISTS(SELECT 1 FROM guests g JOIN guest_access a ON a.guest_id=g.id WHERE g.plan_id=p.id AND g.actor=t.claimed_by AND a.visitor=?1 AND a.invite_hash=g.invite_hash AND g.invite_expires>strftime('%Y-%m-%dT%H:%M:%fZ','now')))").bind(actor).first<any>();
+    const hosted=await db.prepare("SELECT count(*) AS n FROM plans p WHERE p.made_it=1 AND (p.owner=?1 OR EXISTS(SELECT 1 FROM host_access h WHERE h.plan_id=p.id AND h.visitor=?1 AND h.key_hash=p.host_key_hash AND h.key_hash<>''))").bind(actor).first<any>();
+    const recovered=await db.prepare("SELECT count(*) AS n FROM guest_access a JOIN guests g ON g.id=a.guest_id WHERE a.visitor=? AND g.actor<>? AND a.invite_hash=g.invite_hash AND g.invite_expires>?").bind(actor,actor,new Date().toISOString()).first<any>();
     const cities=[...new Set(history.map((h:any)=>String(h.place||'').trim()).filter(Boolean))];
-    return json({profile:p?{name:p.name,handle:p.handle,mo:p.mo,style:p.style,interests:parseInterests(p.interests),avatar:parseAvatar(p.avatar),photo:p.photo_updated?'/api/me/photo?v='+encodeURIComponent(p.photo_updated):null}:null,history,cities,contributed:done?.n||0,hosted:hosted?.n||0});
+    return json({recoveredPlans:recovered?.n||0,profile:p?{name:p.name,handle:p.handle,mo:p.mo,style:p.style,interests:parseInterests(p.interests),avatar:parseAvatar(p.avatar),photo:p.photo_updated?'/api/me/photo?v='+encodeURIComponent(p.photo_updated):null}:null,history,cities,contributed:done?.n||0,hosted:hosted?.n||0});
    }
    if(req.method==='PUT'){
     const b=await body();const name=str(b.name,60),handle=str(b.handle,24).toLowerCase().replace(/^@/,''),mo=str(b.mo,80),style=STYLES.includes(b.style)?b.style:'down';
@@ -110,14 +112,14 @@ async function handler(req:Request){
   if(seg[0]==='plans'&&seg.length===1){
    if(req.method==='GET'){
     // Address is shared only with the organizer and people who said in or maybe.
-    const {results}=await db.prepare(`SELECT p.id,p.title,p.kind,p.date,p.end_date,CASE WHEN p.owner=?1 OR EXISTS(SELECT 1 FROM guests m WHERE m.plan_id=p.id AND (m.actor=?1 OR m.id IN (SELECT a.guest_id FROM guest_access a WHERE a.visitor=?1 AND a.invite_hash=m.invite_hash AND m.invite_expires>strftime('%Y-%m-%dT%H:%M:%fZ','now'))) AND m.status IN ('in','maybe') AND m.details_approved=1) THEN p.place ELSE '' END AS place,p.budget,p.note,p.invite_url,p.created,p.made_it,
+    const {results}=await db.prepare(`SELECT p.id,p.title,p.kind,p.date,p.end_date,CASE WHEN p.owner=?1 OR EXISTS(SELECT 1 FROM host_access h WHERE h.plan_id=p.id AND h.visitor=?1 AND h.key_hash=p.host_key_hash AND h.key_hash<>'') OR EXISTS(SELECT 1 FROM guests m WHERE m.plan_id=p.id AND (m.actor=?1 OR m.id IN (SELECT a.guest_id FROM guest_access a WHERE a.visitor=?1 AND a.invite_hash=m.invite_hash AND m.invite_expires>strftime('%Y-%m-%dT%H:%M:%fZ','now'))) AND m.status IN ('in','maybe') AND m.details_approved=1) THEN p.place ELSE '' END AS place,p.budget,p.note,p.invite_url,p.created,p.made_it,
      (SELECT coalesce(sum(1+CASE WHEN g.extra_status='approved' THEN g.extra_count ELSE 0 END),0) FROM guests g WHERE g.plan_id=p.id AND g.status='in') AS going,
      (SELECT count(*) FROM guests g WHERE g.plan_id=p.id AND g.status='maybe') AS maybe,
      (SELECT count(*) FROM guests g WHERE g.plan_id=p.id AND g.status='invited') AS invited,
      (SELECT count(*) FROM tasks t WHERE t.plan_id=p.id AND t.claimed_by IS NULL) AS open_items,
      (SELECT t.title FROM tasks t WHERE t.plan_id=p.id AND t.claimed_by IS NULL ORDER BY t.rowid LIMIT 1) AS open_item,
      (SELECT count(*) FROM polls v WHERE v.plan_id=p.id AND v.decided_option IS NULL) AS open_votes
-     FROM plans p WHERE p.owner=?1 OR p.id IN (SELECT g.plan_id FROM guests g WHERE (g.actor=?1 AND g.invite_required=0) OR g.id IN (SELECT a.guest_id FROM guest_access a WHERE a.visitor=?1 AND a.invite_hash=g.invite_hash AND g.invite_expires>strftime('%Y-%m-%dT%H:%M:%fZ','now'))) ORDER BY p.created DESC`).bind(actor).all();return json({plans:results});}
+     FROM plans p WHERE p.owner=?1 OR EXISTS(SELECT 1 FROM host_access h WHERE h.plan_id=p.id AND h.visitor=?1 AND h.key_hash=p.host_key_hash AND h.key_hash<>'') OR p.id IN (SELECT g.plan_id FROM guests g WHERE (g.actor=?1 AND g.invite_required=0) OR g.id IN (SELECT a.guest_id FROM guest_access a WHERE a.visitor=?1 AND a.invite_hash=g.invite_hash AND g.invite_expires>strftime('%Y-%m-%dT%H:%M:%fZ','now'))) ORDER BY p.created DESC`).bind(actor).all();return json({plans:results});}
    if(req.method==='POST'){
     const b=await body();const title=str(b.title,100),name=str(b.name,60);if(!title||!name)return json({error:'Give the plan a title and tell us your name.'},400);
     if(b.date&&Number.isNaN(Date.parse(b.date)))return json({error:'Choose a valid date.'},400);
@@ -135,7 +137,7 @@ async function handler(req:Request){
   }
 
   if(seg[0]==='plan'&&seg[1]){
-   const id=seg[1];const plan=await db.prepare('SELECT * FROM plans WHERE id=?').bind(id).first<any>();if(!plan)return json({error:'This plan could not be found. Check your invitation link.'},404);const host=plan.owner===visitor;
+   const id=seg[1];const plan=await db.prepare('SELECT * FROM plans WHERE id=?').bind(id).first<any>();if(!plan)return json({error:'This plan could not be found. Check your invitation link.'},404);const host=plan.owner===visitor||!!await db.prepare("SELECT plan_id FROM host_access WHERE plan_id=? AND visitor=? AND key_hash=? AND key_hash<>''").bind(id,visitor,plan.host_key_hash).first();if(host)actor=plan.owner;
    if(!host){
     const grant=await db.prepare('SELECT g.actor FROM guest_access a JOIN guests g ON g.id=a.guest_id WHERE g.plan_id=? AND a.visitor=? AND a.invite_hash=g.invite_hash AND g.invite_hash<>? AND g.invite_expires>?').bind(id,visitor,'',new Date().toISOString()).first<any>();
     if(grant)actor=grant.actor;
@@ -173,8 +175,7 @@ async function handler(req:Request){
 
    if(seg[2]==='host-link'&&seg.length===3&&req.method==='POST'){
     if(!host)return json({error:'Only the host can make a host link.'},403);
-    if(!/^[a-f0-9-]{36}$/.test(actor))return json({error:'This plan was made in ChatGPT. Manage it there.'},409);
-    const key=newHostKey();await db.batch([db.prepare('UPDATE plans SET host_key_hash=? WHERE id=?').bind(await hashHostKey(key),id),...log(plan.host_key_hash?'You made a new host link. The old one stopped working.':'You made a host link.')]);
+    const key=newHostKey(),hash=await hashHostKey(key);await db.batch([db.prepare('UPDATE plans SET host_key_hash=? WHERE id=?').bind(hash,id),...(visitor!==plan.owner?[db.prepare('UPDATE host_access SET key_hash=? WHERE plan_id=? AND visitor=?').bind(hash,id,visitor)]:[]),...log(plan.host_key_hash?'You made a new host link. Other recovered devices stopped working.':'You made a host link.')]);
     return json({link:hostLink(url.origin,key),replaced:!!plan.host_key_hash});
    }
    if(seg.length===2&&req.method==='DELETE'){
@@ -183,6 +184,7 @@ async function handler(req:Request){
     await db.batch([
      db.prepare('DELETE FROM poll_votes WHERE poll_id IN (SELECT id FROM polls WHERE plan_id=?)').bind(id),
      db.prepare('DELETE FROM poll_options WHERE poll_id IN (SELECT id FROM polls WHERE plan_id=?)').bind(id),
+     db.prepare('DELETE FROM host_access WHERE plan_id=?').bind(id),
      db.prepare('DELETE FROM guest_access WHERE guest_id IN (SELECT id FROM guests WHERE plan_id=?)').bind(id),
      ...['polls','tasks','stops','memories','activity','guests'].map(t=>db.prepare(`DELETE FROM ${t} WHERE plan_id=?`).bind(id)),
      db.prepare('DELETE FROM plans WHERE id=?').bind(id)]);
@@ -213,16 +215,18 @@ async function handler(req:Request){
    }
    if(seg[2]==='rsvp'&&req.method==='POST'){
     const name=str(b.name,60);if(!name||!['in','maybe','out'].includes(b.status))return json({error:'Add your name and choose a response.'},400);
-    const prev=await db.prepare('SELECT extra_count,extra_names,extra_status FROM guests WHERE plan_id=? AND actor=?').bind(id,actor).first<any>();
+    const prev=await db.prepare('SELECT * FROM guests WHERE plan_id=? AND actor=?').bind(id,actor).first<any>();
     if(!prev){const n=await db.prepare('SELECT count(*) AS n FROM guests WHERE plan_id=?').bind(id).first<any>();if((n?.n||0)>=150)return json({error:'This plan is full. Ask the organizer.'},400)}
+    // A status-only reply preserves private fields. Explicit fields in the full form may clear them.
+    const saved={...prev,...b};
     const out=b.status==='out';const freed=out?(await db.prepare('SELECT title FROM tasks WHERE plan_id=? AND claimed_by=?').bind(id,actor).all<any>()).results.map((t:any)=>t.title):[];
-    const count=out?0:Math.max(0,Math.min(4,Math.floor(Number(b.extraCount)||0))),names=count?str(b.extraNames,120):'';
+    const count=out?0:Math.max(0,Math.min(4,Math.floor(Number(b.extraCount===undefined?prev?.extra_count:b.extraCount)||0))),names=count?str(b.extraNames===undefined?prev?.extra_names:b.extraNames,120):'';
     // Extra guests are a request until the organizer approves; changing the request asks again.
     const same=prev&&prev.extra_count===count&&prev.extra_names===names;
     const extraStatus=!count?'':host?'approved':same&&prev.extra_status?prev.extra_status:'requested';
     await db.batch([...(out?[db.prepare('UPDATE tasks SET claimed_by=NULL,claimed_name=NULL,done=0,claim_source=\'\' WHERE plan_id=? AND claimed_by=?').bind(id,actor)]:[]),
      db.prepare('INSERT INTO guests (plan_id,actor,name,status,note,id,extra_count,extra_names,extra_status,dietary,staying,source,updated) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(plan_id,actor) DO UPDATE SET name=excluded.name,status=excluded.status,note=excluded.note,extra_count=excluded.extra_count,extra_names=excluded.extra_names,extra_status=excluded.extra_status,dietary=excluded.dietary,staying=excluded.staying,source=excluded.source,updated=excluded.updated')
-      .bind(id,actor,name,b.status,str(b.note,300),crypto.randomUUID(),count,names,extraStatus,str(b.dietary,200),!out&&b.staying===true?1:0,'guest',now),
+      .bind(id,actor,name,b.status,str(saved.note,300),crypto.randomUUID(),count,names,extraStatus,str(saved.dietary,200),!out&&(saved.staying===true||saved.staying===1)?1:0,'guest',now),
      db.prepare('UPDATE tasks SET claimed_name=? WHERE plan_id=? AND claimed_by=?').bind(name,id,actor),
      db.prepare("UPDATE guests SET check_back='' WHERE plan_id=? AND actor=? AND status<>'maybe'").bind(id,actor),
      ...(host?[]:log(`${name} confirmed: ${answer(b.status,count,names)}${freed.length?` · ${freed.join(', ')} open again`:''}`,false))]);
@@ -398,7 +402,7 @@ async function handler(req:Request){
      if(b.optionId===null){await db.prepare('UPDATE polls SET decided_option=NULL WHERE id=?').bind(poll.id).run();return json({ok:true})}
      const option=await db.prepare('SELECT id,label FROM poll_options WHERE id=? AND poll_id=?').bind(str(b.optionId,40),poll.id).first<any>();if(!option)return json({error:'Choose one of the options.'},400);
      const statements=[db.prepare('UPDATE polls SET decided_option=? WHERE id=?').bind(option.id,poll.id)];
-     if(poll.kind==='date')statements.push(db.prepare('UPDATE plans SET date=? WHERE id=?').bind(new Date(option.label).toISOString(),id));
+     if(poll.kind==='date'){const start=new Date(option.label).toISOString(),error=endError(start,plan.end_date);if(error)return json({error:error+' Edit the trip’s end date before choosing this start.'},400);statements.push(db.prepare('UPDATE plans SET date=? WHERE id=?').bind(start,id))}
      if(poll.kind==='place')statements.push(db.prepare('UPDATE plans SET place=? WHERE id=?').bind(str(option.label,160),id));
      await db.batch(statements);return json({ok:true});
     }

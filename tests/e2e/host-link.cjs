@@ -29,8 +29,10 @@ const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173',O=process.argv[2]||requ
  check(await g.getByRole('heading',{name:'Your host link'}).count()===0&&await g.getByRole('button',{name:'Edit plan details'}).count()===0,'guest sees no host link and no host tools');
  // New link turns off the old one
  await h.getByText('More tools').click();await h.getByRole('button',{name:'Make a new host link'}).click();await h.waitForTimeout(1200);
+ const replaced=await h.locator('.host-link-url').innerText();check(replaced!==link,'replacement link stays visible so it can be saved');
  const d3=await phone();await d3.goto(link);await d3.waitForTimeout(1800);await d3.getByRole('button',{name:'Open as host'}).click();await d3.waitForTimeout(1500);
  check((await d3.locator('body').innerText()).includes('doesn’t work anymore'),'old link says it no longer works');
  check(await d3.getByRole('button',{name:'Edit plan details'}).count()===0,'and gives no host access');
+ await d2.reload();await d2.getByRole('tab',{name:'Overview',exact:true}).waitFor();check(await d2.getByRole('button',{name:'Edit plan details'}).count()===0,'the already recovered second device loses host tools');
  await b.close();console.log(fails?`${fails} problem(s)`:'All host-link checks passed');process.exit(fails?1:0);
 })();

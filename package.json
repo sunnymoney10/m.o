@@ -29,7 +29,8 @@
     "journeys:tabs": "node tests/e2e/fast-tabs.cjs",
     "journeys:answers": "node tests/e2e/answers.cjs",
     "journeys:items": "node tests/e2e/item-edit.cjs",
-    "journeys:access": "node tests/e2e/guest-access.cjs"
+    "journeys:access": "node tests/e2e/guest-access.cjs",
+    "journeys:recovery": "node tests/e2e/recovery.cjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

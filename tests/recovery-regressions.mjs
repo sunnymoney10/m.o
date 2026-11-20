@@ -1,0 +1,25 @@
+import assert from 'node:assert/strict';
+import {signedHeaders} from './signed-identity.mjs';
+const origin='http://127.0.0.1:4173',host=crypto.randomUUID(),a=crypto.randomUUID(),b=crypto.randomUUID();
+async function req(actor,path,method='GET',body,headers={}){const r=await fetch(origin+'/api/'+path,{method,headers:{Origin:origin,Cookie:'mo_session='+actor,'Content-Type':'application/json',...headers},...(body===undefined?{}:{body:JSON.stringify(body)})});return {status:r.status,data:await r.json()}}
+const id=(await req(host,'plans','POST',{title:'Recovery regression',name:'Host',date:'2026-12-01T18:00:00Z',endDate:'2026-12-03T18:00:00Z',tasks:[{title:'Ice',category:'bring'}]})).data.id,base='plan/'+id;
+await req(host,base+'/guests','POST',{names:['Guest']});const g=(await req(host,base)).data.guests.find(g=>!g.isHost),task=(await req(host,base)).data.tasks[0];
+const token=(await req(host,base+`/guests/${g.id}/invite`,'POST',{})).data.link.split('/').pop();
+await req(a,base+`/guests/${g.id}/pick`,'POST',{token});await req(a,base+'/rsvp','POST',{name:'Guest',status:'in',note:'Saved note',dietary:'Saved diet',staying:true,extraCount:1,extraNames:'Plus one'});
+await req(a,base+`/tasks/${task.id}`,'PATCH',{action:'claim'});await req(a,base+`/tasks/${task.id}`,'PATCH',{action:'done'});
+await req(b,base+`/guests/${g.id}/pick`,'POST',{token});await req(b,base+'/rsvp','POST',{name:'Guest',status:'maybe'});
+const mine=(await req(b,base)).data.guests.find(x=>x.isMe);for(const [key,value]of Object.entries({note:'Saved note',dietary:'Saved diet',staying:true,extra_count:1,extra_names:'Plus one'}))assert.equal(mine[key],value,key+' survives status-only recovery');
+assert.equal((await req(b,'me')).data.contributed,1,'second device counts the same scoped completed contribution');
+assert.equal((await req(b,'me')).data.recoveredPlans,1);
+await req(b,base+'/rsvp','POST',{name:'Guest',status:'in',note:'',dietary:'',staying:false,extraCount:0});assert.equal((await req(b,base)).data.guests.find(x=>x.isMe).dietary,'','explicit form clears still work');
+const poll=(await req(host,base+'/polls','POST',{question:'When?',kind:'date',options:['2026-12-10T18:00:00Z','2026-12-11T18:00:00Z']})).data.id,option=(await req(host,base)).data.polls[0].options[0];
+assert.equal((await req(host,base+`/polls/${poll}/decide`,'POST',{optionId:option.id})).status,400);assert.equal((await req(host,base)).data.plan.date,'2026-12-01T18:00:00Z','rejected vote does not partly update the plan');assert.equal((await req(host,base)).data.polls[0].decided_option,null);
+assert.equal((await req(b,base,'PATCH',{title:'Impersonated'},{'oai-authenticated-user-id':host})).status,403,'raw identity headers never impersonate an owner');
+const oldSecret=globalThis.__moTestEnv.MO_IDENTITY_SECRET;globalThis.__moTestEnv.MO_IDENTITY_SECRET='synthetic-regression-secret';
+const body=JSON.stringify({title:'Verified gateway'}),url=origin+'/api/'+base,headers=await signedHeaders(url,'PATCH',body,host,globalThis.__moTestEnv.MO_IDENTITY_SECRET);
+assert.equal((await req(b,base,'PATCH',{title:'Verified gateway'},headers)).status,200,'configured signed identity works');
+assert.equal((await req(b,base,'PATCH',{title:'Tampered'},headers)).status,403,'signature binds request body');
+const expired=await signedHeaders(url,'PATCH',body,host,globalThis.__moTestEnv.MO_IDENTITY_SECRET,'1000000000');assert.equal((await req(b,base,'PATCH',{title:'Verified gateway'},expired)).status,403,'expired assertions fail');
+globalThis.__moTestEnv.MO_IDENTITY_SECRET=oldSecret;
+await req(host,base+`/guests/${g.id}/invite`,'POST',{revoke:true});assert.equal((await req(b,'me')).data.contributed,0,'revoked grants do not retain scoped counts');
+console.log('PASS: scoped recovery preserves RSVP fields and counts, date votes stay valid, raw/tampered/expired identity assertions fail.');

@@ -13,12 +13,23 @@ r=await request(guest,'plan/'+id);assert.equal(r.body.hasHostKey,false,'guests a
 r=await request(stranger,'host-link','POST',{key:'x'.repeat(24)});assert.equal(r.status,404);
 r=await request(stranger,'host-link','POST',{key:'short'});assert.equal(r.status,400);
 r=await request(laptop,'host-link','POST',{key});assert.equal(r.status,200);assert.equal(r.body.plan,id);
-const session=r.cookie.match(/mo_session=([a-f0-9-]{36})/)?.[1];assert.equal(session,host,'laptop now carries the host session');assert.ok(/HttpOnly/.test(r.cookie));assert.ok(!JSON.stringify(r.body).includes(host),'the session ID is never in the response body');
+const session=laptop;assert.ok(!r.cookie.includes(host),'host identity is not copied into the recovering cookie');assert.ok(!JSON.stringify(r.body).includes(host),'the session ID is never in the response body');
 r=await request(session,'plan/'+id,'PATCH',{title:'Friendsgiving 2026'});assert.equal(r.status,200,'the laptop can edit as host');
 r=await request(host,'plan/'+id);assert.equal(r.body.host,true,'the original phone is still host');
-// A new link turns the old one off.
+const other=(await request(host,'plans','POST',{title:'Unrelated private plan',name:'Kaela',place:'PRIVATE'})).body.id;
+assert.equal((await request(laptop,'plan/'+other)).body.host,false,'recovery never grants another plan');
+assert.equal((await request(laptop,'plan/'+other)).body.plan.place,'');
+assert.ok(!(await request(laptop,'plans')).body.plans.some(p=>p.id===other));
+const own=(await request(laptop,'plans','POST',{title:'Laptop own plan',name:'Laptop'})).body.id;
+assert.ok((await request(laptop,'plans')).body.plans.some(p=>p.id===own),'existing identity is retained');
+// Rotating from a recovered device retains that device, while invalidating other grants.
+r=await request(laptop,`plan/${id}/host-link`,'POST');assert.equal(r.status,200);assert.equal((await request(laptop,'plan/'+id)).body.host,true,'the rotating recovered device keeps its access');
+// A new link turns the old one and other recovered devices off.
 r=await request(host,`plan/${id}/host-link`,'POST');assert.equal(r.body.replaced,true);
 r=await request(stranger,'host-link','POST',{key});assert.equal(r.status,404,'old link stops working');
+assert.equal((await request(laptop,'plan/'+id)).body.host,false,'rotation revokes an already recovered device');
+assert.equal((await request(laptop,'plan/'+id,'PATCH',{title:'No'})).status,403);
+assert.equal((await request(host,'plan/'+id)).body.host,true,'original owner keeps access');
 // Too many tries are capped.
 for(let i=0;i<8;i++)await request(stranger,'host-link','POST',{key:'y'.repeat(24)});
 r=await request(stranger,'host-link','POST',{key:'z'.repeat(24)});assert.equal(r.status,429);
