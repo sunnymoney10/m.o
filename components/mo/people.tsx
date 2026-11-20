@@ -117,8 +117,9 @@ export function PeopleTab({detail,act,busy,notify,startAdding=false,startMode=nu
    <label>Your name<input maxLength={60} value={f.name} onChange={e=>setF({...f,name:e.target.value})} placeholder="What should we call you?" autoComplete="given-name"/></label>
    <fieldset><legend>Are you coming?</legend><div className="rsvp-buttons">{([['in','I’m in',Check],['maybe','Still checking',Clock],['out','Can’t make it',X]] as const).map(([s,label,Icon])=><button type="button" key={s} aria-pressed={f.status===s} className={'rsvp-choice choice-'+s+(f.status===s?' chosen':'')} onClick={()=>setF({...f,status:s})}><Icon size={17}/>{label}</button>)}</div></fieldset>
    {f.status&&f.status!=='out'&&<>
-    <fieldset><legend>Bringing anyone?</legend><div className="stepper"><button type="button" className="icon-button bordered" aria-label="One fewer" disabled={f.extra<=0} onClick={()=>setF({...f,extra:f.extra-1})}><Minus size={16}/></button><span aria-live="polite">{f.extra===0?'Just me':`+${f.extra}`}</span><button type="button" className="icon-button bordered" aria-label="One more" disabled={f.extra>=4} onClick={()=>setF({...f,extra:f.extra+1})}><Plus size={16}/></button></div>
-     {f.extra>0&&<><input aria-label="Their names" maxLength={120} value={f.extraNames} onChange={e=>setF({...f,extraNames:e.target.value})} placeholder="Their names, e.g. Ben"/>{!host&&<small className="fine">{detail.organizer||'The host'} will approve extra guests.</small>}</>}</fieldset>
+    {/* One way to bring someone: as a real guest with their own invite (the "Bringing someone?" card), not a +1 count. */}
+    {f.extra>0?<p className="fine bring-later-note">You’re already bringing +{f.extra}{f.extraNames?` (${f.extraNames})`:''}. That stays as it is.</p>
+     :<p className="fine bring-later-note">{host?'Bringing someone? Add them to the guest list so they get their own invite.':'Bringing someone? Answer first, then add them under “Bringing someone?” so they get their own invite and can answer for themselves.'}</p>}
     <label>Dietary needs or allergies <small>(only {host?'you':detail.organizer||'the host'} sees this)</small><input maxLength={200} value={f.dietary} onChange={e=>setF({...f,dietary:e.target.value})} placeholder="e.g. vegetarian, nut allergy"/></label>
     {!host&&<label className="check-row"><input type="checkbox" checked={f.staying} onChange={e=>setF({...f,staying:e.target.checked})}/><span>I’d like to stay over <small>(only {detail.organizer||'the host'} sees this)</small></span></label>}
    </>}
@@ -126,6 +127,11 @@ export function PeopleTab({detail,act,busy,notify,startAdding=false,startMode=nu
    <div className="form-bottom">{(answered||host)?<button type="button" className="text-button" onClick={()=>setEditing(false)}>Cancel</button>:<span/>}<button className="primary" disabled={busy}>{busy?<LoaderCircle className="spin" size={17}/>:null}Send RSVP</button></div>
   </form>}
 
+  {host&&(detail.plusOneRequests||[]).length>0&&<div className="soft-card plus-one-pending" aria-label="Waiting for your OK">
+   <span className="eyebrow">WAITING FOR YOUR OK</span>
+   {(detail.plusOneRequests||[]).map(r=><div className="plus-one-pending-row" key={r.id}><p><strong>{r.name}</strong><span>with {r.withName} · asked to come</span></p>
+    <div className="plus-one-ask-actions"><button className="primary plus-one-approve" disabled={busy} onClick={()=>act(`guests/${r.id}/plus-one`,'POST',{decision:'approved'},d=>{d.plusOneRequests=(d.plusOneRequests||[]).filter(x=>x.id!==r.id)},`${r.name} is on the guest list.`)}>Yes, {r.name} can come</button><button className="text-button plus-one-decline" disabled={busy} onClick={()=>act(`guests/${r.id}/plus-one`,'POST',{decision:'declined'},d=>{d.plusOneRequests=(d.plusOneRequests||[]).filter(x=>x.id!==r.id)},`Declined. ${r.withName} will see “not this time”.`)}>Not this time</button></div></div>)}
+  </div>}
   <div className="guest-list">{sorted.map(g=><div className="guest-block" key={g.id||g.name}><div className="guest">
    <Face className="avatar" seed={g.handle||g.name} avatar={g.avatar} photo={g.photo}/>
    <div className="guest-info"><strong>{g.name}{g.isMe&&g.name!=='You'?' (you)':''}{g.isHost?<em> · host</em>:null}</strong>{g.withName&&<span className="with-guest">with {g.withName}</span>}

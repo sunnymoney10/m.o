@@ -712,3 +712,10 @@ html,body{overflow-x:clip}
 .invite-genmoji{display:grid;gap:8px}
 .invite-genmoji-label{font-weight:600;color:var(--ink)}
 .invite-genmoji .genmoji-box{min-height:64px}
+.plus-one-pending{display:grid;gap:4px;border:2px dashed #7a5600}
+.plus-one-pending-row{display:grid;gap:8px;padding:12px 0;border-bottom:1.5px solid var(--line)}
+.plus-one-pending-row:last-child{border-bottom:0;padding-bottom:0}
+.plus-one-pending-row p{display:grid;gap:2px;margin:0}
+.plus-one-pending-row p span{font-size:13px;color:#7a5600;font-weight:600}
+.plus-one-intro{margin:0;font-size:15px}
+.bring-later-note{margin:0}

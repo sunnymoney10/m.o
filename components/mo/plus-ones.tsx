@@ -22,7 +22,7 @@ export function BringSomeone({detail,act,busy,notify}:{detail:Detail;act:Act;bus
  const origin=typeof location==='undefined'?'':location.origin;
  const when=detail.plan.date?' on '+whenRange(detail.plan.date,detail.plan.end_date,' at '):'';
  const linkFor=(p:PlusOne)=>{const v=links[p.id];return v&&v.expires>new Date().toISOString()?v.url:''};
- const inviteText=(p:PlusOne,url:string)=>`Hi ${p.name.split(' ')[0]}! I’m bringing you to ${detail.plan.title}${when}. ${host} said yes. Tap to say if you can make it: ${url}`;
+ const inviteText=(p:PlusOne,url:string)=>`Hi ${p.name.split(' ')[0]}! I asked ${host} if you could come to ${detail.plan.title}${when} as my plus one, and ${host} said yes. Tap to say if you can make it: ${url}`;
  const nudge=(n:string)=>`Hi ${host}! Can I bring ${n} to ${detail.plan.title}? You can say yes or no in m.o: ${planLink(origin,id)}`;
 
  async function ask(e:React.FormEvent){e.preventDefault();const n=name.trim();if(!n){notify('Type their name.');return}
@@ -43,7 +43,7 @@ export function BringSomeone({detail,act,busy,notify}:{detail:Detail;act:Act;bus
   {asked&&<div className="bring-someone-nudge"><p>Want to text {host} too, so they see it sooner?</p><a className="outline-button" href={smsHref('',nudge(asked))} onClick={()=>setAsked(null)}><Send size={15}/>Text {host}</a><button className="text-button small quiet" onClick={()=>setAsked(null)}>No thanks</button></div>}
   {people.length>0&&<ul className="bring-someone-list">{people.map(p=>{const url=linkFor(p),waiting=p.status==='requested',no=p.status==='declined';return <li key={p.id}>
    <div className="bring-someone-who"><strong>{p.name}</strong>
-    <span className={'bring-someone-status'+(no?' declined':waiting?' waiting':' yes')}>{waiting?<><Clock size={14}/>Waiting for {host}</>:no?<><X size={14}/>{host} said not this time</>:<><Check size={14}/>{p.status==='in'?'Going':p.status==='maybe'?'Still checking':p.status==='out'?'Can’t make it':'On the list'}</>}</span></div>
+    <span className={'bring-someone-status'+(no?' declined':waiting?' waiting':' yes')}>{waiting?<><Clock size={14}/>Waiting for {host}</>:no?<><X size={14}/>{host} said not this time</>:<><Check size={14}/>{p.status==='in'?'Going':p.status==='maybe'?'Still checking':p.status==='out'?'Can’t make it':'On the list · hasn’t answered yet'}</>}</span></div>
    {waiting||no?<button className="text-button small quiet" disabled={busy} onClick={()=>act(`plus-ones/${p.id}`,'DELETE',{},d=>{d.myPlusOnes=(d.myPlusOnes||[]).filter(x=>x.id!==p.id)},waiting?`Request for ${p.name} withdrawn.`:'Cleared.')}>{waiting?'Withdraw':'Clear'}</button>
     :url?<a className="outline-button" href={smsHref('',inviteText(p,url))}><Send size={15}/>Send {p.name.split(' ')[0]} the invite</a>
     :!p.hasLink?<button className="outline-button brick" disabled={making} onClick={async()=>{const u=await makeLink(p);if(u)location.href=smsHref('',inviteText(p,u))}}><Send size={15}/>{making?'Making the link…':`Send ${p.name.split(' ')[0]} the invite`}</button>

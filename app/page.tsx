@@ -202,7 +202,7 @@ export default function Home(){
      // A personal invite link (?g=) names the guest, so they can answer in one tap.
      const target=mine_||(personalG?guests.find(g=>g.id===personalG&&!g.isHost):undefined),first=target?.name.split(' ')[0];
      return <section className="invite-card" aria-labelledby="invite-title">
-      <h2 id="invite-title">{target?`Hi ${first}! ${mine_&&mine_.status!=='invited'?'Can you make it?':`${hostName||'Your friend'} invited you`}`:`${hostName||'Your friend'} invited you`}</h2>
+      <h2 id="invite-title">{target?`Hi ${first}! ${mine_&&mine_.status!=='invited'?'Can you make it?':target.withName?`${target.withName} is bringing you`:`${hostName||'Your friend'} invited you`}`:`${hostName||'Your friend'} invited you`}</h2>{target?.withName&&(!mine_||mine_.status==='invited')&&<p className="plus-one-intro">{target.withName} asked {hostName||'the host'} if you could come as their plus one, and {hostName||'the host'} said yes.</p>}
       <p>{detail!.hidden?'Reply to your host, then '+(detail!.plan.kind==='trip'?'pick something to handle.':'pick something to bring.'):'Say if you’re coming, then pick something to bring. Keep your personal link private.'}</p>
       {target?<>
        <div className="quick-answers">{([['in','I’m in',Check],['maybe','Still checking',Clock],['out','Can’t make it',X]] as const).map(([k,label,Icon])=><button key={k} className={k==='in'?'primary':'outline-button'} disabled={busy} onClick={()=>quickAnswer(target,k)}><Icon size={17}/>{label}</button>)}</div>
