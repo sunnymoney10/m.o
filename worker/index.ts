@@ -62,10 +62,24 @@ async function shortLink(request: Request, env: Cloudflare.Env): Promise<Respons
   return row ? home(`?plan=${row.plan_id}&g=${id}`) : home("");
 }
 
+// Browser protections on every response. The page itself gets a content policy: scripts only from m.o (the app
+// inlines its own start-up data, so inline scripts stay allowed), fonts from Google Fonts, nothing may frame m.o,
+// and the page may only talk to m.o. Address and event searches run on the server, so no other host is needed.
+const CSP=["default-src 'self'",`script-src 'self' 'unsafe-inline'${import.meta.env.DEV?" 'unsafe-eval'":''}`,"style-src 'self' 'unsafe-inline' https://fonts.googleapis.com","font-src 'self' https://fonts.gstatic.com","img-src 'self' data: blob:",`connect-src 'self'${import.meta.env.DEV?' ws: wss:':''}`,"frame-ancestors 'none'","base-uri 'self'","form-action 'self'","object-src 'none'"].join('; ');
+function secure(r:Response,html:boolean):Response{
+  if(r.status===101)return r;
+  const headers=new Headers(r.headers);
+  headers.set('X-Content-Type-Options','nosniff');
+  headers.set('Strict-Transport-Security','max-age=31536000; includeSubDomains');
+  headers.set('Permissions-Policy','camera=(), microphone=(), geolocation=(self), payment=(), usb=(), interest-cohort=()');
+  if(html){headers.set('Content-Security-Policy',CSP);headers.set('X-Frame-Options','DENY')}
+  return new Response(r.body,{status:r.status,statusText:r.statusText,headers});
+}
+
 const worker = {
   async fetch(request: Request, env: Cloudflare.Env, ctx: ExecutionContext<{ CONNECTORS?: ConnectorBinding }>) {
     const short = await shortLink(request, env);
-    if (short) return short;
+    if (short) return secure(short,false);
     let binding = ctx.props?.CONNECTORS;
     // Local preview emulates the same request-scoped capability. This branch and
     // the auxiliary service binding are absent from production builds.
@@ -93,9 +107,9 @@ const worker = {
       const headers=new Headers(rendered.headers);headers.set('Referrer-Policy','no-referrer');headers.set('Cache-Control','no-store');
       if(!/(?:^|; )mo_session=[a-f0-9-]{36}(?:;|$)/.test(request.headers.get('cookie')||''))headers.append('Set-Cookie',`mo_session=${crypto.randomUUID()}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=31536000`);
       headers.set('Cache-Control','private, no-store');
-      return new Response(rendered.body,{status:rendered.status,statusText:rendered.statusText,headers});
+      return secure(new Response(rendered.body,{status:rendered.status,statusText:rendered.statusText,headers}),true);
     }
-    return rendered;
+    return secure(rendered,false);
   },
 };
 
