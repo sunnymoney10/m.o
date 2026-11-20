@@ -538,8 +538,8 @@ legend{font-weight:600;font-size:14px;margin-bottom:8px;color:var(--ink)}
 
 /* ---------- shared press effect: every tap is answered ---------- */
 .primary,.outline-button,.text-button,.claim-button,.chip,.name-chip,.swatch,.rsvp-choice,.seg button,.tab,.plan-card,.demo-card,.row-link,.status-grid>button,.status-items,.icon-button,.host-line-item,.style-option,.type-selector button,.feature-open,.me-dot,.place-hit{transition:transform .2s ease-out,background-color .15s,box-shadow .15s}
-:is(.primary,.lost-mark,.outline-button,a.outline-button,.text-button,.claim-button,.chip,.name-chip,.swatch,.rsvp-choice,.seg button,.tab,.plan-card,.demo-card,.row-link,.status-grid>button,.status-items,.icon-button,.host-line-item,.style-option,.type-selector button,.feature-open,.me-dot,.place-hit,.invite-theme-options button,.invite-color-options button):active:not(:disabled){transform:scale(.97);transition-duration:.12s}
-@media(prefers-reduced-motion:reduce){:is(.primary,.lost-mark,.outline-button,.text-button,.claim-button,.chip,.name-chip,.swatch,.rsvp-choice,.seg button,.tab,.plan-card,.demo-card,.row-link,.status-grid>button,.status-items,.icon-button,.host-line-item,.style-option,.type-selector button,.feature-open,.me-dot,.place-hit,.invite-theme-options button,.invite-color-options button):active:not(:disabled){transform:none;opacity:.8}}
+:is(.primary,.lost-mark,.help-q summary,.outline-button,a.outline-button,.text-button,.claim-button,.chip,.name-chip,.swatch,.rsvp-choice,.seg button,.tab,.plan-card,.demo-card,.row-link,.status-grid>button,.status-items,.icon-button,.host-line-item,.style-option,.type-selector button,.feature-open,.me-dot,.place-hit,.invite-theme-options button,.invite-color-options button):active:not(:disabled){transform:scale(.97);transition-duration:.12s}
+@media(prefers-reduced-motion:reduce){:is(.primary,.lost-mark,.help-q summary,.outline-button,.text-button,.claim-button,.chip,.name-chip,.swatch,.rsvp-choice,.seg button,.tab,.plan-card,.demo-card,.row-link,.status-grid>button,.status-items,.icon-button,.host-line-item,.style-option,.type-selector button,.feature-open,.me-dot,.place-hit,.invite-theme-options button,.invite-color-options button):active:not(:disabled){transform:none;opacity:.8}}
 
 /* delete plan */
 .danger-zone{display:grid;gap:2px;justify-items:start;padding-top:12px;border-top:1.5px solid var(--line)}
@@ -739,3 +739,12 @@ html,body{overflow-x:clip}
 .legal-links{display:flex;flex-wrap:wrap;gap:0 24px;border-top:1.5px solid var(--line);padding-top:16px;margin-top:8px}
 .legal-links a{display:inline-flex;align-items:center;min-height:44px}
 .foot-links{display:flex;gap:16px;width:100%;justify-content:flex-end}.foot-links a{display:inline-flex;align-items:center;min-height:44px;color:var(--muted);font-size:14px}
+/* ---------- help page ---------- */
+.help-q{background:#fffaf3;border-radius:22px;border:1.5px solid var(--line);margin-bottom:8px}
+.help-q summary{list-style:none;cursor:pointer;min-height:44px;padding:12px 48px 12px 16px;font-size:17px;font-weight:700;color:#3a1a2b;position:relative;display:flex;align-items:center}
+.help-q summary::-webkit-details-marker{display:none}
+.help-q summary::after{content:'+';position:absolute;right:18px;top:50%;transform:translateY(-50%);font-size:24px;font-weight:600;color:#b23b28}
+.help-q[open] summary::after{content:'–'}
+.help-q>div{padding:0 16px 16px}
+.legal-contact{background:#e4ebf8;border-radius:22px;padding:16px}
+.lost-help{font-size:15px!important}.lost-help a{color:#b23b28;font-weight:600}

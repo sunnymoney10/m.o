@@ -1,6 +1,7 @@
 # m.o support replies
 
 Ready-made answers for Supportdesk_m.o@proton.me. Copy one, change the parts in [brackets], read it once, and tap Send.
+Many people will find their answer on the Help page (m.o/help) first. For a quick question, you can also reply with that link.
 Keep replies short and kind. Never promise something m.o doesn't do (it doesn't send texts, take payments, book places, or sync with Apple Invites).
 
 The Privacy page promises an answer within 30 days. Check the inbox once a week.
