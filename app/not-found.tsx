@@ -9,5 +9,6 @@ export default function NotFound(){
   <h1>We can’t find that page.</h1>
   <p>The link may have a typo, or the page was moved. If someone sent you a plan, ask them to send the link again.</p>
   <div className="lost-actions"><a className="primary lost-plans" href="/?view=plans">Go to my plans</a><a className="outline-button lost-home" href="/">Go to the home page</a></div>
+  <p className="lost-help">Need a hand? <a href="/help">See Help</a>.</p>
  </main>;
 }

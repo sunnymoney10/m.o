@@ -286,14 +286,14 @@ export default function Home(){
      <button className="outline-button brick block" onClick={()=>{setPtab('people');window.scrollTo(0,0)}}>{answered?'View my RSVP':'RSVP to this plan'}</button>
     </section>}
    </>}
-   <footer className="foot"><Wordmark/><span>Make it out the groupchat.</span><button onClick={()=>setModal('help')}>Free · What’s included?</button><nav className="foot-links" aria-label="Policies"><a href="/privacy">Privacy</a><a href="/terms">Terms</a></nav></footer>
+   <footer className="foot"><Wordmark/><span>Make it out the groupchat.</span><button onClick={()=>setModal('help')}>Free · What’s included?</button><nav className="foot-links" aria-label="Help and policies"><a href="/help">Help</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a></nav></footer>
    </main>
   </div>
   {toast&&<div className="toast" role="status"><CheckCircle2 size={18}/>{toast}</div>}
   {modal&&<div className="modal-backdrop" onClick={e=>{if(e.target===e.currentTarget)setModal(null)}}><section className="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title"><button className="modal-close icon-button" aria-label="Close dialog" onClick={()=>setModal(null)}><X size={21}/></button>
    {modal==='help'?<><span className="say-it">say it: em-oh</span><h2 id="modal-title">Plan it in one place.<br/>Skip the endless group chat.</h2><p>One link holds the date, the address, who’s coming and who’s bringing what.</p>
     <ol className="help-steps"><li><b>Start with the idea.</b><span>A dinner, a trip, anything.</span></li><li><b>Bring your people.</b><span>Paste the link in your group chat. People say if they’re coming.</span></li><li><b>Vote on what’s undecided.</b><span>Vote on a date or place. The host picks the final choice.</span></li><li><b>Split up the list.</b><span>Everyone picks what they’ll bring or do.</span></li><li><b>Afterwards, share memories.</b><span>Post photos and thank-yous.</span></li></ol>
-    <div className="help-note">m.o is free. Your plans are saved; demos are not. m.o never sends messages for you: you copy them and send them yourself. It doesn’t send reminders, take payments or make bookings. Anyone with a plan’s link can open it, so only share it with people you invited. <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a></div>
+    <div className="help-note">m.o is free. Your plans are saved; demos are not. m.o never sends messages for you: you copy them and send them yourself. It doesn’t send reminders, take payments or make bookings. Anyone with a plan’s link can open it, so only share it with people you invited. <a href="/help">Help and answers</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a></div>
     <button className="primary block" onClick={()=>create()}>Start your own plan</button></>
    :<><span className="eyebrow">{modal==='edit'?'EDIT':'NEW PLAN'}</span><h2 id="modal-title">{modal==='edit'?'Edit plan':'What are we doing?'}</h2><p className="muted">{modal==='edit'?'Changes show up for everyone with the link.':'Your plan can be anything. Give it a name, choose a look if you want, and add details now or later.'}</p>
     <form onSubmit={submit} className="plan-form">

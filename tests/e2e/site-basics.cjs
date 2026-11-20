@@ -16,10 +16,18 @@ const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173';
   check(await p.getByRole('link',{name:'Go to my plans'}).count()===1&&await p.getByRole('link',{name:'Go to the home page'}).count()===1,'it offers two ways back');
   check(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),d+': fits the screen');
   await p.getByRole('link',{name:'Go to my plans'}).click();await p.waitForTimeout(1500);check(/view=plans/.test(p.url()),'“Go to my plans” opens the plans list');
+  await p.goto(B+'/no-such-page');await p.waitForTimeout(800);check(await p.getByRole('link',{name:'See Help'}).count()===1,d+': the not-found page points to Help');
+  // Help: questions open to show the answer; the support email is at the bottom.
+  {const r3=await p.goto(B+'/help');await p.waitForTimeout(800);check(r3.status()===200&&(await p.locator('h1').innerText())==='Help','Help opens: '+d);
+   const q=p.locator('.help-q',{hasText:'Why can’t I see the address?'}).first();check(!(await q.locator('p').isVisible()),'answers start closed');
+   await q.locator('summary').click();check(/once you answer/.test(await q.locator('p').innerText())&&await q.locator('p').isVisible(),'tapping a question shows its answer');
+   check((await p.locator('.help-q summary').evaluateAll(s=>s.every(x=>x.getBoundingClientRect().height>=44))),d+': every question is at least 44px tall');
+   check((await p.locator('.legal-contact').innerText()).includes('Still stuck?')&&await p.locator('.legal-contact a[href^="mailto:"]').count()===1,'Help ends with “Still stuck?” and the support email');
+   check(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),d+': Help fits the screen');if(d==='iPhone 14 Pro Max')await p.screenshot({path:require('node:os').tmpdir()+'/legalhelp.png',fullPage:true})}
   for(const [path,h] of [['/privacy','Privacy'],['/terms','Terms']]){const r2=await p.goto(B+path);await p.waitForTimeout(800);
    check(r2.status()===200&&(await p.locator('h1').innerText())===h,d+': '+path+' opens');check(await p.locator('a[href^="mailto:"]').count()===1,path+' shows a contact email');
    check(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),d+': '+path+' fits the screen');if(d==='iPhone 14 Pro Max')await p.screenshot({path:require('node:os').tmpdir()+'/legal'+path.slice(1)+'.png',fullPage:true})}
   await p.goto(B+'/');await p.waitForTimeout(2000);
-  check(await p.locator('.foot-links a[href="/privacy"]').count()===1&&await p.locator('.foot-links a[href="/terms"]').count()===1,d+': the home page footer links Privacy and Terms');
+  check(await p.locator('.foot-links a[href="/help"]').count()===1&&await p.locator('.foot-links a[href="/privacy"]').count()===1&&await p.locator('.foot-links a[href="/terms"]').count()===1,d+': the home page footer links Privacy and Terms');
   check(!bad.length,d+': no page errors or blocked content '+bad.join(' | '))}
  await b.close();console.log(fails?`${fails} problem(s)`:'All site basics checks passed');process.exitCode=fails?1:0})();
