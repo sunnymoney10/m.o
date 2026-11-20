@@ -42,6 +42,6 @@ r=await request(host,'plan/'+id);assert.ok(r.body.activity.some(a=>a.text==='Tes
 
 // If Tess changes her own answer, it's confirmed by her and logged; the host can still correct it later.
 r=await request(tess,`plan/${id}/rsvp`,'POST',{name:'Tess',status:'maybe'});
-r=await request(host,'plan/'+id);assert.equal(r.body.guests.find(g=>g.name==='Tess').source,'guest');assert.ok(r.body.activity.some(a=>a.text==='Tess confirmed: still checking'));
+r=await request(host,'plan/'+id);assert.equal(r.body.guests.find(g=>g.name==='Tess').source,'guest');assert.ok(r.body.activity.some(a=>a.text==='Tess confirmed: still checking (+1 Ben)'));
 r=await request(host,`plan/${id}/guests/${samId}/response`,'POST',{status:'invited'});r=await request(host,'plan/'+id);assert.equal(r.body.guests.find(g=>g.name==='Sam').source,'','reset to no reply is not a noted answer');
 console.log('PASS: host-noted answers and items for friends who never open the link, labels, privacy, activity log and guest confirmation.');

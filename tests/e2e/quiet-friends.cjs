@@ -19,9 +19,9 @@ const log=(...a)=>console.log(...a);
  await tab(h,'People');await row(h,'Tess').getByRole('button',{name:'Update answer'}).click();
  const form=h.locator('.note-form');await form.getByRole('button',{name:'Going'}).click();await form.getByRole('button',{name:'One more'}).click();
  await form.getByLabel(/extra guests/).fill('Ben');await form.getByLabel(/Dietary/).fill('Vegetarian');await shot(h,'q1-note-form');
- await form.getByRole('button',{name:'Save what they told you'}).click();await h.waitForTimeout(1500);log('noted Tess:',await toast(h));
+ await form.getByRole('button',{name:'Save what they told you'}).click();await h.locator('.note-form').waitFor({state:'hidden'});log('noted Tess:',await toast(h));
  // Jordan texted: can't make it
- await row(h,'Jordan').getByRole('button',{name:'Update answer'}).click();await h.locator('.note-form').getByRole('button',{name:'Can’t make it'}).click();await h.locator('.note-form').getByRole('button',{name:'Save what they told you'}).click();await h.waitForTimeout(1500);log('noted Jordan:',await toast(h));
+ await row(h,'Jordan').getByRole('button',{name:'Update answer'}).click();await h.locator('.note-form').getByRole('button',{name:'Can’t make it'}).click();await h.locator('.note-form').getByRole('button',{name:'Save what they told you'}).click();await h.locator('.note-form').waitFor({state:'hidden'});log('noted Jordan:',await toast(h));
  log('people:',await text(h,'.guest-list'));await shot(h,'q2-people');
  // Tess said she'd bring pie
  await tab(h,/Bring list/);await h.locator('.item-row').filter({hasText:'Pie'}).locator('select').selectOption({label:'Tess'});await h.waitForTimeout(1500);log('assign:',await toast(h));
@@ -33,7 +33,8 @@ const log=(...a)=>console.log(...a);
  await tab(h,'Overview');await h.waitForTimeout(300);log('headcount:',await text(h,'.status-number'));log('host notes:',await text(h,'.host-notes'));log('updates:',await text(h,'.activity ul'));await shot(h,'q4-overview');
  // Days later, Tess opens the link and confirms in one tap
  const t=await phone();await t.goto(await personalLink(h,id,'Tess'));await t.waitForTimeout(1200);
- await t.getByRole('button',{name:/Add details:/}).click();await t.waitForTimeout(1500);
+ // Opening the personal link now restores this guest without changing their answer.
+ await t.locator('.noted-banner').waitFor();
  await tab(t,'Overview');await t.waitForTimeout(300);log('Tess banner:',await text(t,'.noted-banner'));await shot(t,'q5-tess-banner',false);
  await t.getByRole('button',{name:'Yes, that’s right'}).click();await t.waitForTimeout(1500);log('Tess confirm:',await toast(t),'| banner gone:',await t.locator('.noted-banner').count()===0);
  await h.reload();await h.waitForTimeout(1500);log('updates after:',await text(h,'.activity ul'));

@@ -1,3 +1,4 @@
+const {chooseLayout}=require('./access.cjs');
 // Phone journey, both sides: the host fixes the bring list (removes "Grandma" added by mistake, fixes a typo);
 // a guest, first as a stranger and then after answering, sees the fixed list and no Edit/Remove buttons.
 // Tall iPhone. Needs `npm run dev` running. Usage: npm run journeys:items [-- <screenshot dir>]
@@ -42,8 +43,8 @@ const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173',O=process.argv[2]||requ
  check(await g.locator('.item-row',{hasText:'Snacks and juice'}).getByText('You’re bringing this').count()===1,'after the host’s fix, Tess still has it under the new wording');
  // Plans change: in Edit plan the host switches Get-together → Trip and adds a job, without deleting anything.
  await h.getByRole('button',{name:'Edit plan details'}).click();await h.waitForTimeout(400);
- check(await h.getByRole('button',{name:'Trip'}).count()===1,'Edit plan offers Get-together / Trip');
- await h.getByRole('button',{name:'Trip'}).click();
+ check(await h.getByRole('button',{name:'Trip',includeHidden:true}).count()===1,'Edit plan offers Get-together / Trip');
+ await chooseLayout(h,'Trip');
  check(await h.evaluate(()=>!!document.querySelector('details.more-details')?.open),'Edit plan opens with all details showing');
  await h.getByLabel(/Add jobs to hand out/).fill('Book the rink by Friday');
  await fits(h,'host Edit plan');await h.screenshot({path:O+'/ie4-edit-plan.png',fullPage:true});
@@ -55,7 +56,7 @@ const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173',O=process.argv[2]||requ
  const gk=await g.evaluate(async id=>(await (await fetch('/api/plan/'+id)).json()),id);check(gk.plan.kind==='trip'&&gk.tasks.some(t=>t.title==='Book the rink by Friday'),'guest sees the trip and the new job');
  await fits(g,'guest after the change');
  // And back again.
- await h.getByRole('button',{name:'Edit plan details'}).click();await h.waitForTimeout(400);await h.getByRole('button',{name:'Get-together'}).click();await h.getByRole('button',{name:/Save/}).first().click();await h.waitForTimeout(1500);
+ await h.getByRole('button',{name:'Edit plan details'}).click();await h.waitForTimeout(400);await chooseLayout(h,'Get-together');await h.getByRole('button',{name:/Save/}).first().click();await h.waitForTimeout(1500);
  check((await h.evaluate(async id=>(await (await fetch('/api/plan/'+id)).json()).plan.kind,id))==='gathering','host switches it back to a get-together');
  const gid=await g.evaluate(async id=>{const r=await fetch('/api/plan/'+id,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({kind:'trip'})});return r.status},id);check(gid===403,'a guest can’t change the plan type');
  await h.evaluate(async id=>fetch('/api/plan/'+id,{method:'DELETE'}),id);

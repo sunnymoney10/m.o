@@ -538,8 +538,8 @@ legend{font-weight:600;font-size:14px;margin-bottom:8px;color:var(--ink)}
 
 /* ---------- shared press effect: every tap is answered ---------- */
 .primary,.outline-button,.text-button,.claim-button,.chip,.name-chip,.swatch,.rsvp-choice,.seg button,.tab,.plan-card,.demo-card,.row-link,.status-grid>button,.status-items,.icon-button,.host-line-item,.style-option,.type-selector button,.feature-open,.me-dot,.place-hit{transition:transform .2s ease-out,background-color .15s,box-shadow .15s}
-:is(.primary,.outline-button,a.outline-button,.text-button,.claim-button,.chip,.name-chip,.swatch,.rsvp-choice,.seg button,.tab,.plan-card,.demo-card,.row-link,.status-grid>button,.status-items,.icon-button,.host-line-item,.style-option,.type-selector button,.feature-open,.me-dot,.place-hit):active:not(:disabled){transform:scale(.97);transition-duration:.12s}
-@media(prefers-reduced-motion:reduce){:is(.primary,.outline-button,.text-button,.claim-button,.chip,.name-chip,.swatch,.rsvp-choice,.seg button,.tab,.plan-card,.demo-card,.row-link,.status-grid>button,.status-items,.icon-button,.host-line-item,.style-option,.type-selector button,.feature-open,.me-dot,.place-hit):active:not(:disabled){transform:none;opacity:.8}}
+:is(.primary,.outline-button,a.outline-button,.text-button,.claim-button,.chip,.name-chip,.swatch,.rsvp-choice,.seg button,.tab,.plan-card,.demo-card,.row-link,.status-grid>button,.status-items,.icon-button,.host-line-item,.style-option,.type-selector button,.feature-open,.me-dot,.place-hit,.invite-theme-options button,.invite-color-options button):active:not(:disabled){transform:scale(.97);transition-duration:.12s}
+@media(prefers-reduced-motion:reduce){:is(.primary,.outline-button,.text-button,.claim-button,.chip,.name-chip,.swatch,.rsvp-choice,.seg button,.tab,.plan-card,.demo-card,.row-link,.status-grid>button,.status-items,.icon-button,.host-line-item,.style-option,.type-selector button,.feature-open,.me-dot,.place-hit,.invite-theme-options button,.invite-color-options button):active:not(:disabled){transform:none;opacity:.8}}
 
 /* delete plan */
 .danger-zone{display:grid;gap:2px;justify-items:start;padding-top:12px;border-top:1.5px solid var(--line)}
@@ -642,6 +642,20 @@ html,body{overflow-x:clip}
 .item-edit-field input{width:100%;min-height:44px}
 .item-edit-actions{display:flex;align-items:center;gap:8px}
 .item-save-button{min-height:44px;padding:0 18px;width:auto}
+
+/* Optional profile details remain easy to discover and comfortable to tap. */
+.profile-extras>summary{min-height:44px;padding:12px 0;cursor:pointer;font-weight:650;color:#b23b28}
+.profile-extras[open]>summary{margin-bottom:16px}
+.profile-extras>fieldset,.profile-extras>label{margin-top:16px}
+.place-hit[aria-selected="true"]{background:#e4ebf8;outline:2px solid #3a1a2b;outline-offset:-2px}
+/* Compact invite styling, with normal text fields kept outside the decorative header. */
+.invite-customization>summary,.plan-layout>summary{min-height:44px;padding:12px 0;cursor:pointer;font-weight:650;color:#b23b28}
+.invite-style{display:grid;gap:16px;padding:12px 0}.invite-theme-options,.invite-color-options{display:flex;flex-wrap:wrap;gap:8px}
+.invite-theme-options button,.invite-color-options button{display:flex;align-items:center;gap:8px;min-height:44px;padding:10px 12px;background:#fffaf3;border:1px solid #b8a9aa;border-radius:14px;color:#3a1a2b;font:inherit}
+.invite-theme-options button[aria-pressed=true],.invite-color-options button[aria-pressed=true]{border:2px solid #3a1a2b;background:#f9e9af;font-weight:650}
+.invite-color-options button span{width:22px;height:22px;border-radius:50%;border:1px solid #6f6066}.invite-emoji-input{max-width:160px}
+.invite-style-preview{overflow:hidden;border:1px solid #dfd1c4;border-radius:18px;background:#fffaf3}.invite-style-preview>.scene{width:100%;height:auto;aspect-ratio:2/1;display:block}.invite-style-preview>strong{display:block;padding:12px 16px;overflow-wrap:anywhere}
+.invite-theme-options button:focus-visible,.invite-color-options button:focus-visible{outline:3px solid #b23b28;outline-offset:3px}
 /* Plus-ones: a guest brings someone; the host approves. */
 .chip-request{font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px;background:var(--brick);color:#fff}
 .with-guest{display:block;font-size:13px;font-weight:500;color:var(--muted)}
@@ -680,3 +694,6 @@ html,body{overflow-x:clip}
 .plus-one-told{display:grid;gap:8px;border:2px solid #2f6b3a}
 .plus-one-told p{margin:0}
 .plus-one-told .plus-one-approve{text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+
+
+.invite-cover{display:block;width:100%;object-fit:cover;aspect-ratio:2/1}.invite-cover-upload input{min-height:44px;max-width:100%;padding:8px 0}.invite-cover-upload input::file-selector-button{min-height:44px;padding:8px 14px;border:1px solid #b8a9aa;border-radius:14px;color:#3a1a2b;background:#fffaf3;font:inherit;cursor:pointer}

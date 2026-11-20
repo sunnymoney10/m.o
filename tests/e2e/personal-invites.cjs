@@ -37,7 +37,7 @@ const log=(...a)=>console.log(...a);
  await h.evaluate(()=>document.querySelectorAll('.send-invites a').forEach(a=>a.addEventListener('click',e=>e.preventDefault())));
  await next.click();await h.waitForTimeout(500);
  check((await h.locator('.send-invites .primary').innerText()).includes('Jordan'),'Send to everyone moves on to Jordan');
- check((await h.locator('.invite-rows li',{hasText:'Tess Morgan'}).innerText()).includes('Invite sent'),'Tess marked as sent');
+ check((await h.locator('.invite-rows li',{hasText:'Tess Morgan'}).innerText()).includes('Messages opened'),'Tess marked as opened in Messages, not delivered');
  await h.locator('.invite-rows li',{hasText:'Sam'}).getByRole('button',{name:'Prepare personal link'}).click();
  const samHref=await h.locator('.invite-rows li',{hasText:'Sam'}).locator('a').getAttribute('href');check(/^sms:[&?]body=Hi%20Sam!/.test(samHref),'no number: Messages opens with the message, you pick the contact');
  // Tess opens her personal link

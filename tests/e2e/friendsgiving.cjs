@@ -13,7 +13,7 @@ const log=(...a)=>console.log(...a);
  const tab=(p,n)=>p.getByRole('tab',{name:n}).click();
  // Ari creates the plan
  const k=await phone();await k.goto(B);await k.waitForTimeout(3000);
- await k.getByRole('button',{name:'Start a plan'}).first().click();
+ await k.getByRole('button',{name:'Start your own plan'}).first().click();
  await k.getByLabel('Give it a name').fill('Friendsgiving');await k.getByLabel('Your name').fill('Ari');
  await k.getByLabel(/When/).fill('2026-11-26T17:00');await k.getByLabel('Where').fill('1420 Elm St, Apt 3B, Philadelphia');
  await k.getByText('Add more details').click();await k.getByLabel(/Arrival and house notes/).fill('Park on Elm, not in the lot (they tow). Buzz 3B and take the stairs. Shoes off inside.');
@@ -59,7 +59,7 @@ await tab(j,'People');
  // Tess on a second browser
  const t2=await phone();await t2.goto(tessLink);await t2.waitForTimeout(1500);await t2.waitForTimeout(300);
  await shot(t2,'t7-second-browser');
- await t2.getByRole('button',{name:/Add details:/}).click();await t2.waitForTimeout(1500);
+ await tab(t2,'People');await t2.locator('.my-rsvp').waitFor();
  log('T2 my rsvp:',await text(t2,'.my-rsvp'));
  await tab(t2,/Bring list/);log('T2 still has claim:',(await t2.locator('.item-list').first().innerText()).includes('You’re bringing'));
  await tab(t2,'People');await t2.getByRole('button',{name:'Change'}).click();await t2.getByRole('button',{name:'Can’t make it'}).click();await t2.getByRole('button',{name:'Send RSVP'}).click();await t2.waitForTimeout(1500);log('T2 cancel toast:',await toast(t2));

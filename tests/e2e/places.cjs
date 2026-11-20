@@ -1,3 +1,4 @@
+const {chooseLayout}=require('./access.cjs');
 const {personalLink,approve}=require('./access.cjs');
 // Phone journey: the host searches for the venue instead of looking it up, and pastes an Airbnb link.
 // Search results are stubbed here (the real ones come from OpenStreetMap). Needs `npm run dev` running.
@@ -11,12 +12,12 @@ const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173',O=process.argv[2]||requ
  await h.goto(B);await h.waitForTimeout(2500);
  await h.evaluate(()=>fetch('/api/plans',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:'Warm-up',name:'Ari'})}));
  await h.goto(B);await h.waitForTimeout(3000);
- await h.getByRole('button',{name:/new plan|start a plan|plan something/i}).first().click();await h.waitForTimeout(500);
+ await h.getByRole('button',{name:/new plan|start (?:a|your own) plan|plan something/i}).first().click();await h.waitForTimeout(500);
  // Get-together: Airbnb and hotel buttons sit under the booking link box (in Add more details), even before Where is filled.
  await h.getByText('Add more details').click();
  check(await h.getByRole('link',{name:/Search Airbnb/}).first().getAttribute('href')==='https://www.airbnb.com/','get-together, no Where yet: Search Airbnb opens Airbnb');
  check(await h.getByRole('link',{name:/Search hotels/}).first().getAttribute('href')==='https://www.booking.com/','and Search hotels opens Booking.com');
- const trip=h.getByRole('button',{name:'Trip'});if(await trip.count())await trip.click();
+ await chooseLayout(h,'Trip');
  await h.getByLabel('Give it a name').fill('UniverSoul Circus');const yn=h.getByLabel('Your name');if(await yn.count())await yn.fill('Ari');
  const where=h.getByRole('combobox');await where.fill('civic center atlanta');await h.waitForTimeout(900);
  check(asked==='civic center atlanta','searches what the host typed');
@@ -35,7 +36,7 @@ const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173',O=process.argv[2]||requ
  check(await h.getByRole('link',{name:/Open in Maps/}).count()>0,'plan shows Open in Maps');const atl=h.url();
  await h.screenshot({path:O+'/pl2-plan.png',fullPage:true});
  // Event search: a second plan from an event name; picking it fills Where and When, and the guest sees both.
- await h.goto(B);await h.waitForTimeout(3000);await h.getByRole('button',{name:'Start a plan'}).first().click();await h.waitForTimeout(400);
+ await h.goto(B);await h.waitForTimeout(3000);await h.getByRole('button',{name:'Start your own plan'}).first().click();await h.waitForTimeout(400);
  const w2=h.getByRole('combobox');await w2.fill('universoul circus raleigh');await h.waitForTimeout(1100);
  check(await h.getByText('EVENTS').count()>0,'events show above places');await h.screenshot({path:O+'/pl4-events.png'});
  await h.getByRole('option',{name:/UniverSoul Circus/}).click();
