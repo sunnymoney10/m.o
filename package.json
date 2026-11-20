@@ -28,6 +28,7 @@
     "journeys:guest": "node tests/e2e/guest-view.cjs",
     "journeys:tabs": "node tests/e2e/fast-tabs.cjs",
     "journeys:answers": "node tests/e2e/answers.cjs",
+    "journeys:items": "node tests/e2e/item-edit.cjs",
     "journeys:access": "node tests/e2e/guest-access.cjs"
   },
   "dependencies": {

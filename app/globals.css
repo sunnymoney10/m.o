@@ -634,3 +634,11 @@ html,body{overflow-x:clip}
 /* Link actions get their own full-width line under the row (in the grid's first column they stretched the avatar column and squeezed the name). */
 @media (max-width:380px){.invite-rows .outline-button{grid-column:2;justify-self:start}}
 .invite-access-actions{grid-column:1/-1;display:flex;gap:4px 16px;flex-wrap:wrap;padding-left:48px}.invite-access-actions button{min-height:44px}.invite-access-actions button:active{transform:translateY(1px)}
+/* Host edits on the bring list: Edit / Remove under each item, and an inline box to fix an item's wording. */
+.item-host-edit{display:flex;gap:0 16px;flex-wrap:wrap}
+.item-host-edit .text-button{min-height:44px}
+.item-edit-row{flex-wrap:wrap}
+.item-edit-field{flex:1 1 180px;min-width:0}
+.item-edit-field input{width:100%;min-height:44px}
+.item-edit-actions{display:flex;align-items:center;gap:8px}
+.item-save-button{min-height:44px;padding:0 18px;width:auto}
