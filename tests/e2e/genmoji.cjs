@@ -17,8 +17,11 @@ const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173',O=process.argv[2]||requ
  check(/smiley-face key/.test(await picker.innerText()),'it explains: tap the box, then the smiley-face key');
  // A Genmoji arrives the way Safari inserts it: a see-through picture inside the box.
  await box.click();await a.evaluate(()=>{const c=document.createElement('canvas');c.width=c.height=160;const x=c.getContext('2d');x.fillStyle='#b23b28';x.beginPath();x.arc(80,80,60,0,7);x.fill();
-  const box=document.querySelector('.genmoji-box');const img=document.createElement('img');img.src=c.toDataURL('image/png');img.alt='skating cat';box.appendChild(img);box.dispatchEvent(new Event('input',{bubbles:true}))});
- await a.waitForTimeout(800);check(await picker.locator('.genmoji-preview img').count()===1,'the Genmoji shows in a round preview');
+  // Like a real iPhone: a <picture> with Safari's glyph source, the <img> filled in a moment later, and no "input" event.
+  const box=document.querySelector('.genmoji-box');const pic=document.createElement('picture');const s=document.createElement('source');s.type='image/x-apple-adaptive-glyph';s.srcset=c.toDataURL('image/png');
+  const img=document.createElement('img');img.alt='skating cat';pic.append(s,img);box.appendChild(pic);c.toBlob(b=>{img.src=URL.createObjectURL(b)},'image/png')});
+ await a.waitForTimeout(1200);check(await picker.locator('.genmoji-preview img').count()===1,'the Genmoji shows in a round preview (no input event, picture wrapper, loading late)');
+ check(await a.locator('.genmoji-box').evaluate(b=>b.innerHTML==='')&&!/Couldn’t read/.test(await picker.innerText()),'the box is cleared and no error shows');
  await picker.getByRole('button',{name:'Background: sky'}).click();
  await fits(a,'Genmoji picker');await picker.screenshot({path:O+'/gm1-picker.png'});
  await picker.getByRole('button',{name:'Use this picture'}).click();await a.locator('.toast',{hasText:/saved/i}).first().waitFor({timeout:15000}).catch(()=>{});
@@ -30,6 +33,22 @@ const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173',O=process.argv[2]||requ
  // An ordinary emoji works too (typed from the keyboard).
  const reopen=async()=>{if(!await box.isVisible().catch(()=>false)){await openPicker();await picker.getByRole('button',{name:'Genmoji'}).click();await a.waitForTimeout(300)}};
  await reopen();check(/Remove picture/.test(await picker.innerText()),'the saved picture can be removed from here');
+ // Safari variant with only the glyph source (no <img>) also works.
+ await reopen();await box.click();await a.evaluate(()=>{const c=document.createElement('canvas');c.width=c.height=120;const x=c.getContext('2d');x.fillStyle='#2f6b3a';x.fillRect(20,20,80,80);
+  const pic=document.createElement('picture');const s=document.createElement('source');s.type='image/x-apple-adaptive-glyph';s.srcset=c.toDataURL('image/png');pic.append(s);document.querySelector('.genmoji-box').appendChild(pic)});
+ await a.waitForTimeout(1200);check(await picker.locator('.genmoji-preview img').count()===1,'a Genmoji with only a source picture also previews');
+ await picker.getByRole('button',{name:'Pick a different one'}).click();
+ // If the phone turns the Genmoji into a blank placeholder (U+FFFC), m.o says so and suggests pasting.
+ await box.click();await a.keyboard.insertText('\uFFFC');await a.waitForTimeout(600);check(/sent that Genmoji as a blank box/.test(await picker.innerText()),'a Genmoji that arrives as a blank box gets a clear “paste it instead” message');
+ // Pasting a copied Genmoji (rich text with a picture inside) works.
+ await box.click();await a.evaluate(()=>{const c=document.createElement('canvas');c.width=c.height=100;const x=c.getContext('2d');x.fillStyle='#b23b28';x.fillRect(10,10,80,80);
+  const dt=new DataTransfer();dt.setData('text/html','<span><img src="'+c.toDataURL('image/png')+'" alt="Genmoji"></span>');dt.setData('text/plain','\uFFFC');
+  document.querySelector('.genmoji-box').dispatchEvent(new ClipboardEvent('paste',{clipboardData:dt,bubbles:true,cancelable:true}))});
+ await a.waitForTimeout(1200);check(await picker.locator('.genmoji-preview img').count()===1,'pasting a copied Genmoji shows the preview');
+ await picker.getByRole('button',{name:'Pick a different one'}).click();
+ // A picture we can't read never fails silently: it says so and describes what arrived, for a screenshot.
+ await box.click();await a.evaluate(()=>{const img=document.createElement('img');img.src='x-apple-unknown://glyph';document.querySelector('.genmoji-box').appendChild(img)});
+ await a.waitForTimeout(3500);{const t=await picker.innerText();check(/Couldn’t read that Genmoji/.test(t)&&/arrived as: img x-apple-unknown/.test(t),'an unreadable Genmoji shows a clear message to screenshot')}
  await box.click();await a.keyboard.insertText('🛼');await a.waitForTimeout(600);
  check((await picker.locator('.genmoji-preview span').innerText())==='🛼','an emoji shows in the preview');
  await picker.getByRole('button',{name:'Use this picture'}).click();await a.waitForTimeout(2000);
