@@ -30,7 +30,7 @@ const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173',O=process.argv[2]||requ
  await fits(h,'host invite with Genmoji');await h.locator('.invite-style').screenshot({path:O+'/gi1-host.png'});
  await h.getByRole('button',{name:/Create plan/}).click();await h.waitForURL(/plan=/,{timeout:15000});const url=h.url();
  // A stranger opens the link and sees the Genmoji invite.
- const g=await phone();await g.goto(url);await g.getByRole('heading',{name:'Skate day',exact:true}).waitFor();
+ const g=await phone();await g.goto(url);await g.getByRole('heading',{name:/saved you a seat at Skate day/}).waitFor();
  const cover=g.locator('.plan-photo .invite-cover');await cover.waitFor({timeout:8000}).catch(()=>{});check(await cover.count()===1,'a stranger sees the Genmoji invite');
  if(await cover.count()){const px=await pixels(g,'.plan-photo .invite-cover');check(px.w===1000&&near(px.center,[0xb2,0x3b,0x28]),'it’s the saved 1000×500 cover with the Genmoji')}
  await fits(g,'guest');await g.screenshot({path:O+'/gi2-guest.png'});
