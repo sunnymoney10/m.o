@@ -31,6 +31,22 @@ Brand flexibility (from the owner's brand handoff): stage names live only in `ST
 
 Phone checks 2026-11-21: `journeys:access`, `journeys:recovery` and `journeys:themes` default to port 5174; they pass with `JOURNEY_URL=http://127.0.0.1:5173`.
 
+## Redesign phase 3: Made it out and Your m.o. (2026-11-21)
+
+Made it out: once the host marks a plan (hosts see "Did it happen?" after the date passes), everyone sees a stamp card with who came and who brought what. The host can open Messages with a thank-you filled in (m.o sends nothing), or plan the next one with the same people. Your m.o.: the person's one line and up to 5 habits they choose themselves. Nothing is scored or ranked. One database addition: `profiles.habits` (migration 0020, empty by default, nothing existing changed), approved by the owner on 2026-11-21.
+
+| Claim | Evidence |
+| --- | --- |
+| Habits: only the person sets them; at most 5; phone numbers, emails, emoji-only and duplicates removed; people in the same plan can see them | 3. `tests/habits.mjs` |
+| Host: a past plan shows "Did it happen?"; marking it shows the stamp, "2 people · 1 thing brought" and who brought what | 3. Browser check, iPhone 14 Pro Max |
+| Plan the next one: the new plan gets the people who came, as "no reply yet" (never as coming) | 3. Browser check |
+| Guest sees the stamp and who brought what, but not the host's buttons | 3. Browser check |
+| All 21 journey, a11y and ux commands pass; tap counts unchanged | 3 |
+| The migration runs on the live database | 2 until deployed (deploy applies new migrations before the new code) |
+| Real people use the thank-you, plan-next and habits | Not yet (level 4) |
+
+Noted: a guest who answered from the open group link without the host's OK doesn't get the plan in their own "Made it out" history. That is the existing privacy rule (history needs host-approved access), not changed here.
+
 ## Redesign phase 2: one-sentence new plan and "saved you a seat" (2026-11-21)
 
 New plan opens on one "What's the plan?" box. Fixed rules (`lib/plan-sentence.ts`, not AI) read a day and time from the sentence and show them; nothing changes until the host taps **Use this date**. "Looks like a" Get-together / Trip chips, and "Ask the group to bring" ideas that are added only when tapped. A guest who hasn't answered sees one invite card: "Hi Jordan! Ari saved you a seat at Friendsgiving.", date, address rule, who's coming, then the three answers.
@@ -82,7 +98,7 @@ Run 2026-11-21 (after phase 1): the same except "Send the first invite" 5 (was 4
    | --- | --- | --- | --- | --- |
    | | | | | |
 
-6. Redesign phase 3: Made it out stamp and "Your m.o" (phase 2 built 2026-11-21, level 3).
+6. Redesign: all three phases built 2026-11-21 (level 3). Next: real hosts and guests try them (level 4).
 7. Check why sending invites now takes one more tap than on Nov 19 (see tap counts).
 
 Done outside the backlog (2026-11-19): trip "Search Airbnb / Search hotels" links (level 3, host and guest journeys), and Escape no longer closes the plan form while suggestions are open (level 3).
