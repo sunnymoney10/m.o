@@ -1,4 +1,5 @@
-export type Plan={cover_url?:string;theme?:string;accent?:string;emoji?:string;id:string;title:string;kind:string;date:string;place:string;budget:string;note:string;going?:number;maybe?:number;open_items?:number;open_item?:string|null;open_votes?:number;requests?:number;invited?:number;invite_url?:string|null;booking_url?:string|null;end_date?:string;made_it?:number};
+import type {Stage,LeftKey} from './journey';
+export type Plan={cover_url?:string;theme?:string;accent?:string;emoji?:string;id:string;title:string;kind:string;date:string;place:string;budget:string;note:string;going?:number;maybe?:number;open_items?:number;open_item?:string|null;open_votes?:number;requests?:number;invited?:number;invite_url?:string|null;booking_url?:string|null;end_date?:string;made_it?:number;cant?:number;stage?:Stage;left?:LeftKey[]};
 
 export type Task={id:string;title:string;category:string;claimed_name:string|null;done:number;isMine:boolean;claim_source?:string};
 import type {Avatar} from './avatar';

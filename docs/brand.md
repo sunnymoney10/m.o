@@ -58,4 +58,6 @@ Outfit for everything; Caveat only for handwritten notes. Sizes come from tokens
 - Shadows: `--shadow-s`, `--shadow-l` only.
 
 ## Voice
-Plain words and short sentences. Buttons say what happens ("Create plan"). The promise is "Make it out the groupchat."
+Plain words and short sentences. Buttons say what happens ("Create plan"). The promise is "Make it out the groupchat." (`TAGLINE` in `lib/site.ts`; also `public/manifest.webmanifest`).
+
+The four plan stages (In the chat, Taking shape, Locked in, Made it out) are named in `lib/journey.ts` only. A future campaign can change their words there without touching the rules.
