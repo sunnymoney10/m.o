@@ -45,7 +45,7 @@ const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173',O=process.argv[2]||requ
   await chooseLayout(h,'Trip');
   const jobs=h.getByLabel(/Jobs to hand out/);check(await jobs.inputValue()==='','new trip has no placeholder jobs');
   check(/Drive from Wilson/.test(await jobs.getAttribute('placeholder')),'the jobs box shows specific examples');
-  await h.getByLabel('Give it a name').fill('Beach weekend');const yn=h.getByLabel('Your name');if(await yn.count()&&await yn.isVisible())await yn.fill('Ari');
+  await h.getByLabel('What’s the plan?').fill('Beach weekend');const yn=h.getByLabel('Your name');if(await yn.count()&&await yn.isVisible())await yn.fill('Ari');
   await h.getByRole('button',{name:/Create plan/}).click();await h.waitForTimeout(1800);await h.getByRole('tab',{name:/To-do list/}).click();await h.waitForTimeout(400);
   const t=await h.locator('body').innerText();check(t.includes('No jobs yet')&&t.includes('Start a vote'),'empty trip list explains jobs and points decisions to votes');
   check(await h.locator('#item-kind').inputValue()==='todo'&&!t.includes('bringing'),'trip list adds jobs by default and never says bringing');

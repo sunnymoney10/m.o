@@ -21,7 +21,7 @@ const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173',O=process.argv[2]||requ
  await d2.getByRole('button',{name:'Open as host'}).click();await d2.waitForTimeout(2500);
  check(await d2.getByRole('button',{name:'Edit plan details'}).count()===1,'second device is now the host');
  check(!d2.url().includes('hostkey'),'the key is gone from the address bar');
- await d2.getByRole('button',{name:'Edit plan details'}).click();await d2.getByLabel('Give it a name').fill('Friendsgiving at Kaela’s');await d2.getByRole('button',{name:'Save changes'}).click();await d2.waitForTimeout(1500);
+ await d2.getByRole('button',{name:'Edit plan details'}).click();await d2.getByLabel('What’s the plan?').fill('Friendsgiving at Kaela’s');await d2.getByRole('button',{name:'Save changes'}).click();await d2.waitForTimeout(1500);
  await h.reload();await h.waitForTimeout(2000);check((await h.locator('h1').first().innerText()).includes('Kaela’s'),'change made on the second device shows on the first phone, which is still host');
  check(await h.getByRole('button',{name:'Edit plan details'}).count()===1,'first phone still host');
  // Guest

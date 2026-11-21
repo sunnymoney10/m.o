@@ -18,7 +18,7 @@ const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173',O=process.argv[2]||requ
  check(await h.getByRole('link',{name:/Search Airbnb/}).first().getAttribute('href')==='https://www.airbnb.com/','get-together, no Where yet: Search Airbnb opens Airbnb');
  check(await h.getByRole('link',{name:/Search hotels/}).first().getAttribute('href')==='https://www.booking.com/','and Search hotels opens Booking.com');
  await chooseLayout(h,'Trip');
- await h.getByLabel('Give it a name').fill('UniverSoul Circus');const yn=h.getByLabel('Your name');if(await yn.count())await yn.fill('Ari');
+ await h.getByLabel('What’s the plan?').fill('UniverSoul Circus');const yn=h.getByLabel('Your name');if(await yn.count())await yn.fill('Ari');
  const where=h.getByRole('combobox');await where.fill('civic center atlanta');await h.waitForTimeout(900);
  check(asked==='civic center atlanta','searches what the host typed');
  await h.screenshot({path:O+'/pl1-suggestions.png'});
@@ -42,7 +42,7 @@ const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173',O=process.argv[2]||requ
  await h.getByRole('option',{name:/UniverSoul Circus/}).click();
  check(await w2.inputValue()==='Dorton Arena, 1025 Blue Ridge Rd, Raleigh, NC, 27607','picking the event fills the venue address');
  check(await h.getByLabel(/^When/).inputValue()==='2026-12-04T19:00','and the event’s date and time (local)');
- check(await h.getByLabel('Give it a name').inputValue()==='UniverSoul Circus','and the name, when empty');
+ check(await h.getByLabel('What’s the plan?').inputValue()==='UniverSoul Circus','and the name, when empty');
  const yn2=h.getByLabel('Your name');if(await yn2.count())await yn2.fill('Ari');
  await h.getByRole('button',{name:/create plan/i}).click();await h.waitForTimeout(2000);const circus=h.url();
  const gc2=await b.newContext({...devices['iPhone 14'],timezoneId:'America/New_York'});const g2=await gc2.newPage();await g2.goto(circus);await g2.waitForTimeout(2000);

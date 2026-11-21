@@ -59,7 +59,7 @@ const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173',O=process.argv[2]||requ
  await fits(h,'Ari’s Send invites');
  // Cynthia answers and sees the address.
  const c=await phone();await c.goto(cynLink);await c.waitForTimeout(2500);
- {const card=await c.locator('.invite-card').innerText();check(card.startsWith('Hi Cynthia! Mom is bringing you'),'Cynthia’s greeting says Mom is bringing her: '+card.split('\n')[0]);check(/Mom asked Ari if you could come as their plus one, and Ari said yes/.test(card),'it explains she’s Mom’s plus one');}
+ {const card=await c.locator('.invite-card').innerText();check(/^No app or account needed\s+Hi Cynthia!\s+Mom is bringing you/.test(card),'Cynthia’s greeting says Mom is bringing her: '+card.split('\n')[0]);check(/Mom asked Ari if you could come as their plus one, and Ari said yes/.test(card),'it explains she’s Mom’s plus one');}
  check(await c.locator('.quick-answers').getByRole('button',{name:'Can’t make it'}).count()===1,'Cynthia answers for herself: I’m in / Still checking / Can’t make it');
  await c.locator('.quick-answers').getByRole('button',{name:'I’m in'}).click();await c.waitForTimeout(2500);
  await c.getByRole('tab',{name:'Overview'}).click();await c.waitForTimeout(500);

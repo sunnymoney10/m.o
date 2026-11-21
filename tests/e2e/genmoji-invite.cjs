@@ -12,7 +12,7 @@ const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173',O=process.argv[2]||requ
  const near=(c,t)=>c.every((v,i)=>Math.abs(v-t[i])<40);
  const h=await phone();await h.goto(B);await h.waitForTimeout(2500);
  await h.getByRole('button',{name:'Start your own plan',exact:true}).first().click();
- await h.getByLabel('Give it a name').fill('Skate day');const yn=h.getByLabel('Your name',{exact:true});if(await yn.count()&&await yn.isVisible())await yn.fill('Ari');
+ await h.getByLabel('What’s the plan?').fill('Skate day');const yn=h.getByLabel('Your name',{exact:true});if(await yn.count()&&await yn.isVisible())await yn.fill('Ari');
  await h.getByText('Customize your invite (optional)',{exact:true}).click();await h.waitForTimeout(300);
  const box=h.getByRole('textbox',{name:/pick a Genmoji or emoji for your invite/});check(await box.count()===1,'the invite has a Genmoji box');
  check(/iPhone doesn’t allow Genmoji in the box above/.test(await h.locator('.invite-style').innerText()),'it explains why there are two boxes');

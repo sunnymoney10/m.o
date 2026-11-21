@@ -8,7 +8,7 @@
  --radius:22px;--font:'Outfit',ui-rounded,'SF Pro Rounded',system-ui,-apple-system,'Segoe UI',sans-serif;--hand:'Caveat','Bradley Hand',cursive;
  --tabbar:76px;
  /* added in the brand pass: every colour in this file now comes from a token */
- --white:#fff;--confirmed-soft:#e3efe2;--noted:#7a5600;--noted-deep:#6b5200;--confirmed:#2f6b3a;--danger:#a3271a;
+ --white:#fff;--confirmed-soft:#e3efe2;--on-dark-text:#e9dde2;--noted:#7a5600;--noted-deep:#6b5200;--confirmed:#2f6b3a;--danger:#a3271a;
  --butter-edge:#e9cf7a;--field-line:#b8a9aa;--track:#ebe0d4;--out:#ece3da;
  --shade-1:#3a1a2b10;--shade-2:#3a1a2b12;--shade-3:#3a1a2b33;--on-dark-1:#ffffff12;--on-dark-2:#ffffff26;--backdrop:#2a112080;
  --shadow-s:0 6px 16px #0002;--shadow-l:0 10px 30px #0003;
@@ -585,9 +585,9 @@ legend{font-weight:600;font-size:var(--fs-body);margin-bottom:8px;color:var(--in
 .row-tools,.item-tools{gap:0 16px}
 
 /* ---------- shared press effect: every tap is answered ---------- */
-.primary,.outline-button,.text-button,.left-action,.claim-button,.chip,.name-chip,.swatch,.rsvp-choice,.seg button,.tab,.plan-card,.demo-card,.row-link,.status-grid>button,.status-items,.icon-button,.host-line-item,.style-option,.type-selector button,.feature-open,.me-dot,.place-hit{transition:transform .2s ease-out,background-color .15s,box-shadow .15s}
-:is(.primary,.left-action,.lost-mark,.help-q summary,.outline-button,a.outline-button,.text-button,.claim-button,.chip,.name-chip,.swatch,.rsvp-choice,.seg button,.tab,.plan-card,.demo-card,.row-link,.status-grid>button,.status-items,.icon-button,.host-line-item,.style-option,.type-selector button,.feature-open,.me-dot,.place-hit,.invite-theme-options button,.invite-color-options button):active:not(:disabled){transform:scale(.97);transition-duration:.12s}
-@media(prefers-reduced-motion:reduce){:is(.primary,.left-action,.lost-mark,.help-q summary,.outline-button,.text-button,.claim-button,.chip,.name-chip,.swatch,.rsvp-choice,.seg button,.tab,.plan-card,.demo-card,.row-link,.status-grid>button,.status-items,.icon-button,.host-line-item,.style-option,.type-selector button,.feature-open,.me-dot,.place-hit,.invite-theme-options button,.invite-color-options button):active:not(:disabled){transform:none;opacity:.8}}
+.primary,.outline-button,.text-button,.left-action,.kind-pick button,.bring-idea,.claim-button,.chip,.name-chip,.swatch,.rsvp-choice,.seg button,.tab,.plan-card,.demo-card,.row-link,.status-grid>button,.status-items,.icon-button,.host-line-item,.style-option,.type-selector button,.feature-open,.me-dot,.place-hit{transition:transform .2s ease-out,background-color .15s,box-shadow .15s}
+:is(.primary,.left-action,.kind-pick button,.bring-idea,.lost-mark,.help-q summary,.outline-button,a.outline-button,.text-button,.claim-button,.chip,.name-chip,.swatch,.rsvp-choice,.seg button,.tab,.plan-card,.demo-card,.row-link,.status-grid>button,.status-items,.icon-button,.host-line-item,.style-option,.type-selector button,.feature-open,.me-dot,.place-hit,.invite-theme-options button,.invite-color-options button):active:not(:disabled){transform:scale(.97);transition-duration:.12s}
+@media(prefers-reduced-motion:reduce){:is(.primary,.left-action,.kind-pick button,.bring-idea,.lost-mark,.help-q summary,.outline-button,.text-button,.claim-button,.chip,.name-chip,.swatch,.rsvp-choice,.seg button,.tab,.plan-card,.demo-card,.row-link,.status-grid>button,.status-items,.icon-button,.host-line-item,.style-option,.type-selector button,.feature-open,.me-dot,.place-hit,.invite-theme-options button,.invite-color-options button):active:not(:disabled){transform:none;opacity:.8}}
 
 /* delete plan */
 .danger-zone{display:grid;gap:2px;justify-items:start;padding-top:12px;border-top:1.5px solid var(--line)}
@@ -796,3 +796,45 @@ html,body{overflow-x:clip}
 .help-q>div{padding:0 16px 16px}
 .legal-contact{background:var(--sky-soft);border-radius:var(--radius);padding:16px}
 .lost-help{font-size:var(--fs-body)!important}.lost-help a{color:var(--brick);font-weight:600}
+
+/* ---------- "saved you a seat" guest invite ---------- */
+.seat-invite{padding:0;gap:0;background:var(--cream);border:0;overflow:hidden;box-shadow:var(--shadow-s)}
+.seat-invite-top{display:grid;gap:12px;padding:20px 20px 24px;background:var(--ink);color:var(--paper)}
+.seat-invite-free{font-size:var(--fs-small);color:var(--on-dark-text)}
+.seat-invite-hi{font-family:var(--hand);font-size:var(--fs-section);color:var(--butter);line-height:1}
+.seat-invite .seat-invite-top h2{font-size:var(--fs-section);font-weight:900;line-height:1.05;color:var(--paper)}
+.seat-invite-top .plus-one-intro{color:var(--on-dark-text)}
+.seat-invite .invite-meta{display:flex;align-items:center;gap:12px;margin:0;font-size:var(--fs-lead);color:var(--paper)}
+.seat-invite .invite-meta svg{color:var(--butter);flex-shrink:0}
+.seat-invite .locked-note{display:inline-flex;align-items:center;gap:12px;color:var(--on-dark-text)}
+.invite-who .invite-seats{display:flex;flex-shrink:0}
+.invite-who .invite-seats:empty{display:none}
+.invite-who .seat{width:26px;height:26px}
+.invite-who .seat-head{fill:var(--butter)}
+.invite-who .seat-line{fill:var(--cream)}
+.seat-invite-answer{display:grid;gap:12px;padding:20px}
+.seat-invite-answer h3{font-size:var(--fs-title)}
+.seat-invite .quick-answers{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.seat-invite .quick-answers .primary{grid-column:1/-1;min-height:56px;font-size:var(--fs-lead)}
+.seat-invite .quick-answers .outline-button{min-height:52px}
+.invite-tip{background:var(--paper);border-radius:var(--r-m);padding:12px 14px;font-size:var(--fs-body);color:var(--ink)}
+@media (max-width:360px){.seat-invite .quick-answers{grid-template-columns:1fr}}
+
+/* ---------- one-sentence new plan ---------- */
+.plan-sentence{font-size:var(--fs-body);color:var(--muted)}
+.plan-form .plan-sentence input{font-size:var(--fs-title);font-weight:800;color:var(--ink);letter-spacing:-.02em}
+.sentence-read{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;padding:14px;border-radius:var(--r-m);background:var(--sky-soft);color:var(--ink)}
+.sentence-read p{display:grid;gap:2px;min-width:0;flex:1 1 180px}
+.sentence-read span,.sentence-read small{font-size:var(--fs-body);color:var(--text)}
+.sentence-read strong{font-size:var(--fs-lead)}
+.kind-pick{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.kind-pick span{font-size:var(--fs-body);color:var(--muted);margin-right:4px}
+.kind-pick button{min-height:44px;padding:0 16px;border-radius:var(--r-pill);border:1.5px solid var(--field-line);font-weight:600;color:var(--ink);background:transparent}
+.kind-pick button.chosen{background:var(--butter);border-color:var(--butter);font-weight:700}
+.only-name{margin:-4px 0 0}
+.bring-ideas{display:grid;gap:8px}
+.bring-ideas .eyebrow{margin:0}
+.bring-idea-row{display:flex;flex-wrap:wrap;gap:8px}
+.bring-idea{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 14px;border-radius:var(--r-pill);background:var(--paper);border:1.5px solid var(--line);font-size:var(--fs-body);color:var(--ink)}
+.bring-idea.chosen{background:var(--butter);border-color:var(--butter);font-weight:700}
+.bring-idea.own{border-style:dashed;border-color:var(--field-line);color:var(--muted)}

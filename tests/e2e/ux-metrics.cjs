@@ -11,7 +11,7 @@ const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173';
  const h=await phone();await h.goto(B);await h.waitForTimeout(1500);
  await h.getByRole('button',{name:'Start your own plan'}).first().click();await h.waitForTimeout(300);
  m.createFieldsShown=await h.locator('[role="dialog"] input:visible, [role="dialog"] textarea:visible').count();
- await h.getByLabel('Give it a name').fill('Friendsgiving');
+ await h.getByLabel('What’s the plan?').fill('Friendsgiving');
  const nameField=h.getByLabel('Your name');if(await nameField.count()&&await nameField.isVisible())await nameField.fill('Ari');
  await h.getByLabel(/When/).fill('2026-11-26T18:00');await h.getByLabel('Where').fill('12 Oak Ave');
  await h.locator('[role="dialog"] button.primary').click();await h.waitForTimeout(1800);
