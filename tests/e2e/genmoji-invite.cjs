@@ -12,7 +12,7 @@ const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173',O=process.argv[2]||requ
  const near=(c,t)=>c.every((v,i)=>Math.abs(v-t[i])<40);
  const h=await phone();await h.goto(B);await h.waitForTimeout(2500);
  await h.getByRole('button',{name:'Start your own plan',exact:true}).first().click();
- await h.getByLabel('Give it a name').fill('Skate day');const yn=h.getByLabel('Your name',{exact:true});if(await yn.count()&&await yn.isVisible())await yn.fill('Ari');
+ await h.getByLabel('What’s the plan?').fill('Skate day');const yn=h.getByLabel('Your name',{exact:true});if(await yn.count()&&await yn.isVisible())await yn.fill('Ari');
  await h.getByText('Customize your invite (optional)',{exact:true}).click();await h.waitForTimeout(300);
  const box=h.getByRole('textbox',{name:/pick a Genmoji or emoji for your invite/});check(await box.count()===1,'the invite has a Genmoji box');
  check(/iPhone doesn’t allow Genmoji in the box above/.test(await h.locator('.invite-style').innerText()),'it explains why there are two boxes');
@@ -30,7 +30,7 @@ const B=process.env.JOURNEY_URL||'http://127.0.0.1:5173',O=process.argv[2]||requ
  await fits(h,'host invite with Genmoji');await h.locator('.invite-style').screenshot({path:O+'/gi1-host.png'});
  await h.getByRole('button',{name:/Create plan/}).click();await h.waitForURL(/plan=/,{timeout:15000});const url=h.url();
  // A stranger opens the link and sees the Genmoji invite.
- const g=await phone();await g.goto(url);await g.getByRole('heading',{name:'Skate day',exact:true}).waitFor();
+ const g=await phone();await g.goto(url);await g.getByRole('heading',{name:/saved you a seat at Skate day/}).waitFor();
  const cover=g.locator('.plan-photo .invite-cover');await cover.waitFor({timeout:8000}).catch(()=>{});check(await cover.count()===1,'a stranger sees the Genmoji invite');
  if(await cover.count()){const px=await pixels(g,'.plan-photo .invite-cover');check(px.w===1000&&near(px.center,[0xb2,0x3b,0x28]),'it’s the saved 1000×500 cover with the Genmoji')}
  await fits(g,'guest');await g.screenshot({path:O+'/gi2-guest.png'});

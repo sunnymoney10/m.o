@@ -43,7 +43,7 @@ const log=(...a)=>console.log(...a);
  // Tess opens her personal link
  const link=body.match(/https?:\/\/\S+/)[0];const t=await phone();await t.goto(link);await t.waitForTimeout(2500);
  await t.screenshot({path:O+'/pi2-personal.png'});
- check((await t.locator('.invite-card h2').innerText()).startsWith('Hi Tess! Ari invited you'),'personal greeting');
+ check((await t.locator('.seat-invite-hi').innerText())==='Hi Tess!'&&(await t.locator('.invite-card h2').innerText()).startsWith('Ari saved you a seat at'),'personal greeting: Hi Tess! Ari saved you a seat');
  await t.locator('.quick-answers').getByRole('button',{name:'I’m in'}).click();await t.waitForTimeout(2500);
  check(await t.getByRole('tab',{name:/Bring list/}).getAttribute('aria-selected')==='true','after one tap Tess lands on the bring list');
  check(!t.url().includes('&g='),'personal part removed from the address after answering');

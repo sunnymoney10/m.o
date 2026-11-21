@@ -31,6 +31,20 @@ Brand flexibility (from the owner's brand handoff): stage names live only in `ST
 
 Phone checks 2026-11-21: `journeys:access`, `journeys:recovery` and `journeys:themes` default to port 5174; they pass with `JOURNEY_URL=http://127.0.0.1:5173`.
 
+## Redesign phase 2: one-sentence new plan and "saved you a seat" (2026-11-21)
+
+New plan opens on one "What's the plan?" box. Fixed rules (`lib/plan-sentence.ts`, not AI) read a day and time from the sentence and show them; nothing changes until the host taps **Use this date**. "Looks like a" Get-together / Trip chips, and "Ask the group to bring" ideas that are added only when tapped. A guest who hasn't answered sees one invite card: "Hi Jordan! Ari saved you a seat at Friendsgiving.", date, address rule, who's coming, then the three answers.
+
+| Claim | Evidence |
+| --- | --- |
+| Sentence reading: weekdays, "tomorrow", "Nov 26", "12/4", "at 4" = 4 PM, no time = 6 PM and said so; impossible dates and a time alone suggest nothing | 3. `tests/plan-sentence.mjs` |
+| Host: type one sentence, tap Use this date and two ideas, create; the plan saves the name without the day, the date, the kind and the two items | 3. Browser check on an iPhone 14 Pro Max |
+| Guest with a personal link: greeting, date, "Place to decide", who's coming, answers fit the screen; a stranger without a link still gets Reply | 3. Browser check (personal link and stranger) and `journeys:invites`, `journeys:access`, `journeys:plusones` |
+| All 21 journey, a11y and ux commands pass; tap counts unchanged from the phase 1 run | 3 |
+| Real hosts write plans this way, and guests understand the invite | Not yet (level 4) |
+
+Phone checks updated for the new wording ("What's the plan?" label, "New plan" heading, guest greeting now "… saved you a seat at …", plan type chips instead of "Layout options"). No check was skipped or loosened. The guest's plan heading only shows after they answer, as before the invite card.
+
 ## Tap counts (`npm run ux:taps`, 2026-11-19, level 3)
 
 Typing in a box is counted separately from taps. "Send in Messages" counts as one tap.
@@ -68,7 +82,7 @@ Run 2026-11-21 (after phase 1): the same except "Send the first invite" 5 (was 4
    | --- | --- | --- | --- | --- |
    | | | | | |
 
-6. Redesign phase 2: new guest invite ("saved you a seat") and the one-sentence new plan. Phase 3: Made it out stamp and "Your m.o".
+6. Redesign phase 3: Made it out stamp and "Your m.o" (phase 2 built 2026-11-21, level 3).
 7. Check why sending invites now takes one more tap than on Nov 19 (see tap counts).
 
 Done outside the backlog (2026-11-19): trip "Search Airbnb / Search hotels" links (level 3, host and guest journeys), and Escape no longer closes the plan form while suggestions are open (level 3).
