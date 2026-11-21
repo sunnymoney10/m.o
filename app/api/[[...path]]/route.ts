@@ -4,6 +4,7 @@ import {verifiedIdentity} from '../../../lib/request-identity';
 import {INVITE_SECRET,newInviteSecret,inviteHash,inviteExpiry} from '../../../lib/guest-access';
 import {cleanName} from '../../../lib/names';
 import {orderPlans} from '../../../lib/plan-order';
+import {stageOf,thingsLeft,type JourneyFacts} from '../../../lib/journey';
 import {newHostKey,hashHostKey,hostLink,HOST_KEY} from '../../../lib/host-key';
 import {placeResults,eventResults,eventTries,readQuery,withHouseNumber,censusResults} from '../../../lib/places';
 import {cleanAvatar,parseAvatar,parsePhoto} from '../../../lib/avatar';
@@ -12,6 +13,12 @@ function https(v:unknown){const s=str(v,1000);if(!s)return null;try{const u=new 
 const invitation=https;
 // An end date is optional; when given it needs a start, must come after it, and the plan can't run past 60 days.
 function endError(start:string,end:string){if(!end)return '';if(Number.isNaN(Date.parse(end)))return 'Choose a valid end date.';if(!start)return 'Add a start date before an end date.';const a=Date.parse(start),b=Date.parse(end);if(b<=a)return 'The end needs to be after the start.';if(b-a>60*86400000)return 'Plans can last up to 60 days.';return ''}
+// A plan's journey stage for everyone who can see the plan, and the count of things left for its host only.
+// Worked out from the real saved data, so a guest who can't see the address still sees the right stage.
+function withJourney({j_host,j_place,j_others,j_noreply,j_checking,j_requests,j_date_votes,j_place_votes,...p}:any){
+ const f:JourneyFacts={hasDate:!!p.date,hasPlace:!!j_place,madeIt:!!p.made_it,others:j_others||0,noReply:j_noreply||0,checking:j_checking||0,openItems:p.open_items||0,openDateVotes:j_date_votes||0,openPlaceVotes:j_place_votes||0,openOtherVotes:Math.max(0,(p.open_votes||0)-(j_date_votes||0)-(j_place_votes||0)),requests:j_requests||0};
+ return {...p,stage:stageOf(f),...(j_host?{left:thingsLeft(f)}:{})};
+}
 function str(v:unknown,max=300){return typeof v==='string'?v.trim().slice(0,max):''}
 const STYLES=['setter','details','down','wildcard','snacks'];
 const HANDLE=/^[a-z0-9_]{2,24}$/;
@@ -127,7 +134,16 @@ async function answer(req:Request){
      (SELECT t.title FROM tasks t WHERE t.plan_id=p.id AND t.claimed_by IS NULL ORDER BY t.rowid LIMIT 1) AS open_item,
      (SELECT count(*) FROM polls v WHERE v.plan_id=p.id AND v.decided_option IS NULL) AS open_votes,
      CASE WHEN p.owner=?1 OR EXISTS(SELECT 1 FROM host_access h WHERE h.plan_id=p.id AND h.visitor=?1 AND h.key_hash=p.host_key_hash AND h.key_hash<>'') THEN (SELECT count(*) FROM guests g WHERE g.plan_id=p.id AND g.status='requested') ELSE 0 END AS requests
-     FROM plans p WHERE p.owner=?1 OR EXISTS(SELECT 1 FROM host_access h WHERE h.plan_id=p.id AND h.visitor=?1 AND h.key_hash=p.host_key_hash AND h.key_hash<>'') OR p.id IN (SELECT g.plan_id FROM guests g WHERE (g.actor=?1 AND g.invite_required=0) OR g.id IN (SELECT a.guest_id FROM guest_access a WHERE a.visitor=?1 AND a.invite_hash=g.invite_hash AND g.invite_expires>strftime('%Y-%m-%dT%H:%M:%fZ','now'))) ORDER BY p.created DESC`).bind(actor).all();return json({plans:orderPlans(results as any[])});}
+     ,(SELECT count(*) FROM guests g WHERE g.plan_id=p.id AND g.status='out') AS cant,
+     CASE WHEN p.owner=?1 OR EXISTS(SELECT 1 FROM host_access h WHERE h.plan_id=p.id AND h.visitor=?1 AND h.key_hash=p.host_key_hash AND h.key_hash<>'') THEN 1 ELSE 0 END AS j_host,
+     p.place<>'' AS j_place,
+     (SELECT count(*) FROM guests g WHERE g.plan_id=p.id AND g.actor<>p.owner AND g.status IN ('in','maybe','invited','out')) AS j_others,
+     (SELECT count(*) FROM guests g WHERE g.plan_id=p.id AND g.actor<>p.owner AND g.status='invited') AS j_noreply,
+     (SELECT count(*) FROM guests g WHERE g.plan_id=p.id AND g.actor<>p.owner AND g.status='maybe') AS j_checking,
+     (SELECT count(*) FROM guests g WHERE g.plan_id=p.id AND g.status='requested') AS j_requests,
+     (SELECT count(*) FROM polls v WHERE v.plan_id=p.id AND v.decided_option IS NULL AND v.kind='date') AS j_date_votes,
+     (SELECT count(*) FROM polls v WHERE v.plan_id=p.id AND v.decided_option IS NULL AND v.kind='place') AS j_place_votes
+     FROM plans p WHERE p.owner=?1 OR EXISTS(SELECT 1 FROM host_access h WHERE h.plan_id=p.id AND h.visitor=?1 AND h.key_hash=p.host_key_hash AND h.key_hash<>'') OR p.id IN (SELECT g.plan_id FROM guests g WHERE (g.actor=?1 AND g.invite_required=0) OR g.id IN (SELECT a.guest_id FROM guest_access a WHERE a.visitor=?1 AND a.invite_hash=g.invite_hash AND g.invite_expires>strftime('%Y-%m-%dT%H:%M:%fZ','now'))) ORDER BY p.created DESC`).bind(actor).all();return json({plans:orderPlans((results as any[]).map(withJourney))});}
 
    if(req.method==='POST'){
     const b=await body();const title=str(b.title,100),name=str(b.name,60);if(!title||!name)return json({error:'Give the plan a title and tell us your name.'},400);
@@ -182,6 +198,8 @@ async function answer(req:Request){
     // Private details (address, arrival notes, itinerary) reach the organizer and people who said in or maybe.
     const mine=gs.results.find((g:any)=>g.actor===actor),insider=host||(!!mine&&['in','maybe'].includes(mine.status)&&!!mine.details_approved);
     const hidden=!insider&&!!(safe.place||safe.booking_url||details||ss.results.length);if(!insider){safe.place='';safe.booking_url=null}
+    {const others=listed.filter((g:any)=>g.actor!==owner&&['in','maybe','invited','out'].includes(g.status)),open=ps.results.filter((v:any)=>!v.decided_option);
+     safe.stage=stageOf({hasDate:!!plan.date,hasPlace:!!plan.place,madeIt:!!plan.made_it,others:others.length,noReply:others.filter((g:any)=>g.status==='invited').length,checking:others.filter((g:any)=>g.status==='maybe').length,openItems:ts.results.filter((t:any)=>!t.claimed_by).length,openDateVotes:open.filter((v:any)=>v.kind==='date').length,openPlaceVotes:open.filter((v:any)=>v.kind==='place').length,openOtherVotes:open.filter((v:any)=>v.kind!=='date'&&v.kind!=='place').length,requests:all.filter((g:any)=>g.status==='requested').length})}
     const polls=ps.results.map((p:any)=>({id:p.id,question:p.question,kind:p.kind,decided_option:p.decided_option,options:os.results.filter((o:any)=>o.poll_id===p.id).map((o:any)=>{const votes=vs.results.filter((v:any)=>v.option_id===o.id);return {id:o.id,label:o.label,votes:votes.length,voters:votes.map((v:any)=>v.name||'Someone'),mine:votes.some((v:any)=>v.actor===actor)}})}));
     return json({plan:safe,host,hasHostKey:host&&!!host_key_hash,activity:acts,organizer:gs.results.find((g:any)=>g.actor===owner)?.name||null,
      details:insider?details:'',...(host?{doorCode:door_code}:{}),hidden,

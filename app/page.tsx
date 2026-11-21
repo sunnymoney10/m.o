@@ -16,9 +16,11 @@ import {ago} from '@/lib/types';
 import {Scene,Face,sceneFor} from '@/components/mo/art';
 import {SetterPanel,Decisions,LivePlan,Replay} from '@/components/mo/plan-sections';
 import {PeopleTab,NotedBanner} from '@/components/mo/people';
-import {GetItReady} from '@/components/mo/ready';
+import {JourneyBar,TheTable,ThingsLeft,CardSeats,StageChip,stageFor,leftPreview} from '@/components/mo/journey';
+import {stageLabel,leftHeadline} from '@/lib/journey';
 import {ProfileView} from '@/components/mo/profile';
 import {Wordmark} from '@/components/mo/brand';
+import {TAGLINE} from '@/lib/site';
 
 const DEMOS:Detail[]=[
  {organizer:'You',plan:{id:'demo-dinner',title:'Friendsgiving, with the usuals',kind:'gathering',date:'2026-11-26T18:00',place:'Your place',budget:'Everyone brings a dish',note:'Good food, questionable stories, and one very full table. Claim what you’re bringing so we have everything covered.'},host:true,
@@ -49,7 +51,6 @@ function when(date:string,end?:string){return date&&!Number.isNaN(+new Date(date
 function nextUp(plans:Plan[]){const now=Date.now()-6*3600e3;const live=plans.filter(p=>!p.made_it);const dated=live.filter(p=>p.date&&+new Date(p.date)>=now).sort((a,b)=>+new Date(a.date)-+new Date(b.date));return dated[0]||live.find(p=>!p.date)||live[0]||null}
 // The one thing to sort out, from saved plan data only. Never a guess about who will do it.
 function bookingLabel(u:string){try{const h=new URL(u).hostname;return /airbnb|abnb/.test(h)?'Open the Airbnb booking':/vrbo/.test(h)?'Open the Vrbo booking':'Open the booking'}catch{return 'Open the booking'}}
-function sortOut(p:Plan):[string,string]|null{const n=p.open_items||0;if(n&&p.open_item)return [n===1?'One thing to sort out':n+' things to sort out',n===1?`${p.open_item} still needs a volunteer`:`${p.open_item} and ${n-1} more need a volunteer`];if(p.open_votes)return [p.open_votes===1?'One vote is still open':p.open_votes+' votes are still open','Lock it in when the group has weighed in'];if(!p.date)return ['One thing to sort out','The date still needs deciding'];if(!p.place)return ['One thing to sort out','The place still needs deciding'];return null}
 function itemIcon(title:string,category:string){const t=title.toLowerCase(),has=(re:string)=>new RegExp('\\b(?:'+re+')\\b').test(t);const I=has('ice|ice bags?')?Snowflake:has('drinks?|sodas?|juice|water|coffee|tea|lemonade|seltzer')?CupSoda:has('wine|beers?|champagne|cocktails?|prosecco')?Wine:has('sweets?|something sweet|desserts?|cakes?|pies?|cookies?|brownies?|cupcakes?')?CakeSlice:has('salads?|veggies|vegetables|greens')?Salad:has('main|main dish|mac|mac and cheese|sides?|dish|turkey|ham|soup|stew|rice|bread|rolls?|stuffing|casserole|chicken')?Soup:has('music|playlist|speakers?|dj')?Music:has('rides?|cars?|drive|driving|carpool|pick ?up')?Car:has('stay|accommodation|airbnb|hotel|rooms?|beds?|lodging')?BedDouble:has('budget|money|pay|split|split the check|venmo')?Wallet:has('tickets?|reservations?|reserve|book|booking')?Ticket:has('plates?|cups?|napkins?|forks?|utensils?|chairs?|folding chairs|tables?|cutlery')?Utensils:category==='bring'?Box:ClipboardCheck;return <I size={22} strokeWidth={1.7}/>}
 
 export default function Home(){
@@ -105,6 +106,7 @@ export default function Home(){
   // Where the tab bar sits before it sticks: just below the element above it (plus the gap between them).
   const gap=parseFloat(getComputedStyle(bar.parentElement!).rowGap)||0,natural=window.scrollY+prev.getBoundingClientRect().bottom+gap;
   const target=Math.max(0,natural-(parseFloat(getComputedStyle(bar).top)||0)-8);if(window.scrollY>target+1)window.scrollTo({top:target,behavior:'auto'})})}
+ function openVotes(){const more=document.querySelector<HTMLDetailsElement>('.more-tools');if(more)more.open=true;requestAnimationFrame(()=>document.querySelector('.decisions-panel')?.scrollIntoView({behavior:'smooth',block:'start'}))}
  function goTab(tab:'people'|'list',opts:{add?:boolean;send?:boolean}={}){setOpenAdd(!!opts.add);setSendOpen(!!opts.send);setPtab(tab);showTabTop()}
  function plansView(){if(!detail&&view==='plans'){window.scrollTo(0,0);return}setDetail(null);setView('plans');setError('');go('/?view=plans');list();window.scrollTo(0,0)}
  function profile(){if(!detail&&view==='me'){window.scrollTo(0,0);return}setDetail(null);setView('me');setError('');go('/?view=me');loadMe();window.scrollTo(0,0)}
@@ -132,7 +134,7 @@ export default function Home(){
  const navItems=[['home','Home',House,home],['plans','Plans',CalendarDays,plansView],['me','You',UsersRound,profile]] as const;
  const navOn=(k:string)=>k==='plans'?where==='plans'||where==='plan':where===k;
 
- const planRow=(x:Plan)=><button className="row-link" key={x.id} onClick={()=>open(x.id)}><InviteArt className="row-thumb" plan={x}/><span className="row-text"><strong>{x.title}</strong><span>{pretty(x.date)} · {x.going||0} going{x.made_it?' · made it out':''}</span></span><ChevronRight size={20}/></button>;
+ const planRow=(x:Plan)=><button className="row-link" key={x.id} onClick={()=>open(x.id)}><InviteArt className="row-thumb" plan={x}/><span className="row-text"><strong>{x.title}</strong><span>{pretty(x.date)} · {x.going||0} going{x.stage?' · '+stageLabel(x.stage):''}</span></span><ChevronRight size={20}/></button>;
  const demoCards=<section className="demos" aria-labelledby="demos-title">
   <div className="section-title"><h2 id="demos-title">Try an example plan</h2><span className="fine">Fictional people · nothing saved</span></div>
   <div className="demo-scroll">{DEMOS.map((d,i)=><button className="demo-card" key={d.plan.id} onClick={()=>open(d.plan.id)}><Scene kind={sceneFor(d.plan.kind,d.plan.made_it)} seed={d.plan.id}/><span className="eyebrow">{DEMO_COPY[i][0]}</span><strong>{DEMO_COPY[i][1]}</strong><span className="fine">{DEMO_COPY[i][2]}</span></button>)}</div>
@@ -142,7 +144,7 @@ export default function Home(){
   <nav className="tabbar" aria-label="Main">
    <button className="rail-mark" onClick={home} aria-label="m.o home"><Wordmark/></button>
    {navItems.map(([k,label,Icon,go])=><button key={k} className={'tab'+(navOn(k)?' on':'')} aria-current={navOn(k)?'page':undefined} onClick={go}><Icon size={22} strokeWidth={1.8}/><span>{label}</span></button>)}
-   <div className="rail-foot"><p>Make it out<br/>the groupchat.</p><button className="text-button" onClick={()=>setModal('help')}>How it works</button></div>
+   <div className="rail-foot"><p>{TAGLINE}</p><button className="text-button" onClick={()=>setModal('help')}>How it works</button></div>
   </nav>
   <div className="frame">
    <header className={'appbar'+(where==='plan'?' centered':'')}>
@@ -164,13 +166,13 @@ export default function Home(){
 
    :where==='home'?<>
     <button className="primary block" onClick={()=>create()}>Start your own plan</button>
-    <section className="greeting"><h1>{hello}{myName?', '+myName:''}.</h1><p>{featured?'Here’s what’s coming up.':plans.length?'All your plans have happened. Start a new one?':'Make it out the groupchat.'}</p></section>
+    <section className="greeting"><h1>{hello}{myName?', '+myName:''}.</h1><p>{featured?'Here’s what’s coming up.':plans.length?'All your plans have happened. Start a new one?':TAGLINE}</p></section>
     {loading?<div className="loading"><LoaderCircle className="spin"/>Getting your plans…</div>
     :featured?<article className="feature-card">
      <button className="feature-open" onClick={()=>open(featured.id)} aria-label={'Open '+featured.title}><InviteArt plan={featured}/></button>
-     <div className="feature-body"><h2>{featured.title}</h2><p className="meta">{when(featured.date)}</p><p className="meta">{featured.going||0} going{featured.maybe?` · ${featured.maybe} still checking`:''}</p></div>
-     {(()=>{const s=sortOut(featured);return s?<div className="sort-out"><Box size={22} strokeWidth={1.7}/><div><strong>{s[0]}</strong><span>{s[1]}</span></div><button onClick={async()=>{await open(featured.id);if(featured.open_items)setPtab('list')}}>Review plan</button></div>
-      :<div className="sort-out settled"><CheckCircle2 size={22} strokeWidth={1.7}/><div><strong>Everything has a person</strong><span>Date, place and every item are covered</span></div><button onClick={()=>open(featured.id)}>View plan</button></div>})()}
+     <div className="feature-body"><h2>{featured.title}</h2><p className="meta">{when(featured.date)}</p><CardSeats plan={featured}/>{featured.stage&&<StageChip stage={featured.stage}/>}</div>
+     {featured.left?<div className={'sort-out'+(featured.left.length?'':' settled')}><div><strong>{leftHeadline(featured.left.length)}</strong><span>{featured.left.length?leftPreview(featured.left):'Everyone knows when, where and what to bring'}</span></div><button onClick={()=>open(featured.id)}>{featured.left.length?'Review plan':'View plan'}</button></div>
+      :null}
     </article>
     :<article className="feature-card empty"><Scene kind="table" seed="welcome"/><div className="feature-body"><h2>Make a plan that’s yours.</h2><p className="meta">Skating, a concert, a walk, a birthday—give your plan any name, then invite your people.</p></div><span className="note-card">Saved you a seat.</span></article>}
     {others.length>0&&<section className="row-list"><h2>Also on your list</h2>{others.slice(0,4).map(planRow)}{others.length>4&&<button className="text-button" onClick={plansView}>See all plans <ArrowUpRight size={15}/></button>}</section>}
@@ -181,7 +183,7 @@ export default function Home(){
     <section className="greeting"><h1>Plans</h1><p>Plans you’re hosting or going to.</p></section>
     {plans.length>0&&<div className="seg" role="group" aria-label="Filter plans">{[['all','All'],['gathering','Get-togethers'],['trip','Trips']].map(([key,label])=><button className={tab===key?'on':''} aria-pressed={tab===key} key={key} onClick={()=>setTab(key)}>{label}</button>)}</div>}
     {loading?<div className="loading"><LoaderCircle className="spin"/>Getting your plans…</div>
-    :filtered.length?<div className="card-grid">{filtered.map(x=><button className="plan-card" key={x.id} onClick={()=>open(x.id)}><InviteArt plan={x}/><span className="card-body"><strong>{x.title}</strong><span className="meta">{when(x.date,x.end_date)}</span><span className="meta">{x.place||'Place to decide'}</span><span className="card-foot"><span>{x.going||0} going</span>{(x.requests||0)>0&&<span className="chip-request">{x.requests} {x.requests===1?'request':'requests'}</span>}{x.made_it?<span className="chip-made">Made it out</span>:(x.open_items||0)>0?<span className="chip-open">{x.open_items} open</span>:null}</span></span></button>)}</div>
+    :filtered.length?<div className="card-grid">{filtered.map(x=><button className="plan-card" key={x.id} onClick={()=>open(x.id)}><InviteArt plan={x}/><span className="card-body"><strong>{x.title}</strong><span className="meta">{when(x.date,x.end_date)}</span><span className="meta">{x.place||'Place to decide'}</span><CardSeats plan={x}/><span className="card-foot">{x.stage&&<StageChip stage={x.stage}/>}{(x.requests||0)>0&&<span className="chip-request">{x.requests} {x.requests===1?'request':'requests'}</span>}{x.left&&x.left.length>0&&!x.made_it?<span className="chip-open">{x.left.length} left</span>:null}</span></span></button>)}</div>
 
     :<div className="empty-state"><h3>{plans.length?'Nothing here yet.':'No plans yet.'}</h3><p>Start one and paste the link in your group chat. Friends don’t need the app.</p></div>}
     <button className="primary block" onClick={()=>create()}>Start your own plan</button>
@@ -195,6 +197,7 @@ export default function Home(){
      <p className="host-line"><Face className="mini-avatar" seed={hostName||'?'} avatar={hostGuest?.avatar} photo={hostGuest?.photo}/>Hosted by {hostIsMe?'you':hostName||'the organizer'}</p>
      <p className="meta-line"><CalendarDays size={20} strokeWidth={1.7}/>{when(p!.date,p!.end_date)}</p>
      <p className="meta-line"><MapPin size={20} strokeWidth={1.7}/>{p!.place||(detail!.hidden?<span className="locked-note"><Lock size={14}/>{(()=>{const me=detail!.guests.find(g=>g.isMe);return me?.needsPersonalLink&&!['in','maybe','out'].includes(me.status)?'Address shows after you answer':'Address needs host approval'})()}</span>:'Place to decide')}</p>
+     <JourneyBar stage={stageFor(detail!)}/>
      {(detail!.host||demo)&&<div className="plan-actions"><button className="outline-button brick" onClick={demo?()=>create(p!.kind):share}>{demo?<Plus size={16}/>:<LinkIcon size={16}/>}{demo?'Make a real plan':'Copy invite link'}</button><button className="outline-button" onClick={calendar}><CalendarDays size={16}/>Add to calendar</button></div>}
     </section>
     {/* A guest arriving from an invite link: the invite is the first thing, with their name one tap away. */}
@@ -227,8 +230,9 @@ export default function Home(){
         <div className="plus-one-ask-actions"><button className="primary plus-one-approve" disabled={busy} onClick={async()=>{if(await act(`guests/${r.id}/plus-one`,'POST',{decision:'approved'},d=>{d.plusOneRequests=(d.plusOneRequests||[]).filter(x=>x.id!==r.id)},`${r.name} is on the guest list.`))setApproved({name:r.name,withName:r.withName})}}>Yes, {r.name} can come</button><button className="text-button plus-one-decline" disabled={busy} onClick={()=>act(`guests/${r.id}/plus-one`,'POST',{decision:'declined'},d=>{d.plusOneRequests=(d.plusOneRequests||[]).filter(x=>x.id!==r.id)},`Declined. ${r.withName} will see “not this time”.`)}>Not this time</button></div></div>)}
      </section>}
      {!!p!.made_it&&<Replay detail={detail!} act={act} busy={busy} canPost={detail!.host||mine_?.status==='in'}/>}
-     {!p!.made_it&&p!.kind==='trip'&&detail!.polls.some(v=>!v.decided_option)&&<section className="soft-card decision-next"><h2>Decide the next step</h2><p>{!p!.date?'Choose the trip dates with your group.':!p!.place?'Choose where you’re staying.':'Your group has an open vote.'}</p><button className="outline-button brick" onClick={()=>{const more=document.querySelector<HTMLDetailsElement>('.more-tools');if(more)more.open=true;requestAnimationFrame(()=>document.querySelector('.decisions-panel')?.scrollIntoView({behavior:'smooth',block:'start'}))}}>Open trip votes</button></section>}
-     {detail!.host&&!p!.made_it&&<GetItReady detail={detail!} link={link} shared={sharedTick>=0&&(()=>{try{return !!localStorage.getItem('mo-shared-'+p!.id)}catch{return false}})()} go={goTab} edit={openEdit} share={share} notify={notify}/>}
+     {!p!.made_it&&p!.kind==='trip'&&detail!.polls.some(v=>!v.decided_option)&&<section className="soft-card decision-next"><h2>Decide the next step</h2><p>{!p!.date?'Choose the trip dates with your group.':!p!.place?'Choose where you’re staying.':'Your group has an open vote.'}</p><button className="outline-button brick" onClick={openVotes}>Open trip votes</button></section>}
+     {detail!.host&&!p!.made_it&&<ThingsLeft detail={detail!} link={link} shared={sharedTick>=0&&(()=>{try{return !!localStorage.getItem('mo-shared-'+p!.id)}catch{return false}})()} go={goTab} edit={openEdit} openVotes={openVotes} notify={notify}/>}
+     {detail!.host&&<TheTable detail={detail!} go={()=>goTab('people')}/>}
 
      {!detail!.host&&answered&&<section className="you-set"><span className="eyebrow">{mine_!.status==='out'?'YOUR ANSWER':'YOU’RE SET'}</span>
       <strong>{mine_!.status==='in'?'You’re going':mine_!.status==='maybe'?'You’re still checking':'You can’t make it'}{mine_!.extra_status==='approved'&&mine_!.extra_count?` with +${mine_!.extra_count}`:''}</strong>
@@ -238,6 +242,7 @@ export default function Home(){
         return ready?<button className="text-button you-set-bring" onClick={toBring}><UserPlus size={16}/>{host_} said yes to {ready.name}. Send {ready.name.split(' ')[0]} the invite</button>
          :(detail!.plusOnesLeft||0)>0?<button className="text-button you-set-bring" onClick={toBring}><UserPlus size={16}/>{detail!.openPlusOnes?'Bringing someone? Add them':`Bringing someone? Ask ${host_}`}</button>:null})()}</>}
      </section>}
+     {!detail!.host&&answered&&<TheTable detail={detail!} go={()=>goTab('people')}/>}
      {detail!.host?<>
      {detail!.host&&(()=>{const requests=guests.filter(g=>g.extra_status==='requested'),unconfirmed=guests.filter(g=>!g.isHost&&g.source==='host'),notedItems=tasks.filter(t=>t.claim_source==='host'),diets=guests.filter(g=>g.dietary&&g.status!=='out'),staying=guests.filter(g=>g.staying&&g.status!=='out');
       return (requests.length||diets.length||staying.length||unconfirmed.length||notedItems.length)?<section className="soft-card host-notes"><span className="eyebrow">ONLY YOU SEE THIS</span>
@@ -286,7 +291,7 @@ export default function Home(){
      <button className="outline-button brick block" onClick={()=>{setPtab('people');window.scrollTo(0,0)}}>{answered?'View my RSVP':'RSVP to this plan'}</button>
     </section>}
    </>}
-   <footer className="foot"><Wordmark/><span>Make it out the groupchat.</span><button onClick={()=>setModal('help')}>Free · What’s included?</button><nav className="foot-links" aria-label="Help and policies"><a href="/help">Help</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a></nav></footer>
+   <footer className="foot"><Wordmark/><span>{TAGLINE}</span><button onClick={()=>setModal('help')}>Free · What’s included?</button><nav className="foot-links" aria-label="Help and policies"><a href="/help">Help</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a></nav></footer>
    </main>
   </div>
   {toast&&<div className="toast" role="status"><CheckCircle2 size={18}/>{toast}</div>}

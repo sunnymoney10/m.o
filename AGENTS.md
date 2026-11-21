@@ -18,9 +18,9 @@ Run `npm run check`, `npm test`, and `npm run build` for relevant code changes. 
 
 ## Where code goes
 
-- Screens and app state: `app/page.tsx`. Feature UI: `components/mo/` (one file per area: `people.tsx`, `ready.tsx`, `plan-sections.tsx`, `profile.tsx`, `avatar-picker.tsx`, `art.tsx`).
+- Screens and app state: `app/page.tsx`. Feature UI: `components/mo/` (one file per area: `people.tsx`, `journey.tsx` (stage bar, the table, things left), `plan-sections.tsx`, `profile.tsx`, `avatar-picker.tsx`, `art.tsx`).
 - All reads and writes: `app/api/[[...path]]/route.ts`. Permissions are checked there, never only in the UI. ChatGPT tools in `app/mcp/route.ts` call the same API.
-- Shared rules used by both client and server: `lib/` (`names.ts`, `avatar.ts`, `group-update.ts`, `types.ts`).
+- Shared rules used by both client and server: `lib/` (`names.ts`, `avatar.ts`, `group-update.ts`, `journey.ts`, `types.ts`). Product wording that may change with the brand (stage names, the tagline in `lib/site.ts`) lives in one place; don't repeat it across screens.
 - Schema: `db/schema.ts`, then `npm run db:generate`. Never edit an existing migration.
 - No UI kits: the unused shadcn scaffolding (`components/ui/`) and its packages were removed (Nov 2026). Build controls in `components/mo/` with the tokens below.
 
