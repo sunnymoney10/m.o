@@ -2,16 +2,18 @@
 import {useEffect,useState} from 'react';
 import {Check,MapPin,Pencil,Plus,ArrowUpRight,LoaderCircle,Lock,UsersRound} from 'lucide-react';
 import type {Me,Profile} from '@/lib/types';
-import {INTERESTS,STYLES} from '@/lib/types';
+import {INTERESTS,STYLES,HABITS} from '@/lib/types';
+import {SeatIcon} from './journey';
 import {Scene,Face} from './art';
 import {AvatarPicker} from './avatar-picker';
 
-const empty:Profile={name:'',handle:'',mo:'',interests:[],style:'down'};
+const empty:Profile={name:'',handle:'',mo:'',interests:[],habits:[],style:'down'};
 
 export function ProfileView({me,loading,save,openPlan,start,uploadPhoto,removePhoto}:{me:Me|null;loading:boolean;save:(p:Profile)=>Promise<boolean>;openPlan:(id:string)=>void;start:()=>void;uploadPhoto:(dataUrl:string)=>Promise<boolean>;removePhoto:()=>Promise<boolean>}){
- const p=me?.profile,[editing,setEditing]=useState(false),[f,setF]=useState<Profile>(empty),[custom,setCustom]=useState(''),[busy,setBusy]=useState(false),[customizing,setCustomizing]=useState(false);
+ const p=me?.profile,[editing,setEditing]=useState(false),[f,setF]=useState<Profile>(empty),[custom,setCustom]=useState(''),[busy,setBusy]=useState(false),[customizing,setCustomizing]=useState(false),[ownHabit,setOwnHabit]=useState('');
  useEffect(()=>{if(!loading&&me&&!me.profile){setF({...empty,name:localStorage.getItem('mo-name')||''});setEditing(true)}},[loading,me]);
- function edit(){setCustomizing(false);setF(p?{...p}:{...empty,name:localStorage.getItem('mo-name')||''});setEditing(true)}
+ function edit(){setCustomizing(false);setF(p?{...p,habits:p.habits||[]}:{...empty,name:localStorage.getItem('mo-name')||''});setEditing(true)}
+ function toggleHabit(h:string){setF(x=>{const list=x.habits||[];return {...x,habits:list.includes(h)?list.filter(t=>t!==h):list.length>=5?list:[...list,h]}})}
  function toggle(tag:string){setF(x=>({...x,interests:x.interests.includes(tag)?x.interests.filter(t=>t!==tag):x.interests.length>=8?x.interests:[...x.interests,tag]}))}
  async function submit(e:React.FormEvent){e.preventDefault();setBusy(true);const ok=await save(f);setBusy(false);if(ok)setEditing(false)}
  if(loading)return <div className="loading"><LoaderCircle className="spin"/>Loading your profile…</div>;
@@ -22,29 +24,38 @@ export function ProfileView({me,loading,save,openPlan,start,uploadPhoto,removePh
    <div className="profile-cover"><Scene kind="portrait" seed={shown?.handle||shown?.name||'you'} avatar={shown?.avatar}/>{p?.photo&&<Face className="cover-photo" seed={p.handle} photo={p.photo}/>}<span className="cover-note">What’s your m.o?</span></div>
    <h1 className={shown?.name?'':'empty'}>{shown?.name||'Your name'}</h1>
    <span className="handle">@{shown?.handle||'yourhandle'}</span>
-   <p className={'mo-line'+(shown?.mo?'':' empty')}>{shown?.mo||'Add a line about what you’re down for.'}</p>
+   {editing&&<p className={'mo-line'+(shown?.mo?'':' empty')}>{shown?.mo||'Add a line about what you’re down for.'}</p>}
    {!!shown?.interests.length&&<div className="chips">{shown.interests.map(t=><span className="chip" key={t}>{t}</span>)}</div>}
    {style&&(p||editing)&&<span className="style-tag">{style[1]} · {style[2]}</span>}
    {!editing&&<div className="profile-actions"><button className="primary plum" onClick={edit}><Pencil size={16}/>{p?'Edit my m.o':'Make my m.o'}</button><button className="outline-button" onClick={start}><Plus size={16}/>Start your own plan</button></div>}
   </section>
 
+  {!editing&&<section className="mo-card" aria-labelledby="mo-title">
+   <div className="mo-card-head"><h2 id="mo-title">Your m.o.</h2><span>{me?.history.length?`${me.history.length} ${me.history.length===1?'plan':'plans'} made it out`:'Nothing made it out yet'}</span></div>
+   <div className="mo-card-line"><span className="eyebrow">MY M.O.</span><p className={'mo-quote'+(p?.mo?'':' empty')}>{p?.mo?`“${p.mo}”`:'How do you do plans? Say it in one line.'}</p></div>
+   <ul className="habit-chips" aria-label="Your habits">{(p?.habits||[]).map(h=><li key={h} className="habit-chip">{h}</li>)}<li><button className="habit-add" onClick={edit}><Plus size={14}/>{p?.habits?.length?'Change yours':'Add yours'}</button></li></ul>
+   <p className="hint">You choose these. Nobody else can add one. No scores, no rankings.</p>
+  </section>}
+
   {editing&&<form className="panel profile-form" onSubmit={submit}>
    <p className="hint">Your profile belongs to this browser. A personal invite restores access to one plan; it does not transfer a profile.</p>{!!me?.recoveredPlans&&<p className="hint">Your recovered plan contributions are included below. You can set up this browser’s own profile here.</p>}<h2>{p?'Edit your m.o':'Make your m.o'}</h2>
    <div className="form-row"><label>Name<input required maxLength={60} value={f.name} onChange={e=>setF({...f,name:e.target.value})} placeholder="What friends call you"/></label>
     <label>Handle<div className="handle-input"><span>@</span><input required maxLength={24} pattern="@?[A-Za-z0-9_]{2,24}" value={f.handle} onChange={e=>setF({...f,handle:e.target.value.replace(/\s/g,'')})} placeholder="jules"/></div></label></div>
+   <label>Your m.o., in one line <small>(optional)</small><input maxLength={80} value={f.mo} onChange={e=>setF({...f,mo:e.target.value})} placeholder="I book the place, you bring the pie."/></label>
+   <fieldset><legend>Your habits <small>(up to 5, all optional)</small></legend><div className="chips pick">{[...new Set([...HABITS,...(f.habits||[])])].map(t=>{const on=(f.habits||[]).includes(t);return <button type="button" key={t} aria-pressed={on} className={'chip'+(on?' on':'')} onClick={()=>toggleHabit(t)}>{on&&<Check size={12}/>}{t}</button>})}</div>
+    <div className="suggest"><input aria-label="Add your own habit" maxLength={32} value={ownHabit} onChange={e=>setOwnHabit(e.target.value)} placeholder="Add your own"/><button type="button" className="icon-button" aria-label="Add habit" disabled={!ownHabit.trim()||(f.habits||[]).length>=5} onClick={()=>{toggleHabit(ownHabit.trim());setOwnHabit('')}}><Plus size={16}/></button></div></fieldset>
    <details className="profile-extras" open={customizing} onToggle={e=>setCustomizing(e.currentTarget.open)}><summary>Customize picture and profile (optional)</summary><AvatarPicker seed={f.handle||f.name||'you'} avatar={f.avatar} photo={p?.photo} canUpload={!!p} onAvatar={a=>setF(x=>({...x,avatar:a}))} upload={uploadPhoto} remove={removePhoto}/>
-   <label>About you, in one line<input maxLength={80} value={f.mo} onChange={e=>setF({...f,mo:e.target.value})} placeholder="One more song. / Always down for a food run."/></label>
    <fieldset><legend>Things you like doing <small>(up to 8)</small></legend><div className="chips pick">{[...new Set([...INTERESTS,...f.interests])].map(t=><button type="button" key={t} aria-pressed={f.interests.includes(t)} className={'chip'+(f.interests.includes(t)?' on':'')} onClick={()=>toggle(t)}>{f.interests.includes(t)&&<Check size={12}/>}{t}</button>)}</div>
     <div className="suggest"><input aria-label="Add your own" maxLength={24} value={custom} onChange={e=>setCustom(e.target.value)} placeholder="Add your own"/><button type="button" className="icon-button" aria-label="Add interest" disabled={!custom.trim()} onClick={()=>{toggle(custom.trim());setCustom('')}}><Plus size={16}/></button></div></fieldset>
    <fieldset><legend>How you like to plan</legend><div className="style-grid">{STYLES.map(([k,label,line])=><button type="button" key={k} className={'style-option'+(f.style===k?' on':'')} aria-pressed={f.style===k} onClick={()=>setF({...f,style:k})}><strong>{label}</strong><small>{line}</small></button>)}</div></fieldset>
-   </details><p className="hint"><Lock size={12}/> Your name, handle, picture, line and interests show to people in plans you join. No scores, no rankings.</p>
+   </details><p className="hint"><Lock size={12}/> Your name, handle, picture, line, habits and interests can be seen by people in plans you join. No scores, no rankings.</p>
    <div className="form-bottom">{p?<button type="button" className="text-button" onClick={()=>setEditing(false)}>Cancel</button>:<span/>}<button className="primary" disabled={busy}>{busy?<LoaderCircle className="spin" size={16}/>:<ArrowUpRight size={16}/>}Save my m.o</button></div>
   </form>}
 
   <section className="made-section">
    <div className="section-title"><h2>Made it out</h2><span className="soft-pill">{me?.history.length||0} {me?.history.length===1?'plan':'plans'}</span></div>
    {me?.history.length?<div className="history-grid">{me.history.map(h=><button key={h.id} className="history-card" onClick={()=>openPlan(h.id)}>
-    <Scene kind="night" seed={h.id}/>
+    <SeatIcon seat="in"/>
     <strong>{h.title}</strong><small>{h.date?new Date(h.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):''}{h.place?' · '+h.place:''}</small></button>)}</div>
    :<div className="empty-state"><div><h3>No past plans yet.</h3><p>Plans you went to show up here once the host marks them done.</p></div><button className="outline-button" onClick={start}>Start your own plan <ArrowUpRight size={15}/></button></div>}
    <p className="shared-note"><UsersRound size={18} strokeWidth={1.8}/>Shared with people in your plans</p>

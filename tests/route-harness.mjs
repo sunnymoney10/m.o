@@ -28,6 +28,7 @@ await import('./plus-ones.mjs');
 await import('./plan-order.mjs');
 await import('./journey.mjs');
 await import('./plan-sentence.mjs');
+await import('./habits.mjs');
 await import('./usage-counts.mjs');
 console.log('Actual route handlers verified against SQLite with separate guest sessions.');
 

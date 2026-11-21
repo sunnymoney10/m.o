@@ -24,6 +24,8 @@ const STYLES=['setter','details','down','wildcard','snacks'];
 const HANDLE=/^[a-z0-9_]{2,24}$/;
 // Optional DAILY_NEW_PLANS environment variable overrides the site-wide daily ceiling on new plans.
 const dailyNewPlans=()=>Number((env as {DAILY_NEW_PLANS?:string})?.DAILY_NEW_PLANS)||500;
+// Habits people choose for themselves ("Always early"). Up to 5, short, no contact details. Never scored or counted.
+function habitsOf(v:unknown){return Array.isArray(v)?[...new Set(v.map(x=>cleanName(str(x,40)).slice(0,32)).filter(x=>x&&/\p{L}/u.test(x)))].slice(0,5):[]}
 function interestsOf(v:unknown){return Array.isArray(v)?[...new Set(v.map(x=>str(x,24)).filter(Boolean))].slice(0,8):[]}
 function parseInterests(s:string){try{const v=JSON.parse(s);return Array.isArray(v)?v:[]}catch{return []}}
 const placeHits=new Map<string,number[]>(),hostTries=new Map<string,number[]>();
@@ -102,13 +104,13 @@ async function answer(req:Request){
   }
   if(seg[0]==='me'&&seg.length===1){
    if(req.method==='GET'){
-    const p=await db.prepare('SELECT name,handle,mo,interests,style,avatar,photo_updated FROM profiles WHERE actor=?').bind(actor).first<any>();
+    const p=await db.prepare('SELECT name,handle,mo,interests,habits,style,avatar,photo_updated FROM profiles WHERE actor=?').bind(actor).first<any>();
     const {results:history}=await db.prepare("SELECT p.id,p.title,p.kind,p.date,p.place FROM plans p WHERE p.made_it=1 AND (p.owner=?1 OR EXISTS(SELECT 1 FROM host_access h WHERE h.plan_id=p.id AND h.visitor=?1 AND h.key_hash=p.host_key_hash AND h.key_hash<>'') OR EXISTS(SELECT 1 FROM guests g WHERE g.plan_id=p.id AND g.status='in' AND g.details_approved=1 AND ((g.actor=?1 AND g.invite_required=0) OR EXISTS(SELECT 1 FROM guest_access a WHERE a.guest_id=g.id AND a.visitor=?1 AND a.invite_hash=g.invite_hash AND g.invite_expires>strftime('%Y-%m-%dT%H:%M:%fZ','now'))))) ORDER BY p.date DESC").bind(actor).all<any>();
     const done=await db.prepare("SELECT count(*) AS n FROM tasks t JOIN plans p ON p.id=t.plan_id WHERE t.done=1 AND ((t.claimed_by=?1 AND (p.owner=?1 OR EXISTS(SELECT 1 FROM guests g WHERE g.plan_id=p.id AND g.actor=?1 AND g.invite_required=0))) OR (t.claimed_by=p.owner AND EXISTS(SELECT 1 FROM host_access h WHERE h.plan_id=p.id AND h.visitor=?1 AND h.key_hash=p.host_key_hash AND h.key_hash<>'')) OR EXISTS(SELECT 1 FROM guests g JOIN guest_access a ON a.guest_id=g.id WHERE g.plan_id=p.id AND g.actor=t.claimed_by AND a.visitor=?1 AND a.invite_hash=g.invite_hash AND g.invite_expires>strftime('%Y-%m-%dT%H:%M:%fZ','now')))").bind(actor).first<any>();
     const hosted=await db.prepare("SELECT count(*) AS n FROM plans p WHERE p.made_it=1 AND (p.owner=?1 OR EXISTS(SELECT 1 FROM host_access h WHERE h.plan_id=p.id AND h.visitor=?1 AND h.key_hash=p.host_key_hash AND h.key_hash<>''))").bind(actor).first<any>();
     const recovered=await db.prepare("SELECT count(*) AS n FROM guest_access a JOIN guests g ON g.id=a.guest_id WHERE a.visitor=? AND g.actor<>? AND a.invite_hash=g.invite_hash AND g.invite_expires>?").bind(actor,actor,new Date().toISOString()).first<any>();
     const cities=[...new Set(history.map((h:any)=>String(h.place||'').trim()).filter(Boolean))];
-    return json({recoveredPlans:recovered?.n||0,profile:p?{name:p.name,handle:p.handle,mo:p.mo,style:p.style,interests:parseInterests(p.interests),avatar:parseAvatar(p.avatar),photo:p.photo_updated?'/api/me/photo?v='+encodeURIComponent(p.photo_updated):null}:null,history,cities,contributed:done?.n||0,hosted:hosted?.n||0});
+    return json({recoveredPlans:recovered?.n||0,profile:p?{name:p.name,handle:p.handle,mo:p.mo,style:p.style,interests:parseInterests(p.interests),habits:parseInterests(p.habits||'[]'),avatar:parseAvatar(p.avatar),photo:p.photo_updated?'/api/me/photo?v='+encodeURIComponent(p.photo_updated):null}:null,history,cities,contributed:done?.n||0,hosted:hosted?.n||0});
    }
    if(req.method==='PUT'){
     const b=await body();const name=str(b.name,60),handle=str(b.handle,24).toLowerCase().replace(/^@/,''),mo=str(b.mo,80),style=STYLES.includes(b.style)?b.style:'down';
@@ -118,7 +120,7 @@ async function answer(req:Request){
     const kept=await db.prepare('SELECT avatar FROM profiles WHERE actor=?').bind(actor).first<any>();const chosen=b.avatar===undefined?undefined:cleanAvatar(b.avatar);
     const avatarJson=chosen===undefined?(kept?.avatar||''):chosen?JSON.stringify(chosen):'';
     const taken=await db.prepare('SELECT actor FROM profiles WHERE handle=? AND actor<>?').bind(handle,actor).first();if(taken)return json({error:'That handle is taken. Try another.'},409);
-    await db.batch([db.prepare('INSERT INTO profiles (actor,name,handle,mo,interests,style,updated,avatar) VALUES (?,?,?,?,?,?,?,?) ON CONFLICT(actor) DO UPDATE SET name=excluded.name,handle=excluded.handle,mo=excluded.mo,interests=excluded.interests,style=excluded.style,updated=excluded.updated,avatar=excluded.avatar').bind(actor,name,handle,mo,JSON.stringify(interestsOf(b.interests)),style,new Date().toISOString(),avatarJson),db.prepare('UPDATE guests SET name=? WHERE actor=?').bind(name,actor),db.prepare('UPDATE tasks SET claimed_name=? WHERE claimed_by=?').bind(name,actor),db.prepare('UPDATE memories SET name=? WHERE actor=?').bind(name,actor)]);
+    await db.batch([db.prepare('INSERT INTO profiles (actor,name,handle,mo,interests,style,updated,avatar,habits) VALUES (?,?,?,?,?,?,?,?,?) ON CONFLICT(actor) DO UPDATE SET name=excluded.name,handle=excluded.handle,mo=excluded.mo,interests=excluded.interests,style=excluded.style,updated=excluded.updated,avatar=excluded.avatar,habits=excluded.habits').bind(actor,name,handle,mo,JSON.stringify(interestsOf(b.interests)),style,new Date().toISOString(),avatarJson,JSON.stringify(habitsOf(b.habits))),db.prepare('UPDATE guests SET name=? WHERE actor=?').bind(name,actor),db.prepare('UPDATE tasks SET claimed_name=? WHERE claimed_by=?').bind(name,actor),db.prepare('UPDATE memories SET name=? WHERE actor=?').bind(name,actor)]);
     return json({ok:true});
    }
   }
@@ -178,7 +180,7 @@ async function answer(req:Request){
    const answer=(status:string,count:number,names:string)=>(status==='in'?'going':status==='maybe'?'still checking':status==='out'?'can’t make it':'no reply yet')+(count?` (+${count}${names?' '+names:''})`:'');
 
    if(seg.length===2 && req.method==='GET'){
-    const gs=await db.prepare('SELECT g.id,g.name,g.status,g.note,g.actor,g.extra_count,g.extra_names,g.extra_status,g.dietary,g.staying,g.source,g.updated,g.check_back,g.invite_required,g.details_approved,g.with_guest,length(g.invite_hash)>0 AS has_link,pr.handle,pr.mo,pr.interests,pr.avatar,pr.photo_updated FROM guests g LEFT JOIN profiles pr ON pr.actor=g.actor WHERE g.plan_id=? ORDER BY g.rowid').bind(id).all<any>();
+    const gs=await db.prepare('SELECT g.id,g.name,g.status,g.note,g.actor,g.extra_count,g.extra_names,g.extra_status,g.dietary,g.staying,g.source,g.updated,g.check_back,g.invite_required,g.details_approved,g.with_guest,length(g.invite_hash)>0 AS has_link,pr.handle,pr.mo,pr.interests,pr.habits,pr.avatar,pr.photo_updated FROM guests g LEFT JOIN profiles pr ON pr.actor=g.actor WHERE g.plan_id=? ORDER BY g.rowid').bind(id).all<any>();
     const ts=await db.prepare('SELECT * FROM tasks WHERE plan_id=? ORDER BY rowid').bind(id).all<any>();
     const ps=await db.prepare('SELECT * FROM polls WHERE plan_id=? ORDER BY created').bind(id).all<any>();
     const os=await db.prepare('SELECT o.id,o.poll_id,o.label FROM poll_options o JOIN polls p ON p.id=o.poll_id WHERE p.plan_id=? ORDER BY o.rowid').bind(id).all<any>();
@@ -205,7 +207,7 @@ async function answer(req:Request){
      details:insider?details:'',...(host?{doorCode:door_code}:{}),hidden,
      // Dietary needs, sleepover requests and pending plus-ones are visible only to the organizer and the guest.
      openPlusOnes:!!open_plus_ones,plusOneRequests,myPlusOnes,plusOnesLeft,
-     guests:listed.map(({actor:a,interests,dietary,staying,check_back,extra_count,extra_names,extra_status,avatar,photo_updated,invite_required,details_approved,with_guest,has_link,...g}:any)=>{const own=a===actor,see=host||own,extra=see||extra_status==='approved';return {...g,withName:with_guest?nameOf.get(with_guest)||null:null,needsPersonalLink:!!invite_required,...(host?{inviteRequired:!!invite_required,detailsApproved:!!details_approved,hasLink:!!has_link}:{}),note:see?g.note:'',avatar:parseAvatar(avatar),photo:photo_updated?`/api/plan/${id}/guests/${g.id}/photo?v=${encodeURIComponent(photo_updated)}`:null,isHost:a===owner,interests:interests?parseInterests(interests):[],isMe:own,extra_count:extra?extra_count:0,extra_names:extra?extra_names:'',extra_status:extra?extra_status:'',...(see?{dietary,staying:!!staying,check_back:check_back||''}:{})}}),
+     guests:listed.map(({actor:a,interests,habits,dietary,staying,check_back,extra_count,extra_names,extra_status,avatar,photo_updated,invite_required,details_approved,with_guest,has_link,...g}:any)=>{const own=a===actor,see=host||own,extra=see||extra_status==='approved';return {...g,withName:with_guest?nameOf.get(with_guest)||null:null,needsPersonalLink:!!invite_required,...(host?{inviteRequired:!!invite_required,detailsApproved:!!details_approved,hasLink:!!has_link}:{}),note:see?g.note:'',avatar:parseAvatar(avatar),photo:photo_updated?`/api/plan/${id}/guests/${g.id}/photo?v=${encodeURIComponent(photo_updated)}`:null,isHost:a===owner,interests:interests?parseInterests(interests):[],habits:habits?parseInterests(habits):[],isMe:own,extra_count:extra?extra_count:0,extra_names:extra?extra_names:'',extra_status:extra?extra_status:'',...(see?{dietary,staying:!!staying,check_back:check_back||''}:{})}}),
      tasks:ts.results.map(({claimed_by,...t}:any)=>({...t,isMine:claimed_by===actor})),
      polls,stops:insider?ss.results:[],
      memories:ms.results.map(({actor:a,...m}:any)=>({...m,isMine:a===actor}))});

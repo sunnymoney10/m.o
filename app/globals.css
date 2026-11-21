@@ -513,10 +513,13 @@ legend{font-weight:600;font-size:var(--fs-body);margin-bottom:8px;color:var(--in
 .made-section{border-top:1.5px solid var(--line);padding-top:20px}
 .made-section .section-title h2{font-size:var(--fs-section)}
 .history-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
-.history-card{display:grid;gap:4px;text-align:left}
+.history-card{display:grid;gap:16px;text-align:left;background:var(--ink);border-radius:var(--r-m);padding:14px;min-height:44px}
+.history-card .seat{width:26px;height:26px}
+.history-card .seat-head{fill:var(--butter)}
+.history-card .seat-line{fill:var(--cream)}
 .history-card .scene{aspect-ratio:4/3;border-radius:var(--r-m)}
-.history-card strong{color:var(--ink);font-size:var(--fs-input)}
-.history-card small{color:var(--muted)}
+.history-card strong{color:var(--paper);font-size:var(--fs-input);display:block}
+.history-card small{color:var(--on-dark-text)}
 .shared-note{display:flex;align-items:center;gap:10px;color:var(--text);font-size:var(--fs-body);margin-top:16px}
 .cities .chips{margin-top:4px}
 .your-part{display:grid;grid-template-columns:1fr 1fr;gap:12px;background:var(--paper);border-radius:var(--radius);padding:18px;box-shadow:0 1px 0 var(--line)}
@@ -585,9 +588,9 @@ legend{font-weight:600;font-size:var(--fs-body);margin-bottom:8px;color:var(--in
 .row-tools,.item-tools{gap:0 16px}
 
 /* ---------- shared press effect: every tap is answered ---------- */
-.primary,.outline-button,.text-button,.left-action,.kind-pick button,.bring-idea,.claim-button,.chip,.name-chip,.swatch,.rsvp-choice,.seg button,.tab,.plan-card,.demo-card,.row-link,.status-grid>button,.status-items,.icon-button,.host-line-item,.style-option,.type-selector button,.feature-open,.me-dot,.place-hit{transition:transform .2s ease-out,background-color .15s,box-shadow .15s}
-:is(.primary,.left-action,.kind-pick button,.bring-idea,.lost-mark,.help-q summary,.outline-button,a.outline-button,.text-button,.claim-button,.chip,.name-chip,.swatch,.rsvp-choice,.seg button,.tab,.plan-card,.demo-card,.row-link,.status-grid>button,.status-items,.icon-button,.host-line-item,.style-option,.type-selector button,.feature-open,.me-dot,.place-hit,.invite-theme-options button,.invite-color-options button):active:not(:disabled){transform:scale(.97);transition-duration:.12s}
-@media(prefers-reduced-motion:reduce){:is(.primary,.left-action,.kind-pick button,.bring-idea,.lost-mark,.help-q summary,.outline-button,.text-button,.claim-button,.chip,.name-chip,.swatch,.rsvp-choice,.seg button,.tab,.plan-card,.demo-card,.row-link,.status-grid>button,.status-items,.icon-button,.host-line-item,.style-option,.type-selector button,.feature-open,.me-dot,.place-hit,.invite-theme-options button,.invite-color-options button):active:not(:disabled){transform:none;opacity:.8}}
+.primary,.outline-button,.text-button,.left-action,.habit-add,.kind-pick button,.bring-idea,.claim-button,.chip,.name-chip,.swatch,.rsvp-choice,.seg button,.tab,.plan-card,.demo-card,.row-link,.status-grid>button,.status-items,.icon-button,.host-line-item,.style-option,.type-selector button,.feature-open,.me-dot,.place-hit{transition:transform .2s ease-out,background-color .15s,box-shadow .15s}
+:is(.primary,.left-action,.habit-add,.kind-pick button,.bring-idea,.lost-mark,.help-q summary,.outline-button,a.outline-button,.text-button,.claim-button,.chip,.name-chip,.swatch,.rsvp-choice,.seg button,.tab,.plan-card,.demo-card,.row-link,.status-grid>button,.status-items,.icon-button,.host-line-item,.style-option,.type-selector button,.feature-open,.me-dot,.place-hit,.invite-theme-options button,.invite-color-options button):active:not(:disabled){transform:scale(.97);transition-duration:.12s}
+@media(prefers-reduced-motion:reduce){:is(.primary,.left-action,.habit-add,.kind-pick button,.bring-idea,.lost-mark,.help-q summary,.outline-button,.text-button,.claim-button,.chip,.name-chip,.swatch,.rsvp-choice,.seg button,.tab,.plan-card,.demo-card,.row-link,.status-grid>button,.status-items,.icon-button,.host-line-item,.style-option,.type-selector button,.feature-open,.me-dot,.place-hit,.invite-theme-options button,.invite-color-options button):active:not(:disabled){transform:none;opacity:.8}}
 
 /* delete plan */
 .danger-zone{display:grid;gap:2px;justify-items:start;padding-top:12px;border-top:1.5px solid var(--line)}
@@ -838,3 +841,39 @@ html,body{overflow-x:clip}
 .bring-idea{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 14px;border-radius:var(--r-pill);background:var(--paper);border:1.5px solid var(--line);font-size:var(--fs-body);color:var(--ink)}
 .bring-idea.chosen{background:var(--butter);border-color:var(--butter);font-weight:700}
 .bring-idea.own{border-style:dashed;border-color:var(--field-line);color:var(--muted)}
+
+/* ---------- made it out (components/mo/journey.tsx) ---------- */
+.made-it-out{border-radius:var(--radius);overflow:hidden;background:var(--paper);box-shadow:0 1px 0 var(--line)}
+.made-top{display:grid;gap:12px;padding:24px 20px;background:var(--ink);color:var(--paper)}
+.made-stamp{justify-self:start;display:inline-flex;align-items:center;gap:10px;padding:8px 14px;border:3px solid var(--butter);border-radius:var(--r-m);transform:rotate(-4deg);font-size:var(--fs-title);font-weight:900;letter-spacing:.04em;text-transform:uppercase;color:var(--butter)}
+.made-stamp .seat{width:28px;height:28px}
+.made-stamp .seat-head{fill:var(--butter)}
+.made-stamp .seat-line{fill:var(--cream)}
+.made-top h2{font-size:var(--fs-section);color:var(--paper)}
+.made-top p{font-size:var(--fs-input);color:var(--on-dark-text)}
+.made-body{display:grid;gap:16px;padding:20px}
+.made-brought h3{margin-bottom:6px}
+.made-brought ul{list-style:none;margin:0;padding:0;display:grid;gap:4px;font-size:var(--fs-body)}
+.made-brought strong{color:var(--ink)}
+.made-actions{display:grid;gap:10px}
+.made-note{font-family:var(--hand);font-size:var(--fs-title);color:var(--brick);text-align:right}
+@media(prefers-reduced-motion:reduce){.made-stamp{transform:none}}
+.left-happened{display:grid;gap:12px;padding:16px;border-radius:var(--r-m);background:var(--butter-soft)}
+.left-happened p{display:grid;gap:2px}
+.left-happened strong{color:var(--ink);font-size:var(--fs-lead)}
+.left-happened span{font-size:var(--fs-body);color:var(--text)}
+.left-happened .primary{justify-self:start}
+.carry-note{display:grid;gap:4px;padding:12px 14px;border-radius:var(--r-m);background:var(--sky-soft);font-size:var(--fs-body);color:var(--ink)}
+.carry-note .text-button{justify-self:start;min-height:44px}
+
+/* ---------- your m.o. (components/mo/profile.tsx) ---------- */
+.mo-card{display:grid;gap:14px;background:var(--paper);border-radius:var(--radius);padding:18px;box-shadow:0 1px 0 var(--line)}
+.mo-card-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px}
+.mo-card-head span{font-size:var(--fs-body);color:var(--muted)}
+.mo-card-line{border-top:1.5px solid var(--line);padding-top:14px}
+.mo-card-line .eyebrow{margin-bottom:4px}
+.mo-quote{font-family:var(--hand);font-size:var(--fs-section);line-height:1.1;color:var(--ink)}
+.mo-quote.empty{font-family:var(--font);font-size:var(--fs-input);color:var(--muted)}
+.habit-chips{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+.habit-chip{display:inline-flex;align-items:center;min-height:36px;padding:0 12px;border-radius:var(--r-pill);background:var(--ink);color:var(--cream);font-size:var(--fs-body);font-weight:600}
+.habit-add{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 14px;border-radius:var(--r-pill);border:1.5px dashed var(--field-line);color:var(--muted);font-size:var(--fs-body)}

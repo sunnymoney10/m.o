@@ -4,6 +4,8 @@
 import {ChevronRight} from 'lucide-react';
 import type {Detail,Plan} from '@/lib/types';
 import {nudgeMaybes} from '@/lib/group-update';
+import {smsHref} from '@/lib/invite';
+import {planGroup} from '@/lib/plan-order';
 import {STAGES,stageOf,stageLabel,factsFrom,thingsLeft,otherVotes,leftHeadline,seatOf,seatSummary,type Stage,type Seat,type LeftKey} from '@/lib/journey';
 
 // One seat: a round head over a table line, like the dot in the logo.
@@ -68,7 +70,7 @@ function names(list:string[]){return list.length<=2?list.join(' and '):list.slic
 type Line={key:LeftKey;title:string;detail:string;action?:{label:string;run:()=>void}};
 
 // The host's list of what is still left before the plan happens, each with one action.
-export function ThingsLeft({detail,link,shared,go,edit,openVotes,notify}:{detail:Detail;link:string;shared:boolean;go:(tab:'people'|'list',opts?:{add?:boolean;send?:boolean})=>void;edit:()=>void;openVotes:()=>void;notify:(t:string)=>void}){
+export function ThingsLeft({detail,link,shared,go,edit,openVotes,notify,markMade,busy}:{detail:Detail;link:string;shared:boolean;go:(tab:'people'|'list',opts?:{add?:boolean;send?:boolean})=>void;edit:()=>void;openVotes:()=>void;notify:(t:string)=>void;markMade:()=>void;busy:boolean}){
  const p=detail.plan,f=factsFrom(detail),left=thingsLeft(f),trip=p.kind==='trip';
  const others=detail.guests.filter(g=>!g.isHost&&['in','maybe','invited','out'].includes(g.status));
  const waiting=others.filter(g=>g.status==='invited'||g.status==='maybe');
@@ -93,8 +95,10 @@ export function ThingsLeft({detail,link,shared,go,edit,openVotes,notify}:{detail
  };
  const shown=left.map(k=>lines[k]());
  const done=[p.date&&'date',p.place&&'place',others.length>0&&!waiting.length&&'everyone answered',detail.tasks.length>0&&!open.length&&(trip?'every task has a person':'bring list covered')].filter(Boolean) as string[];
+ const over=planGroup(p)===2;
  return <section className="next-steps things-left" aria-labelledby="left-title">
-  <h2 id="left-title">{leftHeadline(shown.length)}</h2>
+  {over&&<div className="left-happened"><p><strong>Did it happen?</strong><span>The date has passed. Mark it so it’s saved to everyone’s history.</span></p><button className="primary" disabled={busy} onClick={markMade}>We made it out</button></div>}
+  <h2 id="left-title">{over?'Still open':leftHeadline(shown.length)}</h2>
   {shown.length?<ol>{shown.map(s=><li key={s.key}>
    <span className="left-dot" aria-hidden="true"/>
    <div><strong>{s.title}</strong>{s.detail&&<span>{s.detail}</span>}</div>
@@ -106,3 +110,27 @@ export function ThingsLeft({detail,link,shared,go,edit,openVotes,notify}:{detail
 
 // The stage a plan page shows: the host's own live data when they have it, otherwise what the server worked out.
 export function stageFor(detail:Detail):Stage{return detail.host||!detail.plan.stage?stageOf(factsFrom(detail)):detail.plan.stage}
+
+// The last stage: the plan happened. A stamp, who came, who brought what, and two host actions.
+// "Send everyone a thank-you" opens Messages with words filled in; m.o never sends anything itself.
+export function MadeItOut({detail,link,host,planNext}:{detail:Detail;link:string;host:boolean;planNext:()=>void}){
+ const p=detail.plan,came=detail.guests.filter(g=>g.status==='in'),people=came.reduce((n,g)=>n+1+(g.extra_status==='approved'?g.extra_count||0:0),0);
+ const brought=detail.tasks.filter(t=>t.claimed_name),day=p.date?new Date(p.date).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}):'';
+ const thanks=`Thank you for coming to ${p.title}! We made it out of the group chat. Photos and thank-yous go here: ${link}`;
+ return <section className="made-it-out" aria-labelledby="made-title">
+  <div className="made-top">
+   <span className="made-stamp"><SeatIcon seat="in"/>Made it out</span>
+   <h2 id="made-title">{p.title} happened.</h2>
+   <p>{[day,people?`${people} ${people===1?'person':'people'}`:'',brought.length?`${brought.length} ${brought.length===1?'thing':'things'} brought`:''].filter(Boolean).join(' · ')}</p>
+  </div>
+  <div className="made-body">
+   {brought.length>0&&<div className="made-brought"><h3>Who brought what</h3><ul>{brought.map(t=><li key={t.id}><strong>{t.claimed_name}</strong> · {t.title}</li>)}</ul></div>}
+   {host&&<div className="made-actions">
+    <a className="primary block" href={smsHref('',thanks)}>Send everyone a thank-you</a>
+    <button className="outline-button block" onClick={planNext}>Plan the next one with the same people</button>
+    <p className="fine">Opens Messages with a thank-you filled in. You choose who gets it and tap Send.</p>
+   </div>}
+   <span className="made-note" aria-hidden="true">it made it out the group chat.</span>
+  </div>
+ </section>
+}

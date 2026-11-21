@@ -1,0 +1,1 @@
+ALTER TABLE `profiles` ADD `habits` text DEFAULT '[]' NOT NULL;

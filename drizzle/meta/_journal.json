@@ -141,6 +141,13 @@
       "when": 1795201764707,
       "tag": "0019_past_mantis",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "6",
+      "when": 1795276779709,
+      "tag": "0020_superb_obadiah_stane",
+      "breakpoints": true
     }
   ]
 }
