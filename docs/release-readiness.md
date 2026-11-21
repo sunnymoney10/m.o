@@ -1,6 +1,6 @@
 # m.o release readiness (Friendsgiving)
 
-Updated 2026-11-20. Historical live evidence is retained; PR #27 changes below remain unshipped. Each claim names its evidence level:
+Updated 2026-11-21. Historical live evidence is retained; PR #27 changes below remain unshipped. Each claim names its evidence level:
 1 = design exists, 2 = code reviewed, 3 = automated tests pass, 4 = real people completed it on the live site.
 First level 4 evidence (2026-11-19): a real host (Queen Valesha) sent a real guest (Kofi) a personal invite to a UniverSoul Circus trip. Found: the page needed zooming out on his iPhone, guests could copy the invite link, and the trip said "bring". Also found: new trips came with vague placeholder jobs ("Agree the accommodation budget", "Choose the accommodation", "Organize the ride") that guests can't sensibly take. Trips now start with no jobs, show specific examples, and point decisions to votes. All fixed (level 3) and waiting for a second real try.
 
@@ -16,6 +16,21 @@ First level 4 evidence (2026-11-19): a real host (Queen Valesha) sent a real gue
 | Live matches tested code | Works | 3. Every deploy goes through GitHub after checks pass. Live checks confirm new features are present. | The live site doesn't show which version it runs. |
 | Monitoring and recovery | Partly | 3. Every 30 minutes GitHub checks the live site, its database and new errors, and fails (emailing the owner) on a problem. API test: a failed request is counted by route only, with nothing private. The check was run locally for all three cases: fine, one error, site down. | The email itself is level 2 until the owner gets one from a real failure or a test run. Checks can be up to 30 minutes late (GitHub may delay scheduled runs). Errors in page rendering (not the API) only show up if the home page fails. Restore from a backup was practised on 2026-11-19 against the live database (all tables matched; steps in `docs/restore.md`). Rewinding with Time Travel was not practised, because it changes the live data. |
 
+## Redesign phase 1: plan journey (2026-11-21)
+
+Every plan now shows where it is: **In the chat → Taking shape → Locked in → Made it out**, worked out from saved data only (`lib/journey.ts`, used by the server and the screens; no database change). Host cards and the host screen show "things left to make it out", each with one action, replacing "Get it ready". Cards and plan pages show "the table" of seats (filled = coming, yellow = checking, dashed = no reply, crossed = can't make it; a dashed ring = noted by the host, not confirmed).
+
+| Claim | Evidence |
+| --- | --- |
+| Stage rules (silence never counts; Made it out only when the host marks it) | 3. `tests/journey.mjs`: unit rules and the real API |
+| Same stage for host, guest and a stranger who can't see the address; things left for the host only | 3. `tests/journey.mjs` |
+| Host and guest screens on an iPhone 14 Pro Max: home card, plans list, host plan page, answered guest, stranger; no sideways scroll | 3. Browser screenshots; all 21 journey, a11y and ux commands pass |
+| Real people understand the stages and seats | Not yet (level 4 needs real use) |
+
+Brand flexibility (from the owner's brand handoff): stage names live only in `STAGES`, the tagline in `TAGLINE` (`lib/site.ts`), so a future campaign can rename them in one place. No theme system or copy file was added.
+
+Phone checks 2026-11-21: `journeys:access`, `journeys:recovery` and `journeys:themes` default to port 5174; they pass with `JOURNEY_URL=http://127.0.0.1:5173`.
+
 ## Tap counts (`npm run ux:taps`, 2026-11-19, level 3)
 
 Typing in a box is counted separately from taps. "Send in Messages" counts as one tap.
@@ -30,6 +45,8 @@ Typing in a box is counted separately from taps. "Send in Messages" counts as on
 | Host | Record an answer for a friend who texted back | 4 | 0 |
 | Host | Change the date | 2 | 1 |
 | Host | Delete the plan | 3 | 0 |
+
+Run 2026-11-21 (after phase 1): the same except "Send the first invite" 5 (was 4), "Send each next invite" 3 (was 2) and "Group-chat link: answer" 3 taps and 1 box typed (was 0). These come from the People tab's Send invites screen ("Prepare invite for…") and name entry, which phase 1 didn't change; they changed in earlier work after the Nov 19 count. Worth a look in the backlog.
 | Guest | Personal link: say I'm in | 1 | 0 |
 | Guest | then pick something to bring | 1 | 0 |
 | Guest | Add to calendar | 2 | 0 |
@@ -50,6 +67,9 @@ Typing in a box is counted separately from taps. "Send in Messages" counts as on
    | Step | Who (first name) | Phone / app | What happened | Fixed in |
    | --- | --- | --- | --- | --- |
    | | | | | |
+
+6. Redesign phase 2: new guest invite ("saved you a seat") and the one-sentence new plan. Phase 3: Made it out stamp and "Your m.o".
+7. Check why sending invites now takes one more tap than on Nov 19 (see tap counts).
 
 Done outside the backlog (2026-11-19): trip "Search Airbnb / Search hotels" links (level 3, host and guest journeys), and Escape no longer closes the plan form while suggestions are open (level 3).
 
